@@ -7,6 +7,8 @@ Created on Tue Sep 13 21:46:41 2022
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import datetime
 
 #%% Smaller utility-functions 
 
@@ -21,6 +23,27 @@ def scale125(x):
     xn = mn*10**e    
         
     return xn
+
+def find_filename( prefix='US', ext='wfm', resultdir=[] ):
+    counterfile= f'{prefix}.cnt'
+    if os.path.isfile(counterfile):
+        with open(counterfile, 'r') as fid:
+            n= int( fid.read( ) )
+    else:
+        n=0
+            
+    datecode   = datetime.date.today().strftime('%Y_%m_%d')
+    ext        = ext.split('.')[-1]
+    file_exists= True
+    while file_exists:
+        n+=1
+        resultfile = prefix + '_' + datecode + '_' + f'{n:04d}' + '.' + ext
+        file_exists= os.path.isfile(resultfile)
+    
+    with open(counterfile, 'wt') as fid:
+        fid.write( f'{n:d}' ) 
+        
+    return resultfile   
 
 #%%
 """ waveform-class. Used to store traces sampled in time, one or several channels. 

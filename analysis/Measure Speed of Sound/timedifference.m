@@ -27,6 +27,7 @@ function par= timedifference(par, swap)
 %  2) Through-transmission. Transmitted through sample, and reverberations
 %  Results from these two channels are calculated independently
 %
+%
 
 if nargin<2, swap=0; end
     
@@ -42,9 +43,10 @@ if swap
         wfm(k).v= flip(wfm(k).v,2);
     end
 end
+A = 1000;     % Amplification of pulse no 1
 
 %--- Organize and filter results ---
-v= double([wfm(1).v wfm(2).v]);          % Voltage traces in columns
+v= double( [ A*wfm(1).v wfm(2).v ] );          % Voltage traces in columns
 vname={'Reflected from sample'
        'Transmitted through sample'
        'Reflected from water'

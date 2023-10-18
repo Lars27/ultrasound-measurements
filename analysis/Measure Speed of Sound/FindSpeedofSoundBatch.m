@@ -5,7 +5,9 @@
 
 % List of parameter files (*.cpa) containing measurement information
 parfile={ ...
-    'US_2020_09_14_0034' };
+    'US_2023_09_29_0042'
+    'US_2023_09_29_0044'
+    'US_2023_09_29_0046' };
 N=length(parfile);
 
 exportfile='SpeedofsoundResults.txt';

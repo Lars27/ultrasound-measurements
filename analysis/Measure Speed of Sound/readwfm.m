@@ -22,28 +22,43 @@ function wfm= readwfm(wfmfile)
 %
 
 % Lars Hoff, HiVe, March 2011
+% LH: Modified Oct 2023: Accept .mat files, variables are loaded directly. 
 
-src = fopen (wfmfile,'rb','ieee-be');   % Data stored in 'IEEE big-endian' format, ref. LabVIEW
+[fpath, fname, ext] = fileparts(wfmfile);  % Select interpretation based on file extension
+switch ext
+    case '.mat'
+        wfm = load(wfmfile);    % Trivial, for compatibility if data already in Matlab-format
+    case '.wfm'
+        wfm=interpretwfm(wfmfile);  % Measurement file format compatible across many systems
+    otherwise
+        error( 'Unknown result file format' );
+end
 
-%Read header
-Nhd = fread(src, 1, 'int32');                     % Read header
-wfm.header = readstring(src, Nhd);
-wfm.N      = fread(src, 1, 'uint32');
-wfm.t0     = fread(src, 1, 'float64');
-wfm.dt     = fread(src, 1, 'float64');
-wfm.dtr    = fread(src, 1, 'float64');
-wfm.eoh    = ftell(src);                           % Register where header ends and data starts
-wfm.v      = fread(src, [wfm.N inf], '*float32');  % Read all data in once
+end
 
-wfm.v = wfm.v';
-wfm.Np= max(size(wfm.v));
 
-fclose(src);
+%% Interpret wfm file format
 
-return
+function wfm = interpretwfm(wfmfile)
+    src = fopen ( wfmfile, 'rb', 'ieee-be' );   % Data stored in 'IEEE big-endian' format, ref. LabVIEW
+    Nhd = fread ( src, 1, 'int32' );         
+    wfm.header = readstring(src, Nhd);
+    wfm.N      = fread ( src, 1,  'uint32' );
+    wfm.t0     = fread ( src, 1, 'float64' );
+    wfm.dt     = fread ( src, 1, 'float64' );
+    wfm.dtr    = fread ( src, 1, 'float64' );
+    wfm.eoh    = ftell ( src );                           % Position where header ends and data starts
+    wfm.v      = fread ( src, [wfm.N inf], '*float32' );  % Read all data in once
 
-%=== Internal functions ===
-function s= readstring(src,n)
+    wfm.v = wfm.v';
+    wfm.Np= max(size(wfm.v));
+
+    fclose(src);
+end
+
+%% Internal functions 
+
+function s = readstring(src,n)
 ns= fread(src, n, '*uchar');
 s = char(ns');
-return
+end

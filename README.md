@@ -1,4 +1,4 @@
-# Programs to Aquire and Analyse Results from Measurement Systems in the Ultrasound Lab
+# Programs for Measurement Systems in the Ultrasound Lab
 ## University of South-Eastern Norway, Vestfold Campus
 
 Collection of small applications to comunicate with and acquire data from the measurement systems in USN's ultrasound laboratory at the Vestfold Campus.
@@ -8,7 +8,7 @@ Note that the LabVIEW and Matlab programs will need access to all files in their
 The Matlab functions are to be called from the Matlab console or from antoher Matlab-function.
 
 
-### Acquire and display ultrasound pulses
+## Acquire Ultrasound Pulses
 
 #### Acquire_Ultrasound_LabVIEW
 | Description |  Hardware | Type | Function Name | 
@@ -32,7 +32,7 @@ Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
 #### lyncee_dhm_processing
 Load, process and display results from Lyncee Tec DHM in Matlab
 
-#### impedance-measurements
+## Acquire Impedance Spectra
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
 | Acquire S-parameter measurements         | Rhode & Schwartz ZVL vector netwotrk analyzer       | LabVIEW project | `Measure Impedance R&S ZVL.lvproj` |

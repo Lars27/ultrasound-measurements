@@ -25,7 +25,7 @@ import trewmac300x_serial as te     # Serial inerface to Trewmac analysers
 
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')
-analyser_main_window, QtBaseClass = uic.loadUiType('read_trewmac_gui.ui')
+analyser_main_window, QtBaseClass = uic.loadUiType('read-trewmac-gui.ui')
 
 
 class acquisition_control:  

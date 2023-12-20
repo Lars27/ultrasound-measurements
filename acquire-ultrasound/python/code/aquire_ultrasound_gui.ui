@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>387</width>
-    <height>495</height>
+    <width>304</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,7 +69,7 @@
      <rect>
       <x>20</x>
       <y>120</y>
-      <width>251</width>
+      <width>241</width>
       <height>201</height>
      </rect>
     </property>
@@ -92,72 +92,40 @@
      <attribute name="title">
       <string>Vertical</string>
      </attribute>
-     <widget class="QWidget" name="gridLayoutWidget_3">
+     <widget class="QWidget" name="gridLayoutWidget_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>10</y>
         <width>213</width>
-        <height>158</height>
+        <height>125</height>
        </rect>
       </property>
-      <property name="locale">
-       <locale language="English" country="UnitedKingdom"/>
-      </property>
-      <layout class="QGridLayout" name="parameter_gridLayout">
-       <item row="3" column="1">
-        <widget class="QComboBox" name="coupling_a_comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="ch_b_pushButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="currentText">
-          <string>AC</string>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
          </property>
-         <property name="currentIndex">
-          <number>0</number>
+         <property name="styleSheet">
+          <string notr="true">background-color: maroon;
+color: white;</string>
          </property>
-         <item>
-          <property name="text">
-           <string>AC</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>DC</string>
-          </property>
-         </item>
+         <property name="text">
+          <string>Ch B</string>
+         </property>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QComboBox" name="coupling_b_comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentText">
-          <string>AC</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>AC</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>DC</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="4" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_7">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -167,47 +135,45 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="2">
-        <widget class="QComboBox" name="bw_limit_b_comboBox">
+       <item row="2" column="1">
+        <widget class="QComboBox" name="coupling_a_comboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="currentText">
-          <string>None</string>
+          <string>AC</string>
          </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
          <item>
           <property name="text">
-           <string>None</string>
+           <string>AC</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>20 MHz</string>
+           <string>DC</string>
           </property>
          </item>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="bw_limit_a_comboBox">
-         <property name="currentText">
-          <string>None</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 MHz</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_6">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -217,8 +183,207 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Range [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="ch_a_pushButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(0, 115, 189);
+color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Ch A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="range_b_comboBox">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>19</height>
+          </size>
+         </property>
+         <property name="currentText">
+          <string>10 mV</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>10 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>200 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>500 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10V </string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="range_a_comboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>60</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="currentText">
+          <string>10 mV</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>10 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>200 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>500 mV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5V</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10V </string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>BW limit</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
         <widget class="QDoubleSpinBox" name="offset_a_SpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -245,7 +410,53 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
+       <item row="4" column="1">
+        <widget class="QComboBox" name="bw_limit_a_comboBox">
+         <property name="currentText">
+          <string>None</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20 MHz</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QComboBox" name="coupling_b_comboBox">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="currentText">
+          <string>AC</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>AC</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DC</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="2">
         <widget class="QDoubleSpinBox" name="offset_b_SpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -273,214 +484,24 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="ch_b_pushButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(217, 84, 26);
-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="text">
-          <string>Ch B</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="range_a_comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
+       <item row="4" column="2">
+        <widget class="QComboBox" name="bw_limit_b_comboBox">
          <property name="currentText">
-          <string>10 mV</string>
+          <string>None</string>
          </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
          <item>
           <property name="text">
-           <string>10 mV</string>
+           <string>None</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>20 mV</string>
+           <string>20 MHz</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>50 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10V </string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QComboBox" name="range_b_comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentText">
-          <string>10 mV</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>10 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 mV</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5V</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10V </string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>BW limit</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Range [V]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="ch_a_pushButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(0, 115, 189);
-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="text">
-          <string>Ch A</string>
-         </property>
         </widget>
        </item>
       </layout>
@@ -805,9 +826,9 @@ color: rgb(255, 255, 255);</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>20</y>
+        <y>10</y>
         <width>141</width>
-        <height>131</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="locale">
@@ -825,7 +846,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QDoubleSpinBox" name="trigger_position_SpinBox_4">
+        <widget class="QDoubleSpinBox" name="fmax_SpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -848,7 +869,7 @@ color: rgb(255, 255, 255);</string>
           <double>0.500000000000000</double>
          </property>
          <property name="value">
-          <double>0.500000000000000</double>
+          <double>10.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -863,7 +884,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="2" column="2">
-        <widget class="QDoubleSpinBox" name="trigger_position_SpinBox_3">
+        <widget class="QDoubleSpinBox" name="fmin_SpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -901,7 +922,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="4" column="2">
-        <widget class="QSpinBox" name="spinBox">
+        <widget class="QSpinBox" name="filter_order_spinBox">
          <property name="minimum">
           <number>1</number>
          </property>
@@ -914,7 +935,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="0" column="1" colspan="2">
-        <widget class="QComboBox" name="trigger_source_comboBox_3">
+        <widget class="QComboBox" name="filter_comboBox">
          <property name="currentText">
           <string>No filter</string>
          </property>
@@ -947,7 +968,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>20</x>
       <y>370</y>
-      <width>200</width>
+      <width>191</width>
       <height>41</height>
      </rect>
     </property>
@@ -959,7 +980,7 @@ color: rgb(255, 255, 255);</string>
     </property>
     <property name="minimumSize">
      <size>
-      <width>200</width>
+      <width>0</width>
       <height>0</height>
      </size>
     </property>
@@ -1068,7 +1089,7 @@ color: rgb(255, 255, 255);</string>
     </widget>
    </widget>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <resources/>
  <connections/>

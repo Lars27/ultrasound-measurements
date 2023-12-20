@@ -95,6 +95,60 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
         
 
     #%% Program run 
+    
+    def connect_dso( self ):            # Connect, configure and start instrument
+        errorcode = 0        
+        try:
+            if "openunit" in status:    # Close if an old handle is resident
+                if not("close" in status):        
+                    ps.stop_adc( dsohandle, status )
+                    ps.close_adc( dsohandle, status )
+            #status = {}
+        except NameError:
+            status = {}
+
+        dsohandle = ctypes.c_int16()
+        status, adcmax= ps.open_adc( dsohandle, status )  # Connect and initialise instrument
+
+        # Define vaariables for oscilloscope configuration
+        sampling = ps.dso_horizontal()                  # Horizontal (time) configuration
+        trigger  = ps.dso_trigger( "A", 0.5 )           # Trigger configuration
+
+        ch = []                                         # Vertical (Volt) configuration as array with each channel
+        ch.append( ps.dso_channel ( 0, 10, adcmax ) )
+        ch.append( ps.dso_channel ( 1,  1, adcmax ) )
+        
+        # ch[0].vr = 1
+        # ch[1].vr = 10
+        
+        # Send initial configuration to oscilloscope
+        status, ch[0] = ps.set_vertical(dsohandle, status, ch[0])
+        status, ch[1] = ps.set_vertical(dsohandle, status, ch[1])
+
+        trigger.source = "B"
+        trigger.level  = 0.5
+        trigger.adcmax = adcmax
+        status = ps.set_trigger(dsohandle, status, trigger, ch)
+
+        sampling.timebase   = 3
+        sampling.ns         = 500
+        sampling.pretrigger = 0.1
+        #sampling.nmax = sampling.ns
+        sampling.dt   = ps.get_dt(dsohandle, sampling)
+
+        return errorcode 
+    
+    
+    def set_trigger( self ):
+        trigger.source   = self.trigger_source_comboBox.value() 
+        trigger.position = self.trigger_position_SpinBox.value()
+        z0 = self.analyser.set_z0 ( z0 )
+        self.update_status( f'Z0 = {z0:.1f} Ohm\n', append=True )
+        self.statusBar().showMessage( f'Reference inpedance changed to {z0:.1f} Ohm' )        
+        return z0
+
+        
+        
     def close_app(self):
         self.statusBar().showMessage( 'Closing' )
         plt.close(self.fig)
@@ -172,46 +226,11 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
    
 
     #%% Instrument interaction
-    def connect_dso( self ):
-        errorcode = 0        
-        try:
-            if "openunit" in status:
-                if not("close" in status):        
-                    ps.stop_adc(dsohandle, status)
-                    ps.close_adc(dsohandle, status)
-            #status = {}
-        except NameError:
-            status = {}
 
-        dsohandle = ctypes.c_int16()
-        status, adcmax= ps.open_adc(dsohandle, status)
-
-        ch = []
-        ch.append(ps.dso_channel(0, 10, adcmax ))
-        ch.append(ps.dso_channel(1, 10, adcmax ))
-
-        sampling = ps.dso_horizontal()
-        trigger  = ps.dso_trigger("A", 0.5)
             
 
         #%% Configure ADC
-        ch[0].vr = 1
-        ch[1].vr = 10
-        status, ch[0] = ps.set_vertical(dsohandle, status, ch[0])
-        status, ch[1] = ps.set_vertical(dsohandle, status, ch[1])
 
-        trigger.source = "B"
-        trigger.level  = 0.5
-        trigger.adcmax = adcmax
-        status = ps.set_trigger(dsohandle, status, trigger, ch)
-
-        sampling.timebase   = 3
-        sampling.ns         = 500
-        sampling.pretrigger = 0.1
-        #sampling.nmax = sampling.ns
-        sampling.dt   = ps.get_dt(dsohandle, sampling)
-
-        return errorcode 
     
     #%%    
     def set_filter ( self ):

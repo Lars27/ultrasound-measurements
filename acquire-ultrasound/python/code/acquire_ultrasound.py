@@ -4,30 +4,27 @@ Created on Tue Dec 20 22:20:43 2022
 
 @author: larsh
 
-Contol and read data from Trewmax TE300x impedance analyser
-Using serial interface libraries in 'trewmac300x_serial.py'
+Contol and read data from Picoscope 5000-series osciloscopes
 
 GUI interface made in Qt Designer, ver. 5
 
 Sets up a GUI to control the system
-Communicates using an emulated  COM-port on the computer, default COM7
-Reads, plots and saves a complex impedance spectrum (f,Z).
-Results are read and saved as frequency, abs(Z) and arg(Z), where Z(f) is complex impedance
+Continously reads traces from the oscilloscope
+Function generator will be implemented
 """
 
 #%% Libraries
 import sys
 from PyQt5 import QtWidgets, uic
-import matplotlib.pyplot as plt     # For plotting
+import matplotlib.pyplot as plt            # For plotting
 import numpy as np
-import matplotlib                   # For setup with Qt
-import us_utilities as us           # Utilities made fro USN ultrasound lab
-import trewmac300x_serial as te     # Serial inerface to Trewmac analysers
+import matplotlib                          # For setup with Qt
+import us_utilities as us                  # Utilities made for USN ultrasound lab
 import ps5000a_ultrasound_wrappers as ps   # Interface to Picoscope c-style library
 
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')
-analyser_main_window, QtBaseClass = uic.loadUiType('aquire_ultrasound_gui.ui')
+oscilloscope_main_window, QtBaseClass = uic.loadUiType('aquire_ultrasound_gui.ui')
 
 class dso_filter:   # Digital oscilloscope trigger settings
     type  = "No filter"
@@ -41,24 +38,24 @@ class acquisition_control:
        
         
 #%% Classes and defs
-class read_ultrasound(QtWidgets.QMainWindow, analyser_main_window):
+class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def __init__(self):
+
         QtWidgets.QMainWindow.__init__(self)
-        analyser_main_window.__init__(self)
+        oscilloscope_main_window.__init__(self)
         self.setupUi(self)
 
-        # Initialise instrument
         self.runstate = acquisition_control()
-        
-        # Initialise variables sor instrument conficuration
+
+        # Initialise instrument variables
         ch = []
-        self.ch.append( ps.dso_channel ( 0, 10 ) )
+        self.ch.append( ps.dso_channel ( 0, 10 ) )  # Vertical channel configuration
         self.ch.append( ps.dso_channel ( 1,  1 ) )
         
-        self.trigger  = ps.dso_trigger()
-        self.sampling = ps.dso_horizontal()
-        self.rf_filter= ps.dso_filter()
-        self.wfm      = us.waveform( )
+        self.trigger  = ps.dso_trigger()            # Trigger configuration
+        self.sampling = ps.dso_horizontal()         # Horisontal configuration (time sampling)  
+        self.rf_filter= ps.dso_filter()             # Filtering of acquired data
+        self.wfm      = us.waveform( )              # Result, storing acquired traces
         
         # Connect GUI elements
         self.run_button.clicked.connect( self.connect_dso )
@@ -96,24 +93,25 @@ class read_ultrasound(QtWidgets.QMainWindow, analyser_main_window):
         self.close_button.clicked.connect( self.close_app ) 
         
         # Initialise result graph
-        #plt.ion()         # Does not seem to make any difference
-        # fig, axs = plt.subplots( nrows=2, ncols=1, figsize=(8, 12) )       
-        # for k in range( 0, 2):   # Commpn for both subplots
-        #     axs[k].set_xlabel('Frequency [MHz]')
-        #     axs[k].set_xlim(0 , 20)   
-        #     axs[k].grid( True )              
-        # axs[0].grid( visible=True, which='minor', axis='y' )
-        # axs[0].set_ylabel('|Z| [Ohm]')
-        # axs[1].set_ylabel('arg(Z) [Deg]')       
-        # axs[0].set_ylim( 1, 1e6 )
-        # axs[1].set_ylim( -90, 90 )
+        plt.ion()         # Does not seem to make any difference
+        fig, axs = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
+        for k in range( 0, 2):   # Commpn for both subplots
+             axs[k].set_xlabel('Time [us]')
+             axs[k].set_ylabel('Voltage [V]')
+             #axs[k].set_xlim(0 , 20)   
+             axs[k].grid( True )              
+        
+        axs[2].set_xlabel('Frequency [MHz]')
+        axs[2].set_ylabel('Power [dB re. max]')
+        axs[2].set_xlim(0 , 10)   
+        axs[2].grid( True )              
 
         # Create handle to datapoints, empty so far
-        # graphs=[ axs[0].semilogy( [], [] )[0], axs[1].plot( [], [] )[0] ]         
-        # fig.show()        
-        # self.graph= graphs
-        # self.axs  = axs
-        # self.fig  = fig      
+        graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ]         
+        fig.show()        
+        self.graph= graphs
+        self.axs  = axs
+        self.fig  = fig      
 
         # Initialise GUI with messages         
         self.enable_controls( state=False, active='connect' )                

@@ -11,7 +11,9 @@ import numpy as np
 from picosdk.ps5000a import ps5000a as ps
 from picosdk.functions import adc2mV, assert_pico_ok #, mV2adc
 import us_utilities as us
-      
+
+#%% Classes
+    
 class dso_channel:    # Digital oscilloscope vertical settings (Volts)
     def __init__(self, no, vr, adcmax):
         self.no    = no
@@ -21,6 +23,7 @@ class dso_channel:    # Digital oscilloscope vertical settings (Volts)
     offset  = 0
     enabled = 1
     coupling= "DC"
+    bwl     = 0
         
     def vmax(self):
         vm=us.scale125(self.vr)
@@ -53,11 +56,11 @@ class dso_trigger:   # Digital oscilloscope trigger settings
         self.source = source
         self.level = level
     
-    enable    = 1
-    direction = 2
-    position  = 0.0
-    delay = 0
-    auto  = 3000     
+    enable  = True
+    mode    = "Rising"
+    position= 0.0
+    delay   = 0
+    auto    = 3000     
 
     
 class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
@@ -76,6 +79,7 @@ class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
     def tmax(self):
         return (self.ns-self.npre()-1) *self.dt    
     
+#%% Functions    
 # =============================================================================
 #     def dt(dso_handle, self):
 #         timeIntervalns = ctypes.c_float()
@@ -88,12 +92,11 @@ class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
 # 
 # =============================================================================
 
-
 # Wrappers for original c-style library functions   
 def set_trigger(dsohandle, status, trigger, ch):
     if trigger.source=="EXT":
         source = ps.PS5000A_CHANNEL["PS5000A_EXTERNAL"]
-        trigger.threshold = int(trigger.level/5.0*32767)
+        threshold = int(trigger.level/5.0*32767)
     elif trigger.source in ("A", "B"):
         source = ps.PS5000A_CHANNEL[f"PS5000A_CHANNEL_{trigger.source}"]
         no  = channel_name_to_no(trigger.source)
@@ -102,8 +105,13 @@ def set_trigger(dsohandle, status, trigger, ch):
     else:
         status["trigger"]=-1
         return status
+    
+    if trigger.mode.lower()[0:4] == 'fall':  # Trigger mode "Falling"
+        mode = 3
+    else:
+        mode= 2                           # Trigger mode "Rising"
            
-    status["trigger"] = ps.ps5000aSetSimpleTrigger(dsohandle, trigger.enable, source, threshold, trigger.direction, trigger.delay, trigger.auto)
+    status["trigger"] = ps.ps5000aSetSimpleTrigger(dsohandle, int(trigger.enable), source, threshold, mode, trigger.delay, trigger.auto)
     assert_pico_ok(status["trigger"])
     
     return status

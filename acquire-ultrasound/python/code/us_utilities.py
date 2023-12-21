@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 #%% Smaller utility-functions 
 
+milli = 1e-3
+
 """ Next number in an 1-2-5-10 ... sequence, e.g. for scaling axes"""
 def scale125(x):
     val = np.array([1, 2, 5, 10])

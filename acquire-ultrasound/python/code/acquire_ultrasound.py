@@ -19,22 +19,29 @@ Results are read and saved as frequency, abs(Z) and arg(Z), where Z(f) is comple
 import sys
 from PyQt5 import QtWidgets, uic
 import matplotlib.pyplot as plt     # For plotting
+import numpy as np
 import matplotlib                   # For setup with Qt
 import us_utilities as us           # Utilities made fro USN ultrasound lab
 import trewmac300x_serial as te     # Serial inerface to Trewmac analysers
+import ps5000a_ultrasound_wrappers as ps   # Interface to Picoscope c-style library
 
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')
 analyser_main_window, QtBaseClass = uic.loadUiType('aquire_ultrasound_gui.ui')
 
+class dso_filter:   # Digital oscilloscope trigger settings
+    type  = "No filter"
+    fmin  = 100
+    fmax  = 10e6
+    order = 2
 
 class acquisition_control:  
     def __init__( self ):
         self.finished = False
        
         
-#%% Class and defs
-class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
+#%% Classes and defs
+class read_ultrasound(QtWidgets.QMainWindow, analyser_main_window):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         analyser_main_window.__init__(self)
@@ -42,28 +49,47 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
 
         # Initialise instrument
         self.runstate = acquisition_control()
-        self.analyser = te.te300x()
+        
+        # Initialise variables sor instrument conficuration
+        ch = []
+        self.ch.append( ps.dso_channel ( 0, 10 ) )
+        self.ch.append( ps.dso_channel ( 1,  1 ) )
+        
+        self.trigger  = ps.dso_trigger()
+        self.sampling = ps.dso_horizontal()
+        self.rf_filter= ps.dso_filter()
+        self.wfm      = us.waveform( )
         
         # Connect GUI elements
         self.run_button.clicked.connect( self.connect_dso )
         
-        self.fmin_SpinBox.valueChanged.connect( self.set_filter )
-        self.fmax_SpinBox.valueChanged.connect( self.set_filter )
-        self.filter_order_spinBox.valueChanged.connect( self.set_filter )
-        self.filter_comboBox.valueChanged.connect( self.set_filter )
-        
-        self.ch_a_pushButton.valueChanged.connect( self.enable_channel, ch = 'A' )
-        self.ch_b_pushButton.valueChanged.connect( self.enable_channel, ch = 'B' )
-        
-        self.np_SpinBox.valueChanged.connect( self.set_frequency_range )
-        self.average_SpinBox.valueChanged.connect( self.set_average )
-        self.z0_SpinBox.valueChanged.connect(self.set_z0)       
-        self.output_SpinBox.valueChanged.connect( self.set_output )
-        self.fscalemin_SpinBox.valueChanged.connect( self.set_f_scale )
-        self.fscalemax_SpinBox.valueChanged.connect( self.set_f_scale )       
-        self.Zscalemin_comboBox.activated.connect( self.set_Z_scale )
-        self.Zscalemax_comboBox.activated.connect( self.set_Z_scale )
-        self.connect_button.clicked.connect( self.connect_analyser )
+        self.ch_a_pushButton.clicked.connect( self.set_vertical )
+        self.range_a_comboBox.valueChanged.connect( self.set_vertical )
+        self.coupling_a_comboBox.valueChanged.connect( self.set_vertical )
+        self.offset_a_SpinBox.valueChanged.connect( self.set_vertical )
+        self.coupling_a_comboBox.valueChanged.connect( self.set_vertical )
+
+        self.ch_b_pushButton.clicked.connect( self.set_vertical )
+        self.range_b_comboBox.valueChanged.connect( self.set_vertical )
+        self.coupling_b_comboBox.valueChanged.connect( self.set_vertical )
+        self.offset_b_SpinBox.valueChanged.connect( self.set_vertical )
+        self.coupling_b_comboBox.valueChanged.connect( self.set_vertical )
+
+        self.trigger_source_comboBox.valueChanged.connect( self.set_trigger )
+        self.trigger_position_SpinBox.valueChanged.connect( self.set_trigger )
+        self.trigger_mode_comboBox.valueChanged.connect( self.set_trigger )
+        self.trigger_delay_SpinBox.valueChanged.connect( self.set_trigger )
+        self.trigger_auto_delay_SpinBox.valueChanged.connect( self.set_trigger )
+        self.internal_trigger_delay_SpinBox.valueChanged.connect( self.set_trigger )
+
+        self.sample_rate_SpinBox.valueChanged.connect( self.set_sampling )
+        self.no_samples_SpinBox.valueChanged.connect( self.set_sampling )
+
+        self.filter_comboBox.valueChanged.connect( self.set_rf_filter )
+        self.fmin_spinBox.valueChanged.connect( self.set_rf_filter )
+        self.fmax_spinBox.valueChanged.connect( self.set_rf_filter )
+        self.filter_order_spinBox.valueChanged.connect( self.set_rf_filter )
+               
         self.acquire_button.clicked.connect( self.acquire_trace )
         self.save_button.clicked.connect( self.save_results ) 
         self.stop_button.clicked.connect( self.stop_acquisition ) 
@@ -71,30 +97,30 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
         
         # Initialise result graph
         #plt.ion()         # Does not seem to make any difference
-        fig, axs = plt.subplots( nrows=2, ncols=1, figsize=(8, 12) )       
-        for k in range( 0, 2):   # Commpn for both subplots
-            axs[k].set_xlabel('Frequency [MHz]')
-            axs[k].set_xlim(0 , 20)   
-            axs[k].grid( True )              
-        axs[0].grid( visible=True, which='minor', axis='y' )
-        axs[0].set_ylabel('|Z| [Ohm]')
-        axs[1].set_ylabel('arg(Z) [Deg]')       
-        axs[0].set_ylim( 1, 1e6 )
-        axs[1].set_ylim( -90, 90 )
+        # fig, axs = plt.subplots( nrows=2, ncols=1, figsize=(8, 12) )       
+        # for k in range( 0, 2):   # Commpn for both subplots
+        #     axs[k].set_xlabel('Frequency [MHz]')
+        #     axs[k].set_xlim(0 , 20)   
+        #     axs[k].grid( True )              
+        # axs[0].grid( visible=True, which='minor', axis='y' )
+        # axs[0].set_ylabel('|Z| [Ohm]')
+        # axs[1].set_ylabel('arg(Z) [Deg]')       
+        # axs[0].set_ylim( 1, 1e6 )
+        # axs[1].set_ylim( -90, 90 )
 
         # Create handle to datapoints, empty so far
-        graphs=[ axs[0].semilogy( [], [] )[0], axs[1].plot( [], [] )[0] ]         
-        fig.show()        
-        self.graph= graphs
-        self.axs  = axs
-        self.fig  = fig      
+        # graphs=[ axs[0].semilogy( [], [] )[0], axs[1].plot( [], [] )[0] ]         
+        # fig.show()        
+        # self.graph= graphs
+        # self.axs  = axs
+        # self.fig  = fig      
 
         # Initialise GUI with messages         
         self.enable_controls( state=False, active='connect' )                
         self.statusBar().showMessage('Program started')
         
 
-    #%% Program run 
+    #%% Interact with instrument 
     
     def connect_dso( self ):            # Connect, configure and start instrument
         errorcode = 0        
@@ -107,66 +133,88 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
         except NameError:
             status = {}
 
-        dsohandle = ctypes.c_int16()
-        status, adcmax= ps.open_adc( dsohandle, status )  # Connect and initialise instrument
+        self.dsohandle = ps.ctypes.c_int16()
+        status, adcmax= ps.open_adc( self.dsohandle, status )  # Connect and initialise instrument
 
-        # Define vaariables for oscilloscope configuration
-        sampling = ps.dso_horizontal()                  # Horizontal (time) configuration
-        trigger  = ps.dso_trigger( "A", 0.5 )           # Trigger configuration
-
-        ch = []                                         # Vertical (Volt) configuration as array with each channel
-        ch.append( ps.dso_channel ( 0, 10, adcmax ) )
-        ch.append( ps.dso_channel ( 1,  1, adcmax ) )
-        
-        # ch[0].vr = 1
-        # ch[1].vr = 10
-        
         # Send initial configuration to oscilloscope
-        status, ch[0] = ps.set_vertical(dsohandle, status, ch[0])
-        status, ch[1] = ps.set_vertical(dsohandle, status, ch[1])
-
-        trigger.source = "B"
-        trigger.level  = 0.5
-        trigger.adcmax = adcmax
-        status = ps.set_trigger(dsohandle, status, trigger, ch)
-
-        sampling.timebase   = 3
-        sampling.ns         = 500
-        sampling.pretrigger = 0.1
-        #sampling.nmax = sampling.ns
-        sampling.dt   = ps.get_dt(dsohandle, sampling)
+        status = self.set_vertical( )
+        status = self.set_trigger(  )
+        self.set_sampling( )
+        self.set_rf_filter()
 
         return errorcode 
+    
+    
+    def set_vertical( self ):
+        self.ch[0].enabled   = not self.ch_a_pushButton_isChecked() 
+        self.ch[0].vr        = self .read_scaled_value ( self.range_a_comboBox.currentText() )
+        self.ch[0].coupling  = self.coupling_a_comboBox.currentText()
+        self.ch[0].offset    = self.offset_a_spinBox.value()
+        self.ch[0].bwl       = self.bwl_a_comboBox.currentText()        
+
+        self.ch[1].enabled   = not self.ch_b_pushButton_isChecked() 
+        self.ch[1].vr        = self.read_scaled_value ( self.range_b_comboBox.currentText() )
+        self.ch[1].coupling  = self.coupling_b_comboBox.currentText()
+        self.ch[1].offset    = self.offset_b_spinBox.value()
+        self.ch[1].bwl       = self.bwl_b_comboBox.currentText()    
+        
+        for k in range(0, 2):
+            self.ch[k].no      = k
+            status, self.ch[k] = ps.set_vertical(self.dsohandle, self.status, self.ch[k])
+
+        return status
     
     
     def set_trigger( self ):
-        trigger.source   = self.trigger_source_comboBox.value() 
-        trigger.position = self.trigger_position_SpinBox.value()
-        z0 = self.analyser.set_z0 ( z0 )
-        self.update_status( f'Z0 = {z0:.1f} Ohm\n', append=True )
-        self.statusBar().showMessage( f'Reference inpedance changed to {z0:.1f} Ohm' )        
-        return z0
-
+        self.trigger.source  = self.trigger_source_comboBox.currentText()    
+        self.trigger.enable  = self.trigger.source.lower()[0:3] != 'int'          # Disable trigger if set to internal
+        self.trigger.level   = self.trigger_level_SpinBox.value()
+        self.trigger.position= self.trigger_position_SpinBox.value()
+        self.trigger.mode    = self.trigger_mode_comboBox.currentText()
+        self.trigger.delay   = self.trigger_delay_SpinBox.value()*1e-6
+        self.trigger.auto    = self.trigger_auto_delay_SpinBox.value()*1e-3
         
+        status = ps.set_trigger( self.dsohandle, self.status, self.trigger, self.ch )
         
-    def close_app(self):
-        self.statusBar().showMessage( 'Closing' )
-        plt.close(self.fig)
-        try:
-            self.analyser.close()
-            errorcode = 0
-        except:
-            errorcode =-1
-        finally:
-            self.close()       
-        return errorcode 
+        return status
     
-    def stop_acquisition( self ): 
-        self.runstate.finished = True
-        self.statusBar().showMessage( 'Stopping acquisition' )
-        self.update_status_box( 'acquisition', 'Finishing', 'orange', 'white' )
-        return 0
+    
+    def set_sampling ( self ):
+        self.sampling.timebase  = 3
+        self.sampling.ns        = self.no_samples_SpinBox.value()*1e3
+        self.sampling.pretrigger= self.trigger.position*1e-2
+        self.sampling.dt        = ps.get_dt( self.dsohandle, self.sampling)
+        self.sampling.fs        = 1/self.sampling.dt
+
+        self.sample_rate_SpinBox.setValue( self.sampling.fs*1e-6 )
         
+        return 0
+    
+    
+    def set_rf_filter ( self ):
+        self.rf_filter.type  = self.trigger_source_comboBox.currentText() 
+        self.rf_filter.fmin  = self.fmin_spinBox.value()
+        self.rf_filter.fmax  = self.fmax_spinBox.value()
+        self.rf_filter.order = self.filter_order_spinBox.value()
+        
+        return 0
+    
+    #%% Read and save results
+    
+    def acquire_trace( self ):
+        v = np.zeros( shape=( self.sampling.ns, 2) )
+        for k in [0,1]:
+            status, v[:,k], n_recorded= ps.acquire_trace( self.dsohandle, self.status, self.sampling, self.ch[k] )
+        
+        self.wfm.v  = v
+        self.wfm.dt = self.sampling.dt
+        self.wfm.t0 = self.sampling.t0
+        self.wfm.t0 = self.sampling.t0
+
+        self.wfm.plot()        
+
+        return 0
+
     def save_results( self ):
         [ resultfile, resultpath ] = us.find_filename(prefix='US', ext='trc', resultdir='results')
         us.save_impedance_result( resultpath, self.analyser.res )
@@ -174,6 +222,28 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
         self.resultpath_Edit.setPlainText( resultpath ) 
         self.statusBar().showMessage( f'Result saved to {resultfile}' )
         return 0
+        
+        
+    # def close_app(self):
+    #     self.statusBar().showMessage( 'Closing' )
+    #     plt.close(self.fig)
+    #     try:
+    #         self.analyser.close()
+    #         errorcode = 0
+    #     except:
+    #         errorcode =-1
+    #     finally:
+    #         self.close()       
+    #     return errorcode 
+    
+    # def stop_acquisition( self ): 
+    #     self.runstate.finished = True
+    #     self.statusBar().showMessage( 'Stopping acquisition' )
+    #     self.update_status_box( 'Finishing', 'orange', 'white' )
+    #     return 0
+        
+    
+    #%% General GUI read and write
     
     def update_status( self, message, append = False ):
         if append:
@@ -182,27 +252,9 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
         self.status_textEdit.setText(message)  
         return message    
     
-    def update_status_box( self, message_type, message, background_color='white', text_color='black' ):
-        match message_type.lower():
-            case 'connection':
-                box = self.portstatus_Edit
-            case 'acquisition':
-                box = self.acquisitionstatus_Edit 
-        box.setText( message )
-        box.setStyleSheet(f"background-color : {background_color}; color : {text_color}")
-        return 0
-
-    def enable_controls( self, state=False, active='connect' ):
-        self.main_tabWidget.setTabEnabled(0, state)
-        self.main_tabWidget.setTabEnabled(1, state )
-        self.acquire_button.setEnabled( state )
-        match active.lower():
-            case 'control':
-                self.main_tabWidget.setCurrentIndex( 0 )
-            case 'connect':
-                self.main_tabWidget.setCurrentIndex( 2 )
-            case 'scale':
-                self.main_tabWidget.setCurrentIndex( 3 )        
+    def update_status_box( self, message, background_color='white', text_color='black' ):
+        self.status_Edit.setText( message )
+        self.status_Edit.setStyleSheet(f"background-color : {background_color}; color : {text_color}")
         return 0
             
     def read_scaled_value (self, valuestr ): # Read value as number with SI-prefix
@@ -223,90 +275,12 @@ class read_analyser(QtWidgets.QMainWindow, analyser_main_window):
                 mult = 1
         value = float( valuestr[0] ) * mult
         return value
-   
-
-    #%% Instrument interaction
-
-            
-
-        #%% Configure ADC
 
     
-    #%%    
-    def set_filter ( self ):
-        fmin  = self.fmin_spinBox.value()
-        fmax  = self.fmax_spinBox.value()
-        order = self.filter_order_spinBox.value()
-        filter = self.filter_comboBox.value()
-                
-        return 0
-    
-    def enable_channel( self, ch ):
-        
-        
-    def set_average( self ):
-        average = self.average_SpinBox.value()
-        average = self.analyser.set_averaging ( average )
-        self.update_status( f'average = {average:3d}\n', append=True )
-        self.statusBar().showMessage( f'Averaging changed to {average:3d}' )
-        return average
-        
-    def set_output( self ):
-        output = self.output_SpinBox.value()
-        output = self.analyser.set_output ( output )
-        self.update_status( f'Output = {output:.0f} %\n', append=True )
-        self.statusBar().showMessage( f'Output level changed to {output:.0f} %' )        
-        return output
-    
-    def set_z0( self ):
-        z0 = self.z0_SpinBox.value()
-        z0 = self.analyser.set_z0 ( z0 )
-        self.update_status( f'Z0 = {z0:.1f} Ohm\n', append=True )
-        self.statusBar().showMessage( f'Reference inpedance changed to {z0:.1f} Ohm' )        
-        return z0
-
-    def acquire_trace( self ):
-        self.resultfile_Edit.setText('Not saved')        
-        self.runstate.finished = False
-        self.enable_controls( state=False, active='scale' )       
-        self.update_status_box( 'acquisition', 'Acquiring', 'green', 'white'  )
-        while not( self.runstate.finished):
-            self.statusBar().showMessage( 'Reading data from analyser' )        
-            self.update_status( 'Reading data from analyser ... \n', append=True )
-            self.analyser.read_sweep_point_by_point( self.graph , self.fig )
-            self.update_status( 'Finished\n', append=True )                
-            self.fig.canvas.draw()          # --- TRY: Probably not sufficient
-            self.fig.canvas.flush_events()  # --- TRY: Probably good            
-        self.statusBar().showMessage( 'Reading from analyser finished' )     
-        self.enable_controls( state=True, active='control' )
-        self.update_status_box( 'acquisition', 'Finished'  )
-        return 0
-
-    def set_f_scale( self ):
-        fmin = self.fscalemin_SpinBox.value()
-        fmax = self.fscalemax_SpinBox.value()
-        if fmin<fmax:
-            self.axs[0].set_xlim( fmin, fmax )
-            self.axs[1].set_xlim( fmin, fmax )            
-            self.fig.canvas.draw()
-            self.fig.canvas.flush_events()  
-            self.statusBar().showMessage( 'Frequency axis changed' ) 
-        return 0
-        
-    def set_Z_scale( self ):
-        Zstr = self.Zscalemin_comboBox.currentText()
-        Zmin = self.read_scaled_value ( Zstr )
-        Zmax = self.read_scaled_value ( self.Zscalemax_comboBox.currentText() )
-        if Zmin<Zmax:
-            self.axs[0].set_ylim( Zmin, Zmax )        
-            self.fig.canvas.draw()
-            self.fig.canvas.flush_events()        
-            self.statusBar().showMessage( 'Impedance axis changed' ) 
-        return 0
 
 #%% Main function
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    window = read_analyser()
+    window = read_ultrasound()
     window.show()
     sys.exit(app.exec_())

@@ -1,6 +1,7 @@
 LICENSE.md
 README.md
 setup.py
+setupPicosynth.py
 PicoSDK.egg-info/PKG-INFO
 PicoSDK.egg-info/SOURCES.txt
 PicoSDK.egg-info/dependency_links.txt

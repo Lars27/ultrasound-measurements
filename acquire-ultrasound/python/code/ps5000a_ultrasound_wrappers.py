@@ -15,11 +15,12 @@ import us_utilities as us
 #%% Classes
     
 class dso_channel:    # Digital oscilloscope vertical settings (Volts)
-    def __init__(self, no, vr, adcmax):
+    def __init__(self, no ):
         self.no    = no
-        self.vr    = vr    
-        self.adcmax= adcmax
-        
+
+    no      = 0 
+    vr      = 1 
+    adcmax  = 2**14    
     offset  = 0
     enabled = 1
     coupling= "DC"
@@ -52,10 +53,8 @@ class dso_channel:    # Digital oscilloscope vertical settings (Volts)
 
     
 class dso_trigger:   # Digital oscilloscope trigger settings
-    def __init__(self, source, level):
-        self.source = source
-        self.level = level
-    
+    source  = "A"
+    level   = 0.5
     enable  = True
     mode    = "Rising"
     position= 0.0

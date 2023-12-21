@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>433</width>
-    <height>737</height>
+    <width>482</width>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,14 +70,14 @@
       <x>20</x>
       <y>200</y>
       <width>241</width>
-      <height>201</height>
+      <height>231</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="vertical_tab">
      <property name="enabled">
@@ -122,6 +122,9 @@ color: white;</string>
          </property>
          <property name="text">
           <string>Ch B</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -219,6 +222,12 @@ color: rgb(255, 255, 255);</string>
          </property>
          <property name="text">
           <string>Ch A</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -377,7 +386,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="offset_a_SpinBox">
+        <widget class="QDoubleSpinBox" name="offset_a_spinBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -411,7 +420,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QComboBox" name="bw_limit_a_comboBox">
+        <widget class="QComboBox" name="bwl_a_comboBox">
          <property name="currentText">
           <string>None</string>
          </property>
@@ -457,7 +466,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QDoubleSpinBox" name="offset_b_SpinBox">
+        <widget class="QDoubleSpinBox" name="offset_b_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -485,7 +494,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="4" column="2">
-        <widget class="QComboBox" name="bw_limit_b_comboBox">
+        <widget class="QComboBox" name="bwl_b_comboBox">
          <property name="currentText">
           <string>None</string>
          </property>
@@ -517,101 +526,15 @@ color: rgb(255, 255, 255);</string>
         <x>10</x>
         <y>10</y>
         <width>181</width>
-        <height>152</height>
+        <height>151</height>
        </rect>
       </property>
       <property name="locale">
        <locale language="English" country="UnitedKingdom"/>
       </property>
       <layout class="QGridLayout" name="parameter_gridLayout_3">
-       <item row="4" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_delay_SpinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
-         <property name="minimum">
-          <double>0.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>200.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_auto_delay_SpinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
-         <property name="minimum">
-          <double>0.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>10000.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_13">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Mode</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="trigger_mode_comboBox">
-         <property name="currentText">
-          <string>Rising</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>Rising</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Falling</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_position_SpinBox">
+        <widget class="QDoubleSpinBox" name="trigger_position_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -638,6 +561,16 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Auto delay [ms]</string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_5">
          <property name="locale">
@@ -645,16 +578,6 @@ color: rgb(255, 255, 255);</string>
          </property>
          <property name="text">
           <string>Position [%]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_14">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Auto delay [ms]</string>
          </property>
         </widget>
        </item>
@@ -698,7 +621,7 @@ color: rgb(255, 255, 255);</string>
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_11">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -708,7 +631,7 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_16">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -718,8 +641,8 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QDoubleSpinBox" name="internal_trigger_delay_SpinBox">
+       <item row="8" column="1">
+        <widget class="QDoubleSpinBox" name="internal_trigger_delay_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -746,6 +669,130 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="trigger_delay_spinBox">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>200.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="trigger_mode_comboBox">
+         <property name="currentText">
+          <string>Rising</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Rising</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Falling</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QDoubleSpinBox" name="trigger_auto_delay_spinBox">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Level [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="trigger_level_spinBox">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="decimals">
+          <number>2</number>
+         </property>
+         <property name="minimum">
+          <double>-5.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>5.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -764,7 +811,7 @@ color: rgb(255, 255, 255);</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="no_samples_SpinBox">
+        <widget class="QDoubleSpinBox" name="no_samples_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -803,7 +850,7 @@ color: rgb(255, 255, 255);</string>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="sample_rate_SpinBox">
+        <widget class="QDoubleSpinBox" name="sample_rate_spinBox">
          <property name="minimum">
           <double>0.100000000000000</double>
          </property>

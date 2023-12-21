@@ -7,6 +7,9 @@ Created on Tue Sep 13 21:46:41 2022
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import datetime
+
 
 #%% Smaller utility-functions 
 
@@ -24,19 +27,42 @@ def scale125(x):
         
     return xn
 
+"""
+Define file naming and format 
+File names made from date and counter
+"""
+def find_filename( prefix='US', ext='wfm', resultdir=[] ):   
+    if not(os.path.isdir( resultdir ) ):     # Create result directory if it does not exist
+        os.mkdir( resultdir )         
+    counterfile= os.path.join( os.getcwd(), resultdir, f'{prefix}.cnt' )
+    if os.path.isfile(counterfile):         # Read existing counter file
+        with open(counterfile, 'r') as fid:
+            n= int( fid.read( ) )  
+    else:
+        n=0                                 # Set counter to 0 if no counter file exists            
+    datecode   = datetime.date.today().strftime('%Y_%m_%d')
+    ext        = ext.split('.')[-1]
+    file_exists= True
+    while file_exists:                      # Find lowest number of file not in use
+        n+=1
+        resultfile  = prefix + '_' + datecode + '_' + f'{n:04d}' + '.' + ext
+        resultpath  = os.path.join( os.getcwd(), resultdir, resultfile )
+        file_exists = os.path.isfile( resultpath )    
+    with open(counterfile, 'wt') as fid:    # Write counter of last result file to counter file
+        fid.write( f'{n:d}' ) 
+    return [ resultfile, resultpath ]
+
+
 #%%
 """ waveform-class. Used to store traces sampled in time, one or several channels. 
     Compatible with previous versions used in e.g. LabVIEW and Matlab 
     Adapted from LabVIEW's waveform-type, similar to python's mccdaq-library"""
 
-class waveform    :
-    def __init__(self, y, dt, t0=0):
-        self.y  = y
-        if y.ndim == 1:    # Ensure y is 2D
-            self.y = self.y.reshape((1, len(y)))
-        self.dt   = dt
-        self.t0   = t0
-        self.nfft = self.ns()
+class waveform:
+    y    = []   # Initialised to meaningless values
+    dt   = 1
+    t0   = 0
+    nfft = 0
         
     def ns(self):
         return len(self.y)

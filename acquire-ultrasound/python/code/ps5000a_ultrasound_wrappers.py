@@ -17,7 +17,8 @@ import us_utilities as us
 class dso_status:
      handle = ctypes.c_int16()
      connected = False
-    
+     status = {}    
+     
 class dso_channel:    # Digital oscilloscope vertical settings (Volts)
     def __init__(self, no ):
         self.no    = no
@@ -35,13 +36,11 @@ class dso_channel:    # Digital oscilloscope vertical settings (Volts)
             vm = 10e-3
         if vm>50:
             vm = 50
-        return vm
-    
+        return vm   
 
     def name(self):
         channel_name= channel_no_to_name(self.no)
-        return f"Channel {channel_name}"
-    
+        return f"Channel {channel_name}"    
         
     def coupling_code(self):
         return  ps.PS5000A_COUPLING[f"PS5000A_{self.coupling}"]
@@ -50,8 +49,7 @@ class dso_channel:    # Digital oscilloscope vertical settings (Volts)
         if self.vmax()<1:
             adcrangename= f"PS5000A_{int(self.vmax()*1000)}MV"           
         else:
-            adcrangename= f"PS5000A_{int(self.vmax())}V"           
-                   
+            adcrangename= f"PS5000A_{int(self.vmax())}V"                              
         return ps.PS5000A_RANGE[adcrangename]
 
     
@@ -62,8 +60,9 @@ class dso_trigger:   # Digital oscilloscope trigger settings
     direction   = "Rising"
     position    = 0.0
     delay       = 0
-    autodelay   = 3000     
+    autodelay   = 1     
     internal    = 0
+    adcmax      = int(2**15-1)
 
     
 class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
@@ -96,15 +95,16 @@ class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
 # =============================================================================
 
 # Wrappers for original c-style library functions   
-def set_trigger(dsohandle, status, trigger, ch):
+def trigger(dsohandle, status, trigger, ch, sampling ):
     if trigger.source=="EXT":
         source = ps.PS5000A_CHANNEL["PS5000A_EXTERNAL"]
-        threshold = int(trigger.level/5.0*32767)
+        vrel   = np.clip( trigger.level / 5.0, -1, 1)
+        threshold = int( trigger.level/5.0 * trigger.adcmax )
     elif trigger.source in ("A", "B"):
         source = ps.PS5000A_CHANNEL[f"PS5000A_CHANNEL_{trigger.source}"]
-        no  = channel_name_to_no(trigger.source)
-        ref = ch[no].vmax()
-        threshold = int(trigger.level/ref*trigger.adcmax)
+        no   = channel_name_to_no(trigger.source)
+        vrel = np.clip( trigger.level / ch[no].vmax(), -1, 1)
+        threshold = int( vrel * ch[no].adcmax )
     else:
         status["trigger"]=-1
         return status
@@ -112,11 +112,14 @@ def set_trigger(dsohandle, status, trigger, ch):
     if trigger.direction.lower()[0:4] == 'fall':  # Trigger mode "Falling"
         mode = 3
     else:
-        mode= 2                           # Trigger mode "Rising"
-           
-    status["trigger"] = ps.ps5000aSetSimpleTrigger(dsohandle, int(trigger.enable), source, threshold, mode, trigger.delay, trigger.autodelay )
-    assert_pico_ok(status["trigger"])
-    
+        mode = 2                           # Trigger mode "Rising"
+        
+    enable       = int( trigger.enable )
+    delay_pts    = int( trigger.delay/sampling.dt )
+    autodelay_ms = int( trigger.autodelay * 1e3 )
+         
+    status["trigger"] = ps.ps5000aSetSimpleTrigger( dsohandle, enable, source, threshold, mode, delay_pts, autodelay_ms )
+    assert_pico_ok( status["trigger"] )
     return status
 
 
@@ -131,14 +134,14 @@ def get_dt(dsohandle, sampling):
     return timeIntervalns.value*1e-9
 
 
-def set_vertical(dsohandle,status, ch):
+def vertical( dsohandle, status, ch ):
     name= channel_no_to_name(ch.no)
     statusname = f"setCh{name}"  
         
     status[statusname ] = ps.ps5000aSetChannel(dsohandle, ch.no, ch.enabled, ch.coupling_code() , ch.adcrange(), ch.offset)
     assert_pico_ok(status[statusname ])    
     
-    return status, ch
+    return status 
     
 
 def open_adc(dsohandle, status):    
@@ -189,6 +192,8 @@ def acquire_trace(dsohandle, status, sampling, ch):
 
     # Create buffers ready for assigning pointers for data collection
     buffer = (ctypes.c_int16 * sampling.ns)()
+    #print(dsohandle, source, ctypes.byref(buffer), sampling.ns)
+    
     status[statusname] = ps.ps5000aSetDataBuffer(dsohandle, source, ctypes.byref(buffer), sampling.ns, 0, 0)
     assert_pico_ok(status[statusname])
     

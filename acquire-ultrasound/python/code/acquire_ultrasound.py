@@ -126,21 +126,21 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def connect_dso( self ):            # Connect, configure and start instrument
         errorcode = 0        
         try:
-            if "openunit" in status:    # Close if an old handle is resident
-                if not("close" in status):        
-                    ps.stop_adc( dso.handle, status )
-                    ps.close_adc( dso.handle, status )
-            #status = {}
+            if "openunit" in self.dso.status:    # Close if an old handle is resident
+                if not("close" in self.dso.status ):        
+                    ps.stop_adc( dso.handle, self.dso.status )
+                    ps.close_adc( dso.handle, self.dso.status )
+            #self.dso.status = {}
         except NameError:
-            status = {}
+            self.dso.status = {}
 
         self.dso.handle = ps.ctypes.c_int16()
-        status, adcmax= ps.open_adc( self.dso.handle, status )  # Connect and initialise instrument
+        self.dso.status, adcmax= ps.open_adc( self.dso.handle, self.dso.status )  # Connect and initialise instrument
         self.dso.connected = True
         
         # Send initial configuration to oscilloscope
-        status = self.set_vertical( )
-        status = self.set_trigger(  )
+        self.dso.status = self.set_vertical( )
+        self.dso.status = self.set_trigger(  )
         self.set_sampling( )
         self.set_rf_filter()
 
@@ -163,11 +163,9 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         if self.dso.connected: 
             for k in range(0, 2):
                 self.ch[k].no      = k
-                status, self.ch[k] = ps.set_vertical(self.dsohandle, self.status, self.ch[k])
-            return status
-        
-        else:
-            return -10            
+                self.dso.status = ps.vertical(self.dso.handle, self.dso.status, self.ch[k])
+
+        return self.dso.status           
     
     
     def set_trigger( self ):
@@ -183,13 +181,9 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.sampling.pretrigger= self.trigger.position*1e-2
         
         if self.dso.connected: 
-            status = ps.set_trigger( self.dso.handle, self.status, self.trigger, self.ch )
-            return status
-        
-        else:
-            return -10
-        
-        return status
+            self.dso.status = ps.trigger( self.dso.handle, self.dso.status, self.trigger, self.ch, self.sampling )
+
+        return self.dso.status  
     
     
     def set_sampling ( self ):
@@ -215,13 +209,15 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     
     def acquire_trace( self ):
         v = np.zeros( shape=( self.sampling.ns, 2) )
+        print (self.sampling.ns)
         for k in [0,1]:
-            status, v[:,k], n_recorded= ps.acquire_trace( self.dso.handle, self.status, self.sampling, self.ch[k] )
+            self.dso.status, v[:,k], n_recorded= ps.acquire_trace( self.dso.handle, self.dso.status, self.sampling, self.ch[k] )
         
-        self.wfm.v  = v
+        self.wfm.y  = v
         self.wfm.dt = self.sampling.dt
-        self.wfm.t0 = self.sampling.t0
-        self.wfm.t0 = self.sampling.t0
+        self.wfm.t0 = self.sampling.t0()
+        
+        print ( self.wfm.dt, self.wfm.t0, self.wfm.ns() )
 
         self.wfm.plot()        
 
@@ -240,13 +236,13 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.statusBar.showMessage( 'Closing' )
         plt.close(self.fig)
         try:
-            self.analyser.close()
+            self.dso.status  =  ps.close_adc( self.dso.handle, self.dso.status )
             errorcode = 0
         except:
             errorcode =-1
         finally:
             self.close()       
-        return errorcode 
+        return self.dso.status, errorcode 
     
     def stop_acquisition( self ): 
         self.runstate.finished = True

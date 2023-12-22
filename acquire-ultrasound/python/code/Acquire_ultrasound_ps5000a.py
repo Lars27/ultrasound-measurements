@@ -31,27 +31,27 @@ dsohandle = ctypes.c_int16()
 status, adcmax= ps.open_adc(dsohandle, status)
 
 ch = []
-ch.append(ps.dso_channel(0, 10, adcmax ))
-ch.append(ps.dso_channel(1, 10, adcmax ))
+ch.append(ps.dso_channel(0 ))
+ch.append(ps.dso_channel(1 ))
 
 sampling = ps.dso_horizontal()
-trigger  = ps.dso_trigger("A", 0.5)
+trigger  = ps.dso_trigger()
     
 
 #%% Configure ADC
 ch[0].vr = 1
 ch[1].vr = 10
-status, ch[0] = ps.set_vertical(dsohandle, status, ch[0])
-status, ch[1] = ps.set_vertical(dsohandle, status, ch[1])
+status = ps.vertical(dsohandle, status, ch[0])
+status = ps.vertical(dsohandle, status, ch[1])
 
-trigger.source = "B"
+trigger.source = "A"
 trigger.level  = 0.5
 trigger.adcmax = adcmax
-status = ps.set_trigger(dsohandle, status, trigger, ch)
+status = ps.trigger(dsohandle, status, trigger, ch, sampling )
 
 sampling.timebase   = 3
-sampling.ns         = 500
-sampling.pretrigger = 0.1
+sampling.ns         = 20000
+sampling.pretrigger = 0.0
 #sampling.nmax = sampling.ns
 sampling.dt   = ps.get_dt(dsohandle, sampling)
 
@@ -65,11 +65,14 @@ for k in [0,1]:
 #%% Close and disconnect 
 status = ps.stop_adc(dsohandle, status)
 status = ps.close_adc(dsohandle, status)
-print(status)
 
 #%% Plot results
-wfm = us.waveform(v, sampling.dt, sampling.t0())
+wfm = us.waveform()
+wfm.y = v
+wfm.dt = sampling.dt
+wfm.t0 = sampling.t0()
+
 wfm.nfft = 4096
 
 plt.figure(1,(8,8))
-wfm.plotspectrum( timescale="us", freqscale="MHz", fmax=10, normalise=True, scale="db" )
+wfm.plotspectrum( timeunit="us", frequnit="MHz", fmax=10, normalise=True, scale="db" )

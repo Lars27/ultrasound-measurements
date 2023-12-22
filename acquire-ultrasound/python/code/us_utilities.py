@@ -58,17 +58,22 @@ def find_filename( prefix='US', ext='wfm', resultdir=[] ):
     Compatible with previous versions used in e.g. LabVIEW and Matlab 
     Adapted from LabVIEW's waveform-type, similar to python's mccdaq-library"""
 
-class waveform:
-    y    = []   # Initialised to meaningless values
-    dt   = 1
-    t0   = 0
-    nfft = 0
-        
-    def ns(self):
-        return len(self.y)
+class waveform:    
+    def __init__(self, y=np.zeros((1000,1)), dt=1, t0=0):
+        self.y  = y          # [V]  Voltage trace
+        if y.ndim == 1:      # Ensure v is 2D
+            self.y = self.y.reshape((1, len(y)))
+        self.dt = dt         # [s]  Sample interval
+        self.t0 = t0         # [s]  Time of first sample 
+                
+    def ns(self):   
+        return len( self.y )   # Number of points in trace
     
-    def t(self):
+    def t(self):             # [s] Time vector from start time and sample interval
         return np.linspace(self.t0, self.t0+self.dt*self.ns(), self.ns() )
+        
+    def fs(self):          # [Hz]   Sample rate
+        return 1/self.dt   
     
     def plot(self, timeunit=""):
         if timeunit == "us":
@@ -82,9 +87,6 @@ class waveform:
         plt.grid(True)
         #plt.show()
         
-    def fs(self):
-        return 1/self.dt
-
     def f(self):
         return np.arange( 0, self.nfft/2 )/self.nfft * self.fs()
     

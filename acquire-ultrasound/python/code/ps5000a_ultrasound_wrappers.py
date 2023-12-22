@@ -14,15 +14,18 @@ import us_utilities as us
 
 #%% Classes
     
+class dso_status:
+     handle = ctypes.c_int16()
+     connected = False
+    
 class dso_channel:    # Digital oscilloscope vertical settings (Volts)
     def __init__(self, no ):
         self.no    = no
 
-    no      = 0 
     vr      = 1 
     adcmax  = 2**14    
     offset  = 0
-    enabled = 1
+    enabled = True
     coupling= "DC"
     bwl     = 0
         
@@ -53,13 +56,14 @@ class dso_channel:    # Digital oscilloscope vertical settings (Volts)
 
     
 class dso_trigger:   # Digital oscilloscope trigger settings
-    source  = "A"
-    level   = 0.5
-    enable  = True
-    mode    = "Rising"
-    position= 0.0
-    delay   = 0
-    auto    = 3000     
+    source      = "A"
+    enable      = True
+    level       = 0.5
+    direction   = "Rising"
+    position    = 0.0
+    delay       = 0
+    autodelay   = 3000     
+    internal    = 0
 
     
 class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
@@ -69,14 +73,14 @@ class dso_horizontal:   # Digital oscilloscope horizontal settings (Time)
     #nmax = 1000
     pretrigger = 0
     
-    def npre(self):
+    def npre ( self ):
         return int(self.ns*self.pretrigger)
-    def npost(self):
-        return self.ns-self.npre()
-    def t0(self):
-        return -self.npre()*self.dt    
-    def tmax(self):
-        return (self.ns-self.npre()-1) *self.dt    
+    def npost ( self ):
+        return int( self.ns - self.npre() )
+    def t0 ( self ):
+        return -self.npre() * self.dt    
+    def tmax ( self ):
+        return ( self.ns - self.npre() -1 ) *self.dt    
     
 #%% Functions    
 # =============================================================================
@@ -105,12 +109,12 @@ def set_trigger(dsohandle, status, trigger, ch):
         status["trigger"]=-1
         return status
     
-    if trigger.mode.lower()[0:4] == 'fall':  # Trigger mode "Falling"
+    if trigger.direction.lower()[0:4] == 'fall':  # Trigger mode "Falling"
         mode = 3
     else:
         mode= 2                           # Trigger mode "Rising"
            
-    status["trigger"] = ps.ps5000aSetSimpleTrigger(dsohandle, int(trigger.enable), source, threshold, mode, trigger.delay, trigger.auto)
+    status["trigger"] = ps.ps5000aSetSimpleTrigger(dsohandle, int(trigger.enable), source, threshold, mode, trigger.delay, trigger.autodelay )
     assert_pico_ok(status["trigger"])
     
     return status

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>482</width>
-    <height>617</height>
+    <height>769</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,14 +70,14 @@
       <x>20</x>
       <y>200</y>
       <width>241</width>
-      <height>231</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="vertical_tab">
      <property name="enabled">
@@ -240,59 +240,59 @@ color: rgb(255, 255, 255);</string>
           </size>
          </property>
          <property name="currentText">
-          <string>10 mV</string>
+          <string>10 m</string>
          </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
          <item>
           <property name="text">
-           <string>10 mV</string>
+           <string>10 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>20 mV</string>
+           <string>20 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>50 mV</string>
+           <string>50 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>100 mV</string>
+           <string>100 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>200 mV</string>
+           <string>200 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>500 mV</string>
+           <string>500 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>1 V</string>
+           <string>1</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>2V</string>
+           <string>2</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>5V</string>
+           <string>5</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>10V </string>
+           <string>10</string>
           </property>
          </item>
         </widget>
@@ -318,59 +318,59 @@ color: rgb(255, 255, 255);</string>
           </size>
          </property>
          <property name="currentText">
-          <string>10 mV</string>
+          <string>10 m</string>
          </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
          <item>
           <property name="text">
-           <string>10 mV</string>
+           <string>10 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>20 mV</string>
+           <string>20 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>50 mV</string>
+           <string>50 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>100 mV</string>
+           <string>100 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>200 mV</string>
+           <string>200 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>500 mV</string>
+           <string>500 m</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>1 V</string>
+           <string>1</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>2V</string>
+           <string>2</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>5V</string>
+           <string>5</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>10V </string>
+           <string>10</string>
           </property>
          </item>
         </widget>
@@ -526,14 +526,14 @@ color: rgb(255, 255, 255);</string>
         <x>10</x>
         <y>10</y>
         <width>181</width>
-        <height>151</height>
+        <height>171</height>
        </rect>
       </property>
       <property name="locale">
        <locale language="English" country="UnitedKingdom"/>
       </property>
       <layout class="QGridLayout" name="parameter_gridLayout_3">
-       <item row="2" column="1">
+       <item row="4" column="1">
         <widget class="QDoubleSpinBox" name="trigger_position_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -561,7 +561,7 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_14">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -571,7 +571,7 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_5">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -591,57 +591,7 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="trigger_source_comboBox">
-         <property name="currentText">
-          <string>Internal</string>
-         </property>
-         <property name="currentIndex">
-          <number>3</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>Ch A</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Ch B</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>EXT</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Internal</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_11">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Delay [µs]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Internal trigger [ms]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
+       <item row="10" column="1">
         <widget class="QDoubleSpinBox" name="internal_trigger_delay_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -669,7 +619,7 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="7" column="1">
         <widget class="QDoubleSpinBox" name="trigger_delay_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -697,27 +647,27 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="trigger_mode_comboBox">
-         <property name="currentText">
-          <string>Rising</string>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
          </property>
-         <property name="currentIndex">
-          <number>0</number>
+         <property name="text">
+          <string>Delay [µs]</string>
          </property>
-         <item>
-          <property name="text">
-           <string>Rising</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Falling</string>
-          </property>
-         </item>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Internal trigger [ms]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
         <widget class="QDoubleSpinBox" name="trigger_auto_delay_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -745,27 +695,37 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_13">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="trigger_source_comboBox">
+         <property name="currentText">
+          <string>A</string>
          </property>
-         <property name="text">
-          <string>Mode</string>
+         <property name="currentIndex">
+          <number>0</number>
          </property>
+         <item>
+          <property name="text">
+           <string>A</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>EXT</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Internal</string>
+          </property>
+         </item>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_17">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Level [V]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
+       <item row="2" column="1">
         <widget class="QDoubleSpinBox" name="trigger_level_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
@@ -793,6 +753,46 @@ color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Level [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="trigger_mode_comboBox">
+         <property name="currentText">
+          <string>Rising</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Rising</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Falling</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Direction</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -814,6 +814,9 @@ color: rgb(255, 255, 255);</string>
         <widget class="QDoubleSpinBox" name="no_samples_spinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="decimals">
           <number>0</number>
@@ -851,6 +854,9 @@ color: rgb(255, 255, 255);</string>
        </item>
        <item row="0" column="1">
         <widget class="QDoubleSpinBox" name="sample_rate_spinBox">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
          <property name="minimum">
           <double>0.100000000000000</double>
          </property>
@@ -1117,31 +1123,6 @@ color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
      <string>Acquire</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="stop_button">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>530</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>16777215</width>
-      <height>16777215</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(255, 85, 127);</string>
-    </property>
-    <property name="locale">
-     <locale language="English" country="UnitedKingdom"/>
-    </property>
-    <property name="text">
-     <string>Stop</string>
     </property>
    </widget>
    <widget class="QPushButton" name="close_button">

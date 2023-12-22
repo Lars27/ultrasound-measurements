@@ -48,7 +48,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.runstate = acquisition_control()
 
         # Initialise instrument variables
-        self.ch = []
+        self.dso = ps.dso_status()                 # Instrument connection and status
+        self.ch  = []
         self.ch.append( ps.dso_channel ( 0 ) )  # Vertical channel configuration
         self.ch.append( ps.dso_channel ( 1 ) )
         
@@ -65,16 +66,19 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.coupling_a_comboBox.activated.connect( self.set_vertical )
         self.offset_a_spinBox.valueChanged.connect( self.set_vertical )
         self.coupling_a_comboBox.activated.connect( self.set_vertical )
+        self.bwl_a_comboBox.activated.connect( self.set_vertical )
 
         self.ch_b_pushButton.clicked.connect( self.set_vertical )
         self.range_b_comboBox.activated.connect( self.set_vertical )
         self.coupling_b_comboBox.activated.connect( self.set_vertical )
         self.offset_b_spinBox.valueChanged.connect( self.set_vertical )
         self.coupling_b_comboBox.activated.connect( self.set_vertical )
+        self.bwl_b_comboBox.activated.connect( self.set_vertical )
 
         self.trigger_source_comboBox.activated.connect( self.set_trigger )
         self.trigger_position_spinBox.valueChanged.connect( self.set_trigger )
         self.trigger_mode_comboBox.activated.connect( self.set_trigger )
+        self.trigger_level_spinBox.valueChanged.connect( self.set_trigger )       
         self.trigger_delay_spinBox.valueChanged.connect( self.set_trigger )
         self.trigger_auto_delay_spinBox.valueChanged.connect( self.set_trigger )
         self.internal_trigger_delay_spinBox.valueChanged.connect( self.set_trigger )
@@ -88,8 +92,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.filter_order_spinBox.valueChanged.connect( self.set_rf_filter )
                
         self.acquire_button.clicked.connect( self.acquire_trace )
-        self.save_button.clicked.connect( self.save_results ) 
-        self.stop_button.clicked.connect( self.stop_acquisition ) 
+        self.save_button.clicked.connect( self.save_results )         
         self.close_button.clicked.connect( self.close_app ) 
         
         # Initialise result graph
@@ -125,15 +128,16 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         try:
             if "openunit" in status:    # Close if an old handle is resident
                 if not("close" in status):        
-                    ps.stop_adc( dsohandle, status )
-                    ps.close_adc( dsohandle, status )
+                    ps.stop_adc( dso.handle, status )
+                    ps.close_adc( dso.handle, status )
             #status = {}
         except NameError:
             status = {}
 
-        self.dsohandle = ps.ctypes.c_int16()
-        status, adcmax= ps.open_adc( self.dsohandle, status )  # Connect and initialise instrument
-
+        self.dso.handle = ps.ctypes.c_int16()
+        status, adcmax= ps.open_adc( self.dso.handle, status )  # Connect and initialise instrument
+        self.dso.connected = True
+        
         # Send initial configuration to oscilloscope
         status = self.set_vertical( )
         status = self.set_trigger(  )
@@ -156,35 +160,45 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.ch[1].offset    = self.offset_b_spinBox.value()
         self.ch[1].bwl       = self.bwl_b_comboBox.currentText()    
         
-        for k in range(0, 2):
-            self.ch[k].no      = k
-            status, self.ch[k] = ps.set_vertical(self.dsohandle, self.status, self.ch[k])
-
-        return status
+        if self.dso.connected: 
+            for k in range(0, 2):
+                self.ch[k].no      = k
+                status, self.ch[k] = ps.set_vertical(self.dsohandle, self.status, self.ch[k])
+            return status
+        
+        else:
+            return -10            
     
     
     def set_trigger( self ):
-        self.trigger.source  = self.trigger_source_comboBox.currentText()    
-        self.trigger.enable  = self.trigger.source.lower()[0:3] != 'int'          # Disable trigger if set to internal
-        self.trigger.level   = self.trigger_level_spinBox.value()
-        self.trigger.position= self.trigger_position_spinBox.value()
-        self.trigger.mode    = self.trigger_mode_comboBox.currentText()
-        self.trigger.delay   = self.trigger_delay_spinBox.value()*1e-6
-        self.trigger.auto    = self.trigger_auto_delay_spinBox.value()*1e-3
+        self.trigger.source     = self.trigger_source_comboBox.currentText()    
+        self.trigger.enable     = self.trigger.source.lower()[0:3] != 'int'          # Disable trigger if set to internal
+        self.trigger.position   = self.trigger_position_spinBox.value()
+        self.trigger.direction  = self.trigger_mode_comboBox.currentText()
+        self.trigger.level      = self.trigger_level_spinBox.value()
+        self.trigger.delay      = self.trigger_delay_spinBox.value()*1e-6
+        self.trigger.autodelay  = self.trigger_auto_delay_spinBox.value()*1e-3
+        self.trigger.internal   = self.internal_trigger_delay_spinBox.value()*1e-3
         
-        status = ps.set_trigger( self.dsohandle, self.status, self.trigger, self.ch )
+        self.sampling.pretrigger= self.trigger.position*1e-2
+        
+        if self.dso.connected: 
+            status = ps.set_trigger( self.dso.handle, self.status, self.trigger, self.ch )
+            return status
+        
+        else:
+            return -10
         
         return status
     
     
     def set_sampling ( self ):
         self.sampling.timebase  = 3
-        self.sampling.ns        = self.no_samples_spinBox.value()*1e3
-        self.sampling.pretrigger= self.trigger.position*1e-2
-        self.sampling.dt        = ps.get_dt( self.dsohandle, self.sampling)
-        self.sampling.fs        = 1/self.sampling.dt
-
-        self.sample_rate_spinBox.setValue( self.sampling.fs*1e-6 )
+        self.sampling.ns        = int( self.no_samples_spinBox.value()*1e3 )
+        if self.dso.connected: 
+            self.sampling.dt  = ps.get_dt( self.dso.handle, self.sampling)
+            self.sampling.fs  = 1/self.sampling.dt
+            self.sample_rate_spinBox.setValue( self.sampling.fs*1e-6 )
         
         return 0
     
@@ -202,7 +216,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def acquire_trace( self ):
         v = np.zeros( shape=( self.sampling.ns, 2) )
         for k in [0,1]:
-            status, v[:,k], n_recorded= ps.acquire_trace( self.dsohandle, self.status, self.sampling, self.ch[k] )
+            status, v[:,k], n_recorded= ps.acquire_trace( self.dso.handle, self.status, self.sampling, self.ch[k] )
         
         self.wfm.v  = v
         self.wfm.dt = self.sampling.dt
@@ -256,7 +270,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         return 0
             
     def read_scaled_value (self, valuestr ): # Read value as number with SI-prefix
-        valuestr= valuestr.split(' ')               
+        valuestr= valuestr.split(' ')     
         if len(valuestr) == 1:
             mult = 1
         else:

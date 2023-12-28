@@ -73,6 +73,8 @@ class horizontal:   # Digital oscilloscope horizontal settings (Time)
     #nmax = 1000
     pretrigger = 0
     
+    def fs ( self ):
+        return 1/self.dt
     def npre ( self ):
         return int(self.ns*self.pretrigger)
     def npost ( self ):
@@ -83,7 +85,9 @@ class horizontal:   # Digital oscilloscope horizontal settings (Time)
         return ( self.ns - self.npre() -1 ) *self.dt    
 
     
-class communication:       
+class communication:
+    connected   = False  
+    status      = {}    
     handle      = ctypes.c_int16(0)
     maxADC      = ctypes.c_int16(0)   
     overflow    = ctypes.c_int16(0)
@@ -91,8 +95,8 @@ class communication:
     ready       = ctypes.c_int16(0)
     check       = ctypes.c_int16(0)
     ch          = 'A'
-    bufferA      = ( ctypes.c_int16 * 10 )()    # Bufer for Picoscope data, could not make this a method
-    bufferB      = ( ctypes.c_int16 * 10 )()    # Bufer for Picoscope data, could not make this a method
+    bufferA      = ( ctypes.c_int16 * 10 )()    # Buffer for Picoscope data, could not make this a method
+    bufferB      = ( ctypes.c_int16 * 10 )()    # Buffer for Picoscope data, could not make this a method
       
     
 #%% Functions    
@@ -152,8 +156,8 @@ def set_vertical( dsohandle, status, ch ):
     name= channel_no_to_name(ch.no)
     statusname = f"setCh{name}"  
         
-    status[statusname ] = picoscope.ps5000aSetChannel(dsohandle, ch.no, ch.enabled, ch.coupling_code() , ch.adcrange(), ch.offset)
-    assert_pico_ok(status[statusname ])    
+    status[statusname ] = picoscope.ps5000aSetChannel( dsohandle, ch.no, ch.enabled, ch.coupling_code() , ch.adcrange(), ch.offset )
+    assert_pico_ok( status[ statusname ] )    
     
     return status 
     

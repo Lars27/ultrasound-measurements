@@ -24,8 +24,8 @@ dso =ps.communication( )
 try:
     if "openunit" in status:
         if not("close" in status):        
-            ps.stop_adc(dsohandle, status)
-            ps.close_adc(dsohandle, status)
+            ps.stop_adc(dso.handle, status)
+            ps.close_adc(dso.handle, status)
     #status = {}
 except NameError:
     status = {}

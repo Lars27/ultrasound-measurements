@@ -43,7 +43,7 @@ trigger  = ps.trigger()
 
 #%% Configure ADC
 ch[0].vr = 100e-3
-ch[1].vr = 1
+ch[1].vr = 10e-3
 status = ps.set_vertical( dso.handle, status, ch[0] )
 status = ps.set_vertical( dso.handle, status, ch[1] )
 
@@ -53,29 +53,29 @@ trigger.adcmax = dso.maxADC
 status = ps.set_trigger( dso.handle, status, trigger, ch, sampling )
 
 sampling.timebase   = 3
-sampling.ns         = 10000
+sampling.ns         = 20000
 sampling.pretrigger = 0.0
 sampling.dt   = ps.get_dt(dso.handle, sampling)
 
 
 #%% Capture data block
 v = np.zeros((sampling.ns, 2))
-dso = ps.configure_acquisition( dso, status, sampling )
+status, dso = ps.configure_acquisition( dso, status, sampling )
 
 print( 'Picoscope configured. Starting sampling' )
 for k in range(10):
     print ( k )
-    status, v = ps.acquire_trace(dso, status, sampling, ch )
+    status, dso, v = ps.acquire_trace(dso, status, sampling, ch )
 
     wfm    = us.waveform()
     wfm.y  = v
     wfm.dt = sampling.dt
     wfm.t0 = sampling.t0()
     
-    wfm.nfft = 4096
+    wfm.nfft = 2048
     
     plt.figure(1,(8,8))
-    wfm.plotspectrum( timeunit="us", frequnit="MHz", fmax=10, normalise=True, scale="db" )
+    wfm.plot( timeunit="us" )
     plt.show()
 
 #%% Close and disconnect 

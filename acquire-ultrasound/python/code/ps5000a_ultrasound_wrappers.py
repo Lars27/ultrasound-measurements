@@ -190,7 +190,7 @@ def configure_acquisition( dso, status, sampling ):
     status[ "setDataBuffersB" ] = picoscope.ps5000aSetDataBuffer( dso.handle, 1, ctypes.byref( dso.bufferB ), sampling.ns, 0, 0)
     assert_pico_ok( status[ "setDataBuffersB" ] )
 
-    return dso
+    return status, dso
     
 
 def acquire_trace( dso, status, sampling, ch ):
@@ -214,7 +214,7 @@ def acquire_trace( dso, status, sampling, ch ):
     
     v = 1e-3*np.column_stack( [mV_a, mV_b] )    
 
-    return status, v
+    return status, dso, v
 
 
 def stop_adc(dsohandle, status):

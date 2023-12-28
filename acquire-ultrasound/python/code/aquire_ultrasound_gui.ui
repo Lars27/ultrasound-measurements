@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>482</width>
-    <height>769</height>
+    <width>465</width>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1191,6 +1191,97 @@ background-color: rgb(255, 0, 0);</string>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_7">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>220</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="locale">
+     <locale language="English" country="UnitedKingdom"/>
+    </property>
+    <layout class="QGridLayout" name="parameter_gridLayout_4">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_18">
+       <property name="locale">
+        <locale language="English" country="UnitedKingdom"/>
+       </property>
+       <property name="text">
+        <string>Start zoom [us]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_21">
+       <property name="locale">
+        <locale language="English" country="UnitedKingdom"/>
+       </property>
+       <property name="text">
+        <string>End zoom [us]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="start_zoom_spinBox">
+       <property name="locale">
+        <locale language="English" country="UnitedKingdom"/>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::UpDownArrows</enum>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-100.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>200.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QDoubleSpinBox" name="end_zoom_spinBox">
+       <property name="locale">
+        <locale language="English" country="UnitedKingdom"/>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::UpDownArrows</enum>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-100.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>200.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>10.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

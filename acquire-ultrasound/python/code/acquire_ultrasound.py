@@ -31,6 +31,10 @@ class dso_filter:   # Digital oscilloscope trigger settings
     fmin  = 100
     fmax  = 10e6
     order = 2
+    
+class displayscale:
+    tmin = 0
+    tmax = 10    
 
 class acquisition_control:  
     def __init__( self ):
@@ -57,10 +61,15 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.sampling = ps.horizontal()     # Horisontal configuration (time sampling)  
         self.rf_filter= dso_filter()        # Filtering of acquired data
         self.wfm      = us.waveform( )      # Result, storing acquired traces
+        self.display  = displayscale()      # Scaling and diplay options
         
         # Connect GUI elements
         self.run_button.clicked.connect( self.connect_dso )
+        self.acquire_button.clicked.connect( self.acquire_trace )
         
+        self.start_zoom_spinBox.valueChanged.connect( self.update_display )
+        self.end_zoom_spinBox.valueChanged.connect( self.update_display)
+
         self.ch_a_pushButton.clicked.connect( self.update_vertical )
         self.range_a_comboBox.activated.connect( self.update_vertical)
         self.coupling_a_comboBox.activated.connect( self.update_vertical )
@@ -101,9 +110,12 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         for k in range( 0, 2):   # Commpn for both subplots
              axs[k].set_xlabel('Time [us]')
              axs[k].set_ylabel('Voltage [V]')
-             #axs[k].set_xlim(0 , 20)   
              axs[k].grid( True )              
         
+        axs[0].set_xlim(-100 , 200)   
+        axs[1].set_xlim(  10,  20 )   
+
+
         axs[2].set_xlabel('Frequency [MHz]')
         axs[2].set_ylabel('Power [dB re. max]')
         axs[2].set_xlim(0 , 10)   
@@ -149,6 +161,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.status = self.update_trigger()
         self.update_sampling()
         self.update_rf_filter()
+        self.update_display()
 
         return errorcode 
 
@@ -214,19 +227,29 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     
     # Acquire scaled trace from instrument 
     def acquire_trace( self ):
-        v = np.zeros( shape=( self.sampling.ns, 2) )
-        print (self.sampling.ns)
-        for k in [0,1]:
-            self.status, v[:,k], n_recorded= ps.acquire_trace( self.dso.handle, self.status, self.sampling, self.ch[k] )
+        self.status, self.dso          = ps.configure_acquisition( self.dso, self.status, self.sampling )        
+        self.status, self.dso, self.v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
         
-        self.wfm.y  = v
-        self.wfm.dt = self.sampling.dt
-        self.wfm.t0 = self.sampling.t0()
+        wfm    = us.waveform()
+        wfm.y  = self.v
+        wfm.dt = self.sampling.dt
+        wfm.t0 = self.sampling.t0()
+
+        tmin = self.display.tmin
+        tmax = self.display.tmax
         
-        print ( self.wfm.dt, self.wfm.t0, self.wfm.ns() )
+        wfmz    = us.waveform()
+        nmin    = np.max( np.where( wfm.t() < tmin ) )
+        nmax    = np.min( np.where( wfm.t() > tmax ) )
+        wfmz.t0 = wfm.t()[ nmin ]
+        wfmz.dt = wfm.dt
+        wfmz.y  = wfm.y[ nmin : nmax , : ]
 
-        self.wfm.plot()        
-
+        self.graph[0].set_data(  wfm.t()*1e6,  wfm.y[:,0] ) 
+        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] ) 
+        self.fig.canvas.draw()            # --- TRY: Probably necessary
+        self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program          
+        
         return 0
 
     # Save result to binary file, automatically generated filename
@@ -309,6 +332,19 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
                 self.acquisition_tabWidget.setCurrentIndex( 2 )
             case 'scale':
                 self.acquisition_tabWidget.setCurrentIndex( 3 )        
+        return 0
+    
+    def update_display( self ):
+        tmin = self.start_zoom_spinBox.value()
+        tmax = self.end_zoom_spinBox.value()
+        
+        self.axs[1].set_xlim(  tmin, tmax  )
+
+        self.display.tmin = tmin*1e-6    
+        self.display.tmax = tmax*1e-6 
+        
+        self.fig.canvas.draw()
+        
         return 0
     
 

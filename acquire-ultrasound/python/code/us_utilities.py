@@ -5,6 +5,7 @@ Created on Tue Sep 13 21:46:41 2022
 @author: larsh
 """
 
+import copy 
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -69,13 +70,16 @@ class waveform:
     def ns(self):   
         return len( self.y )   # Number of points in trace
     
+    def nfft(self):
+        return 2**(3+( self.ns()-1 ).bit_length() )
+    
     def t(self):             # [s] Time vector from start time and sample interval
         return np.linspace(self.t0, self.t0+self.dt*self.ns(), self.ns() )
         
     def fs(self):          # [Hz]   Sample rate
         return 1/self.dt   
     
-    def plot(self, timeunit=""):
+    def plot ( self, timeunit="" ):
         if timeunit == "us":
             mult = 1e6
         else:
@@ -87,20 +91,21 @@ class waveform:
         plt.grid(True)
         #plt.show()
         
-    def f(self):
-        return np.arange( 0, self.nfft/2 )/self.nfft * self.fs()
+    def f ( self ):
+        return np.arange( 0, self.nfft()/2 )/self.nfft() * self.fs()
     
-    def powerspectrum(self, normalise=True, scale="linear" ):
-        nf = len(self.f())   
-        fy = np.fft.fft(self.y, n=self.nfft, axis=0)
-        p  = np.abs(fy[0:nf, :])
+    def powerspectrum ( self, normalise=True, scale="linear" ):
+        nf   = len(self.f())   
+        y_ft = np.fft.fft( self.y, n=nf, axis=0)
+        psd  = 1/( self.fs()*nf ) * np.abs( y_ft[ 0:nf, :])**2 
+        psd[2:] *=2 
         if normalise:
-            p = p/p.max(axis=0)
+            psd = psd/psd.max(axis=0)
         if scale.lower() == "db":
-            p = 20*np.log10(p)
-        return p
+            psd = 20*np.log10(psd)
+        return psd
     
-    def plotspectrum(self, timeunit="s", frequnit="Hz", fmax=None, normalise=True, scale="dB" ):
+    def plotspectrum ( self, timeunit="s", frequnit="Hz", fmax=None, normalise=True, scale="dB" ):
         plt.subplot(2,1,1)
         self.plot(timeunit)
         
@@ -120,7 +125,7 @@ class waveform:
             plt.ylabel('Power')
             
             
-    def load(self, filename):   # Load wavefrom-file. Compatible with older file format used in e.g. LabVIEW
+    def load ( self, filename ):   # Load wavefrom-file. Compatible with older file format used in e.g. LabVIEW
         with open(filename, 'rb') as fid:
             n_hd= int( np.fromfile(fid, dtype='>i4', count=1) )
             hd  = fid.read(n_hd)
@@ -137,7 +142,19 @@ class waveform:
             self.t0 = t0
             self.dt = dt
             self.dtr= dtr     # Normally not used, included for backward compatibility
-            self.y  = np.reshape(y, (-1, nc))            
+            self.y  = np.reshape(y, (-1, nc))  
+            
+    def zoom (self, tlim ):
+        wfm  = copy.deepcopy(self)
+        nlim = np.flatnonzero ( ( self.t() >= min(tlim) ) & ( self.t() <= max(tlim) ) )
+        
+        t0   = self.t()[np.min(nlim)]
+        y    = self.y[nlim]
+        
+        wfm.t0 = t0
+        wfm.y  = y
+        
+        return wfm
             
                 
         

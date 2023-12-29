@@ -71,9 +71,7 @@ for k in range(10):
     wfm.y  = v
     wfm.dt = sampling.dt
     wfm.t0 = sampling.t0()
-    
-    wfm.nfft = 2048
-    
+       
     plt.figure(1,(8,8))
     wfm.plot( timeunit="us" )
     plt.show()

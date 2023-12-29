@@ -64,11 +64,15 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.display  = displayscale()      # Scaling and diplay options
         
         # Connect GUI elements
-        self.run_button.clicked.connect( self.connect_dso )
+        self.connect_button.clicked.connect( self.connect_dso )
         self.acquire_button.clicked.connect( self.acquire_trace )
         
-        self.start_zoom_spinBox.valueChanged.connect( self.update_display )
-        self.end_zoom_spinBox.valueChanged.connect( self.update_display)
+        self.zoom_start_spinBox.valueChanged.connect( self.update_display )
+        self.zoom_end_spinBox.valueChanged.connect( self.update_display)
+        self.zoom_vertical_comboBox.activated.connect( self.update_display)
+        self.zoom_fmin_spinBox.valueChanged.connect( self.update_display)
+        self.zoom_fmax_spinBox.valueChanged.connect( self.update_display)
+        self.zoom_dbmin_spinBox.valueChanged.connect( self.update_display)
 
         self.ch_a_pushButton.clicked.connect( self.update_vertical )
         self.range_a_comboBox.activated.connect( self.update_vertical)
@@ -107,43 +111,49 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         # Initialise result graph
         plt.ion()         # Does not seem to make any difference
         fig, axs = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
-        for k in range( 0, 2):   # Commpn for both subplots
+        for k in range( 0, 2):   # Common for both time-trace subplots
              axs[k].set_xlabel('Time [us]')
              axs[k].set_ylabel('Voltage [V]')
              axs[k].grid( True )              
         
-        axs[0].set_xlim(-100 , 200)   
-        axs[1].set_xlim(  10,  20 )   
-
-
+        axs[0].set_xlim (-200 , 200 )   
+        axs[1].set_xlim (  10,   20 )   
+        
         axs[2].set_xlabel('Frequency [MHz]')
         axs[2].set_ylabel('Power [dB re. max]')
-        axs[2].set_xlim(0 , 10)   
+        axs[2].set_xlim (  0 , 10 )   
+        axs[2].set_ylim (-40 ,  0 )   
         axs[2].grid( True )              
 
         # Create handle to datapoints, empty so far
-        graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ]         
+        graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ] 
         fig.show()        
         self.graph= graphs
         self.axs  = axs
         self.fig  = fig      
 
         # Initialise GUI with messages         
-        self.enable_controls( state=True, active='connect' )                
+        self.update_status_box( "Not connected", background_color="white", text_color="darkred" )
+        self.enable_controls( state=True, active='connect' )  
+
+        self.acquire_button.setEnabled( False )
+        self.connect_button.setEnabled( True )
+
         self.statusBar.showMessage('Program started')
         
         self.dso =ps.communication( )
         self.status = {}
-        self.status["initilaisation"]= 0
+        self.status["initialisation"]= 0
         
 
     #%% Interact with instrument 
 
     # Connect, configure and start instrument
     def connect_dso( self ):                                         
+        self.statusBar.showMessage('Connecting instrument ...')
         errorcode = 0        
         try:
-            if "openunit" in self.status:                            # Close if an old handle is resident. Probably not possible
+            if "openunit" in self.status:         # Close if an old handle is resident. Probably not possible
                 if not("close" in self.status ):        
                     ps.stop_adc( dso.handle, self.status )
                     ps.close_adc( dso.handle, self.status )
@@ -162,6 +172,13 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.update_sampling()
         self.update_rf_filter()
         self.update_display()
+        
+        self.acquire_button.setEnabled( True )
+        self.connect_button.setEnabled( False )
+
+        self.statusBar.showMessage('Instrument connected')
+        self.update_status_box( "Connected", background_color="white", text_color="darkgreen" )
+
 
         return errorcode 
 
@@ -226,44 +243,59 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     #%% Read and save results
     
     # Acquire scaled trace from instrument 
-    def acquire_trace( self ):
-        self.status, self.dso          = ps.configure_acquisition( self.dso, self.status, self.sampling )        
-        self.status, self.dso, self.v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
+    def acquire_trace( self ):        
+        self.statusBar.showMessage('Acquiring data ...')
         
-        wfm    = us.waveform()
-        wfm.y  = self.v
-        wfm.dt = self.sampling.dt
-        wfm.t0 = self.sampling.t0()
-
-        tmin = self.display.tmin
-        tmax = self.display.tmax
+        self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
+        self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
         
-        wfmz    = us.waveform()
-        nmin    = np.max( np.where( wfm.t() < tmin ) )
-        nmax    = np.min( np.where( wfm.t() > tmax ) )
-        wfmz.t0 = wfm.t()[ nmin ]
-        wfmz.dt = wfm.dt
-        wfmz.y  = wfm.y[ nmin : nmax , : ]
+        self.wfm.y  = v
+        self.wfm.dt = self.sampling.dt
+        self.wfm.t0 = self.sampling.t0()
 
-        self.graph[0].set_data(  wfm.t()*1e6,  wfm.y[:,0] ) 
-        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] ) 
+        self.statusBar.showMessage('Data acquired. Plotting ...')
+
+        self.plot_result()
+
+        self.update_status_box( "Data acquired", background_color="white", text_color="darkgreen" )
+
+        return 0
+
+    def plot_result ( self ):
+        self.statusBar.showMessage('Plotting result ...')
+
+        wfmz= self.wfm.zoom( [ self.display.tmin, self.display.tmax ] )
+
+        self.graph[0].set_data( self.wfm.t()*1e6, self.wfm.y[:,0] )                  # Full trace
+        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] )                          # Zoomed interval
+        self.graph[2].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
+
         self.fig.canvas.draw()            # --- TRY: Probably necessary
         self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program          
         
-        return 0
+        self.update_display( )
 
+        self.statusBar.showMessage('Plotting finished')
+        
+        return 0
+        
     # Save result to binary file, automatically generated filename
     def save_results( self ):
+        self.statusBar.showMessage('Saving results ...')
+
         [ resultfile, resultpath ] = us.find_filename(prefix='US', ext='trc', resultdir='results')
         us.save_impedance_result( resultpath, self.analyser.res )
         self.resultfile_Edit.setText( resultfile ) 
         self.resultpath_Edit.setPlainText( resultpath ) 
         self.statusBar().showMessage( f'Result saved to {resultfile}' )
+
+        self.statusBar.showMessage('Results saved')
+
         return 0
         
     # Close instrument connection    
     def close_app(self):
-        self.statusBar.showMessage( 'Closing' )
+        self.statusBar.showMessage( 'Closing ...' )
         plt.close(self.fig)
         try:
             self.status  =  ps.close_adc( self.dso.handle, self.status )
@@ -272,9 +304,12 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
             errorcode =-1
         finally:
             self.close()       
+
+        self.statusBar.showMessage( 'Closed' )
+
         return self.status, errorcode 
     
-    # NOT ACTIVE: Stop acquisition withou closing
+    # NOT ACTIVE: Stop acquisition without closing
     def stop_acquisition( self ): 
         self.runstate.finished = True
         self.statusBar.showMessage( 'Stopping acquisition' )
@@ -335,10 +370,22 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         return 0
     
     def update_display( self ):
-        tmin = self.start_zoom_spinBox.value()
-        tmax = self.end_zoom_spinBox.value()
+        tmin = self.zoom_start_spinBox.value()  # Display in us, calculations in s
+        tmax = self.zoom_end_spinBox.value()        
+        vzoom= self.read_scaled_value ( self.zoom_vertical_comboBox.currentText() )        
+        fmin = self.zoom_fmin_spinBox.value()  
+        fmax = self.zoom_fmax_spinBox.value()  
+        dbmin= self.zoom_dbmin_spinBox.value()
         
+        self.axs[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
         self.axs[1].set_xlim(  tmin, tmax  )
+        self.axs[2].set_xlim(  fmin, fmax  )
+        
+        self.axs[0].set_ylim( -self.ch[0].vr/2, self.ch[0].vr/2 )
+        self.axs[1].set_ylim( -vzoom , vzoom )
+        self.axs[2].set_ylim(  dbmin , 0 )
+       # self.axs[0].axvline( tmin, color='darkgreen')  # No point using axvine: Returns line object that must be updated
+       # self.axs[0].axvline( tmax, color='darkgreen')  # Use normal plot instead
 
         self.display.tmin = tmin*1e-6    
         self.display.tmax = tmax*1e-6 

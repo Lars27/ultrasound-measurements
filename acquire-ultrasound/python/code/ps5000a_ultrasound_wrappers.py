@@ -24,7 +24,7 @@ class channel:    # Digital oscilloscope vertical settings (Volts)
         self.no    = no
 
     vr      = 1 
-    adcmax  = 2**14    
+    adcmax  = 32767  # Fixed in Picoscope 5000a for 12 to 16 bit resolution, incorrcet for 8 bit
     offset  = 0
     enabled = True
     coupling= "DC"
@@ -121,7 +121,7 @@ def set_trigger(dsohandle, status, trigger, ch, sampling ):
     elif trigger.source in ("A", "B"):
         source = picoscope.PS5000A_CHANNEL[f"PS5000A_CHANNEL_{trigger.source}"]
         no   = channel_name_to_no(trigger.source)
-        vrel = np.clip( trigger.level / ch[no].vmax(), -1, 1)
+        vrel = np.clip( trigger.level / ch[no].vmax(), -1, 1)       
         threshold = int( vrel * ch[no].adcmax )
     else:
         status["trigger"]=-1

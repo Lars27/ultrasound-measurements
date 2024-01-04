@@ -15,6 +15,7 @@ Function generator will be implemented
 
 #%% Libraries
 import sys
+import time
 from PyQt5 import QtWidgets, uic
 import matplotlib.pyplot as plt            # For plotting
 import numpy as np
@@ -39,6 +40,8 @@ class displayscale:
 class acquisition_control:  
     def __init__( self ):
         self.finished = False
+        self.stop     = False
+        self.ready    = False
        
         
 #%% Classes and defs
@@ -105,7 +108,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.filter_order_spinBox.valueChanged.connect( self.update_rf_filter )
                
         self.acquire_button.clicked.connect( self.acquire_trace )
-        self.save_button.clicked.connect( self.save_results )         
+        self.save_button.clicked.connect( self.save_results )      
+        self.stop_button.clicked.connect( self.stop_acquisition ) 
         self.close_button.clicked.connect( self.close_app ) 
         
         # Initialise result graph
@@ -133,7 +137,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.fig  = fig      
 
         # Initialise GUI with messages         
-        self.update_status_box( "Not connected", background_color="white", text_color="darkred" )
+        self.update_status_box( "Not connected", background_color="red", text_color="white" )
         self.enable_controls( state=True, active='connect' )  
 
         self.acquire_button.setEnabled( False )
@@ -177,8 +181,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.connect_button.setEnabled( False )
 
         self.statusBar.showMessage('Instrument connected')
-        self.update_status_box( "Connected", background_color="white", text_color="darkgreen" )
+        self.update_status_box( "Connected", background_color="darkorange", text_color="white" )
 
+        self.runstate.finished = True
+        self.runstate.ready    = True
+        self.runstate.stop     = False
 
         return errorcode 
 
@@ -186,12 +193,14 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def update_vertical( self ):
         self.ch[0].enabled   = not self.ch_a_pushButton.isChecked() 
         self.ch[0].vr        = self.read_scaled_value ( self.range_a_comboBox.currentText() )
+        self.ch[0].vr        = self.ch[0].vmax()
         self.ch[0].coupling  = self.coupling_a_comboBox.currentText()
         self.ch[0].offset    = self.offset_a_spinBox.value()
         self.ch[0].bwl       = self.bwl_a_comboBox.currentText()        
 
         self.ch[1].enabled   = not self.ch_b_pushButton.isChecked() 
         self.ch[1].vr        = self.read_scaled_value ( self.range_b_comboBox.currentText() )
+        self.ch[1].vr        = self.ch[1].vmax()
         self.ch[1].coupling  = self.coupling_b_comboBox.currentText()
         self.ch[1].offset    = self.offset_b_spinBox.value()
         self.ch[1].bwl       = self.bwl_b_comboBox.currentText()    
@@ -243,39 +252,40 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     #%% Read and save results
     
     # Acquire scaled trace from instrument 
-    def acquire_trace( self ):        
-        self.statusBar.showMessage('Acquiring data ...')
+    def acquire_trace( self ):      
+        if self.runstate.ready:
+            self.runstate.ready = False
+            self.update_status_box( "Acquiring data", background_color="darkgreen", text_color="white" )
+            self.statusBar.showMessage('Acquiring data ...')
+            self.close_button.setEnabled( False )
+            while not( self.runstate.stop):
+                self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
+                self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
+                
+                self.wfm.y  = v
+                self.wfm.dt = self.sampling.dt
+                self.wfm.t0 = self.sampling.t0()
+                
+                self.plot_result()
         
-        self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
-        self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
-        
-        self.wfm.y  = v
-        self.wfm.dt = self.sampling.dt
-        self.wfm.t0 = self.sampling.t0()
-
-        self.statusBar.showMessage('Data acquired. Plotting ...')
-
-        self.plot_result()
-
-        self.update_status_box( "Data acquired", background_color="white", text_color="darkgreen" )
-
+        self.update_status_box( "Stopped", background_color="darkblue", text_color="white" )
+        self.statusBar.showMessage( 'Ready' )       
+        self.runstate.stop = False
         return 0
+    
 
     def plot_result ( self ):
-        self.statusBar.showMessage('Plotting result ...')
-
         wfmz= self.wfm.zoom( [ self.display.tmin, self.display.tmax ] )
 
         self.graph[0].set_data( self.wfm.t()*1e6, self.wfm.y[:,0] )                  # Full trace
-        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] )                          # Zoomed interval
+        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] )                          # Zoomed interval       
         self.graph[2].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
 
         self.fig.canvas.draw()            # --- TRY: Probably necessary
-        self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program          
-        
+        self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program                 
         self.update_display( )
+        
 
-        self.statusBar.showMessage('Plotting finished')
         
         return 0
         
@@ -311,9 +321,15 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     
     # NOT ACTIVE: Stop acquisition without closing
     def stop_acquisition( self ): 
-        self.runstate.finished = True
-        self.statusBar.showMessage( 'Stopping acquisition' )
-        self.update_status_box( 'Finishing', 'orange', 'white' )
+        if not(self.runstate.stop ):
+            self.runstate.stop = True
+            self.statusBar.showMessage( 'Stopping acquisition' )
+            self.update_status_box( 'Stopping acquisition', 'darkred', 'white' )
+
+        self.runstate.stop     = True
+        self.runstate.finished = True            
+        self.runstate.ready    = True            
+        self.close_button.setEnabled( True )
         return 0
         
     
@@ -345,7 +361,6 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
                 mult = 1e3;
             elif valuestr[1]== 'M':
                 mult = 1e6
-                print('valuestr M')
             elif valuestr[1]== 'G':
                 mult = 1e9
             else:
@@ -381,7 +396,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.axs[1].set_xlim(  tmin, tmax  )
         self.axs[2].set_xlim(  fmin, fmax  )
         
-        self.axs[0].set_ylim( -self.ch[0].vr/2, self.ch[0].vr/2 )
+        self.axs[0].set_ylim( -self.ch[0].vmax(), self.ch[0].vmax() )
         self.axs[1].set_ylim( -vzoom , vzoom )
         self.axs[2].set_ylim(  dbmin , 0 )
        # self.axs[0].axvline( tmin, color='darkgreen')  # No point using axvine: Returns line object that must be updated

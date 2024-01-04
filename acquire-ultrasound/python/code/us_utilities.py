@@ -71,7 +71,7 @@ class waveform:
         return len( self.y )   # Number of points in trace
     
     def nfft(self):
-        return 2**(3+( self.ns()-1 ).bit_length() )
+        return 2**(2+( self.ns()-1 ).bit_length() )     # Interpolate spectum by padding zeros
     
     def t(self):             # [s] Time vector from start time and sample interval
         return np.linspace(self.t0, self.t0+self.dt*self.ns(), self.ns() )
@@ -96,13 +96,13 @@ class waveform:
     
     def powerspectrum ( self, normalise=True, scale="linear" ):
         nf   = len(self.f())   
-        y_ft = np.fft.fft( self.y, n=nf, axis=0)
-        psd  = 1/( self.fs()*nf ) * np.abs( y_ft[ 0:nf, :])**2 
-        psd[2:] *=2 
+        y_ft = np.fft.fft( self.y, n=self.nfft(), axis=0 )
+        psd  = 1/( self.fs()*nf ) * np.abs( y_ft[ 0:nf, :])**2         
+        psd[1:] *=2 
         if normalise:
             psd = psd/psd.max(axis=0)
         if scale.lower() == "db":
-            psd = 20*np.log10(psd)
+            psd = 10*np.log10(psd)
         return psd
     
     def plotspectrum ( self, timeunit="s", frequnit="Hz", fmax=None, normalise=True, scale="dB" ):

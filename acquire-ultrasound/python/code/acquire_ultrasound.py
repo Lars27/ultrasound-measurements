@@ -136,24 +136,28 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         ax_right    = []
         graph_left  = []
         graph_right = []
+        graph_marker = []
         for k in range(3):
             ax_right.append( ax_left[k].twinx() )
-            graph_left.append ( ax_left[k].plot ( [], [], color='C0' ) )     # Emptu placeholder for datapoints
+            graph_left.append ( ax_left[k].plot ( [], [], color='C0' ) )     # Empty placeholder for datapoints
             graph_right.append( ax_right[k].plot( [], [], color='C1' ) )
         
-        #graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ] 
+        graph_marker = ax_left[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
+
         fig.show()        
         self.graph_left  = graph_left
         self.graph_right = graph_right
+        self.graph_marker = graph_marker
         self.ax_left     = ax_left
         self.ax_right    = ax_right
         self.fig         = fig      
 
         # Initialise GUI with messages         
-        self.update_status_box( "Not connected", background_color="red", text_color="white" )
+        self.update_connected_box( "Not connected", background_color="red", text_color="white" )
         self.enable_controls( state=True, active='connect' )  
 
         self.acquire_button.setEnabled( False )
+        self.save_button.setEnabled   ( False )
         self.connect_button.setEnabled( True )
 
         self.statusBar.showMessage('Program started')
@@ -191,10 +195,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.update_display()
         
         self.acquire_button.setEnabled( True )
+        self.save_button.setEnabled   ( False )
         self.connect_button.setEnabled( False )
 
         self.statusBar.showMessage('Instrument connected')
-        self.update_status_box( "Connected", background_color="darkorange", text_color="white" )
+        self.update_connected_box( "Connected", background_color="darkgreen", text_color="white" )
 
         self.runstate.finished = True
         self.runstate.ready    = True
@@ -272,17 +277,18 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
             self.statusBar.showMessage('Acquiring data ...')
             self.close_button.setEnabled( False )
             self.acquire_button.setEnabled( False )
+            self.save_button.setEnabled   ( True )
             while not( self.runstate.stop):
                 self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
                 self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
                 
-                self.wfm.y  = v
+                self.wfm.v  = v
                 self.wfm.dt = self.sampling.dt
                 self.wfm.t0 = self.sampling.t0()
                 
                 self.plot_result()
         
-        self.update_status_box( "Stopped", background_color="darkblue", text_color="white" )
+        self.update_status_box( "Stopped", background_color="darkred", text_color="white" )
         self.statusBar.showMessage( 'Ready' )       
         self.runstate.stop = False
         return 0
@@ -291,13 +297,13 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def plot_result ( self ):
         wfmz= self.wfm.zoom( [ self.display.tmin, self.display.tmax ] )
         
-        self.graph_left[0][0].set_data ( self.wfm.t()*1e6, self.wfm.y[:,0] )                  # Full trace
-        self.graph_right[0][0].set_data( self.wfm.t()*1e6, self.wfm.y[:,1] )                  
-        self.graph_left[1][0].set_data (     wfmz.t()*1e6,     wfmz.y[:,0] )                  # Selected interval       
-        self.graph_right[1][0].set_data(     wfmz.t()*1e6,     wfmz.y[:,1] )                  
+        self.graph_left[0][0].set_data ( self.wfm.t()*1e6, self.wfm.v[:,0] )                  # Full trace
+        self.graph_right[0][0].set_data( self.wfm.t()*1e6, self.wfm.v[:,1] )                  
+        self.graph_left[1][0].set_data (     wfmz.t()*1e6,     wfmz.v[:,0] )                  # Selected interval       
+        self.graph_right[1][0].set_data(     wfmz.t()*1e6,     wfmz.v[:,1] )                  
         self.graph_left[2][0].set_data ( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
         self.graph_right[2][0].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,1] )  
-
+        
         self.fig.canvas.draw()            # --- TRY: Probably necessary
         self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program                 
         self.update_display( )
@@ -308,14 +314,13 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def save_results( self ):
         self.statusBar.showMessage('Saving results ...')
 
-        [ resultfile, resultpath ] = us.find_filename(prefix='US', ext='trc', resultdir='results')
-        us.save_impedance_result( resultpath, self.analyser.res )
+        resultfile, resultpath, n = us.find_filename(prefix='US', ext='trc', resultdir='results')
+        self.wfm.save( resultpath )
+        self.filecounter_spinBox.setValue( n ) 
         self.resultfile_Edit.setText( resultfile ) 
-        self.resultpath_Edit.setPlainText( resultpath ) 
-        self.statusBar().showMessage( f'Result saved to {resultfile}' )
-
-        self.statusBar.showMessage('Results saved')
-
+        self.resultpath_Edit.setText( resultpath ) 
+        
+        self.statusBar.showMessage( f'Result saved to {resultfile}' )
         return 0
         
     # Close instrument connection    
@@ -345,6 +350,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.runstate.finished = True            
         self.runstate.ready    = True            
         self.close_button.setEnabled  ( True )
+        self.save_button.setEnabled   ( False )
         self.acquire_button.setEnabled( True )
 
         return 0
@@ -364,6 +370,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def update_status_box( self, message, background_color='white', text_color='black' ):
         self.status_Edit.setText( message )
         self.status_Edit.setStyleSheet(f"background-color : {background_color}; color : {text_color}")
+        return 0
+
+    def update_connected_box( self, message, background_color='white', text_color='black' ):
+        self.connected_Edit.setText( message )
+        self.connected_Edit.setStyleSheet(f"background-color : {background_color}; color : {text_color}")
         return 0
     
     # Interpret a text as a scaled value ( milli, kilo, Mega etc. )
@@ -411,7 +422,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         dbmin  = self.zoom_dbmin_spinBox.value()
         
         self.ax_left[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
-        self.ax_left[1].set_xlim(  tmin, tmax  )
+        if tmax>tmin:
+            self.ax_left[1].set_xlim(  tmin, tmax  )
         self.ax_left[2].set_xlim(  fmin, fmax  )
         
         self.ax_left[0].set_ylim ( -self.ch[0].vmax(), self.ch[0].vmax() )
@@ -421,8 +433,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.ax_left[2].set_ylim (  dbmin , 0 )
         self.ax_right[2].set_ylim(  dbmin , 0 )
 
+        self.graph_marker[0].set_data ( np.full( (2,1), tmin ) , np.array( [ -100, 100 ] ) ) 
+        self.graph_marker[1].set_data ( np.full( (2,1), tmax ) , np.array( [ -100, 100 ] ) ) 
+
         self.display.tmin = tmin*1e-6    
-        self.display.tmax = tmax*1e-6 
+        self.display.tmax = tmax*1e-6       
         
         self.fig.canvas.draw()
         

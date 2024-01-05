@@ -51,7 +51,7 @@ def find_filename( prefix='US', ext='wfm', resultdir=[] ):
         file_exists = os.path.isfile( resultpath )    
     with open(counterfile, 'wt') as fid:    # Write counter of last result file to counter file
         fid.write( f'{n:d}' ) 
-    return [ resultfile, resultpath ]
+    return resultfile, resultpath, n
 
 
 #%%
@@ -60,15 +60,19 @@ def find_filename( prefix='US', ext='wfm', resultdir=[] ):
     Adapted from LabVIEW's waveform-type, similar to python's mccdaq-library"""
 
 class waveform:    
-    def __init__(self, y=np.zeros((1000,1)), dt=1, t0=0):
-        self.y  = y          # [V]  Voltage trace
-        if y.ndim == 1:      # Ensure v is 2D
-            self.y = self.y.reshape((1, len(y)))
-        self.dt = dt         # [s]  Sample interval
-        self.t0 = t0         # [s]  Time of first sample 
-                
+    def __init__(self, v=np.zeros((1000,1)), dt=1, t0=0):
+        self.v  = v          # [V]  Voltage trace
+        if v.ndim == 1:      # Ensure v is 2D
+            self.v = self.v.reshape( ( 1, len(v) ) )
+        self.dt  = dt         # [s]  Sample interval
+        self.t0  = t0         # [s]  Time of first sample 
+        self.dtr = 0          # [s]  Interval between measurement blocks. Not used
+              
+    def nc(self):
+        return self.v.shape[1]   # Number of channels
+    
     def ns(self):   
-        return len( self.y )   # Number of points in trace
+        return self.v.shape[0]   # Number of points in trace
     
     def nfft(self):
         return 2**(2+( self.ns()-1 ).bit_length() )     # Interpolate spectum by padding zeros
@@ -85,7 +89,7 @@ class waveform:
         else:
             mult = 1
             
-        plt.plot(self.t()*mult, self.y)
+        plt.plot(self.t()*mult, self.v)
         plt.xlabel(f'Time [{timeunit}]')
         plt.ylabel('Ampltude')
         plt.grid(True)
@@ -96,7 +100,7 @@ class waveform:
     
     def powerspectrum ( self, normalise=True, scale="linear" ):
         nf   = len(self.f())   
-        y_ft = np.fft.fft( self.y, n=self.nfft(), axis=0 )
+        y_ft = np.fft.fft( self.v, n=self.nfft(), axis=0 )
         psd  = 1/( self.fs()*nf ) * np.abs( y_ft[ 0:nf, :])**2         
         psd[1:] *=2 
         if normalise:
@@ -123,8 +127,32 @@ class waveform:
             plt.ylim((-40.0 , 0))
         else:
             plt.ylabel('Power')
+ 
             
-            
+    def zoom (self, tlim ):
+        wfm  = copy.deepcopy(self)
+        nlim = np.flatnonzero ( ( self.t() >= min(tlim) ) & ( self.t() <= max(tlim) ) )
+        
+        t0   = self.t()[np.min(nlim)]
+        v    = self.v[nlim]
+        
+        wfm.t0 = t0
+        wfm.v  = v
+        
+        return wfm
+    
+    """ 
+    Load and save 'waveform' files in binary format 
+    Data points saved as 4-byte sgl-values
+    Format used since 1990s on a variety of platforms (LabWindows, C, LabVIEW, Matlab)
+    Uses 'c-order' of arrays and IEEE big-endian byte order
+        hd  Header, informative text
+        nc  Number of channels
+        t0  Start time
+        dt  Sample interval
+        dtr Interval between blocks. Used only in special cases
+        v   Data points (often voltage)
+    """        
     def load ( self, filename ):   # Load wavefrom-file. Compatible with older file format used in e.g. LabVIEW
         with open(filename, 'rb') as fid:
             n_hd= int( np.fromfile(fid, dtype='>i4', count=1) )
@@ -142,20 +170,22 @@ class waveform:
             self.t0 = t0
             self.dt = dt
             self.dtr= dtr     # Normally not used, included for backward compatibility
-            self.y  = np.reshape(y, (-1, nc))  
+            self.v  = np.reshape(y, (-1, nc))            
             
-    def zoom (self, tlim ):
-        wfm  = copy.deepcopy(self)
-        nlim = np.flatnonzero ( ( self.t() >= min(tlim) ) & ( self.t() <= max(tlim) ) )
-        
-        t0   = self.t()[np.min(nlim)]
-        y    = self.y[nlim]
-        
-        wfm.t0 = t0
-        wfm.y  = y
-        
-        return wfm
-            
+    
+    def save(self, filename):   
+        header= "<WFM_Python_>f4>"
+        n_hd=len(header)        
+        #y = np.require( self.v, requirements='C' )
+        with open(filename, 'xb') as fid:
+            fid.write( np.array(n_hd).astype('>i4') )
+            fid.write( bytes(header, 'utf-8') )
+            fid.write( np.array( self.nc() ).astype('>u4')  )
+            fid.write( np.array( self.t0 ).astype('>f8')  )
+            fid.write( np.array( self.dt ).astype('>f8')  )
+            fid.write( np.array( self.dtr ).astype('>f8') )
+            fid.write( self.v.astype('>f4')  )
+        return 0                  
                 
         
             

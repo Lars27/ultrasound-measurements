@@ -28,21 +28,21 @@ matplotlib.use('Qt5Agg')
 oscilloscope_main_window, QtBaseClass = uic.loadUiType('aquire_ultrasound_gui.ui')
 
 # Classes
-class dso_filter:   # Digital oscilloscope trigger settings
-    type  = "No filter"
-    fmin  = 100
-    fmax  = 10e6
-    order = 2
+class dso_filter:   # Digital filtering before display
+    type  = "No filter"       # Filter type: None, AC removal, bandpass, ...
+    fmin  = 100               # [Hz] Lower cutoff frequency
+    fmax  = 10e6              # [Hz] Upper cutoff frequency
+    order = 2                 # Filter order
     
-class display:
-    tmin = 0
-    tmax = 10    
-    ch   = [ True, True ]
+class display:                # Settings for display on screen during runtime
+    tmin = 0                  # [s] Start zoomed section of trace (pulse to be analysed)
+    tmax = 10                 # [s] End zoomed section of trace
+    ch   = [ True, True ]     # Channels to diaplay on screen
 
-class acquisition_control:  
-    finished = False
-    stop     = False
-    ready    = False
+class acquisition_control:    # Control running of program
+    finished = False          # Acquisition finished
+    stop     = False          # Stop data acquisition (but not program) 
+    ready    = False          # Osciloscope configured and ready to start
        
         
 #%% Main classes with defs
@@ -57,7 +57,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.runstate = acquisition_control()
 
         # Initialise instrument variables
-        self.dso = ps.communication()       # Instrument connection and status
+        self.dso = ps.communication()       # Instrument connection and status. From ps5000a_ultrasound_wrappers.py 
         self.ch  = []
         self.ch.append( ps.channel ( 0 ) )  # Vertical channel configuration
         self.ch.append( ps.channel ( 1 ) )
@@ -68,98 +68,94 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.wfm      = us.waveform( )      # Result, storing acquired traces
         self.display  = display()           # Scaling and diplay options
         
-        # Connect GUI elements
+        # Connect functions to elements from GUI-file (aquire_ultrasound_gui.ui)
         self.connect_button.clicked.connect( self.connect_dso )
         self.acquire_button.clicked.connect( self.acquire_trace )
         
-        self.zoom_start_spinBox.valueChanged.connect( self.update_display )
-        self.zoom_end_spinBox.valueChanged.connect  ( self.update_display )
+        self.zoom_start_spinBox.valueChanged.connect   ( self.update_display )    # Display
+        self.zoom_end_spinBox.valueChanged.connect     ( self.update_display )
         self.zoom_vertical_a_comboBox.activated.connect( self.update_display )
         self.zoom_vertical_b_comboBox.activated.connect( self.update_display )
-        self.zoom_fmin_spinBox.valueChanged.connect ( self.update_display )
-        self.zoom_fmax_spinBox.valueChanged.connect ( self.update_display )
-        self.zoom_dbmin_spinBox.valueChanged.connect( self.update_display )
+        self.zoom_fmin_spinBox.valueChanged.connect    ( self.update_display )
+        self.zoom_fmax_spinBox.valueChanged.connect    ( self.update_display )
+        self.zoom_dbmin_spinBox.valueChanged.connect   ( self.update_display )
 
         self.ch_a_pushButton.clicked.connect( self.update_display )
         self.ch_b_pushButton.clicked.connect( self.update_display )
         
-        self.range_a_comboBox.activated.connect   ( self.update_vertical )
+        self.range_a_comboBox.activated.connect   ( self.update_vertical )      # Vertical osciloscope settings (Voltage)
         self.coupling_a_comboBox.activated.connect( self.update_vertical )
         self.offset_a_spinBox.valueChanged.connect( self.update_vertical )
         self.coupling_a_comboBox.activated.connect( self.update_vertical )
         self.bwl_a_comboBox.activated.connect     ( self.update_vertical )
-
         self.range_b_comboBox.activated.connect   ( self.update_vertical )
         self.coupling_b_comboBox.activated.connect( self.update_vertical )
         self.offset_b_spinBox.valueChanged.connect( self.update_vertical )
         self.coupling_b_comboBox.activated.connect( self.update_vertical )
         self.bwl_b_comboBox.activated.connect     ( self.update_vertical )
 
-        self.trigger_source_comboBox.activated.connect( self.update_trigger )
-        self.trigger_position_spinBox.valueChanged.connect( self.update_trigger )
-        self.trigger_mode_comboBox.activated.connect( self.update_trigger )
-        self.trigger_level_spinBox.valueChanged.connect( self.update_trigger )       
-        self.trigger_delay_spinBox.valueChanged.connect( self.update_trigger )
-        self.trigger_auto_delay_spinBox.valueChanged.connect( self.update_trigger )
+        self.trigger_source_comboBox.activated.connect          ( self.update_trigger )      # Osciloscope trigger settings
+        self.trigger_position_spinBox.valueChanged.connect      ( self.update_trigger )
+        self.trigger_mode_comboBox.activated.connect            ( self.update_trigger )
+        self.trigger_level_spinBox.valueChanged.connect         ( self.update_trigger )       
+        self.trigger_delay_spinBox.valueChanged.connect         ( self.update_trigger )
+        self.trigger_auto_delay_spinBox.valueChanged.connect    ( self.update_trigger )
         self.internal_trigger_delay_spinBox.valueChanged.connect( self.update_trigger )
 
-        self.sample_rate_spinBox.valueChanged.connect( self.update_sampling )
-        self.no_samples_spinBox.valueChanged.connect( self.update_sampling )
+        self.sample_rate_spinBox.valueChanged.connect( self.update_sampling )      # Horizontal  osciloscope settings (Time)
+        self.no_samples_spinBox.valueChanged.connect ( self.update_sampling ) 
 
-        self.filter_comboBox.activated.connect( self.update_rf_filter )
+        self.filter_comboBox.activated.connect( self.update_rf_filter )            # Display filter settings
         self.fmin_spinBox.valueChanged.connect( self.update_rf_filter )
         self.fmax_spinBox.valueChanged.connect( self.update_rf_filter )
         self.filter_order_spinBox.valueChanged.connect( self.update_rf_filter )
                
-        self.acquire_button.clicked.connect( self.acquire_trace )
-        self.save_button.clicked.connect( self.save_results )      
-        self.stop_button.clicked.connect( self.stop_acquisition ) 
-        self.close_button.clicked.connect( self.close_app ) 
+        self.acquire_button.clicked.connect( self.acquire_trace )                # Control buttons
+        self.save_button.clicked.connect   ( self.save_results )      
+        self.stop_button.clicked.connect   ( self.stop_acquisition ) 
+        self.close_button.clicked.connect  ( self.close_app ) 
         
         # Initialise result graph
-        plt.ion()         # Does not seem to make any difference
-        fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
-        for k in range( 0, 2):   # Common for both time-trace subplots
+        plt.ion()         # Does not seem to make any difference, 
+        fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       # Define result figure with axes
+
+        for k in range( 0, 2):                      # Configure time trace graphs 
              ax_left[k].set_xlabel('Time [us]')
-             ax_left[k].grid( True )              
-        
+             ax_left[k].grid( True )                      
         ax_left[0].set_xlim (-200 , 200 )   
-        ax_left[1].set_xlim (  10,   20 )   
+        ax_left[1].set_xlim (  10,   20 )           
         
-        ax_left[2].set_xlabel('Frequency [MHz]')
+        ax_left[2].set_xlabel('Frequency [MHz]')    # Configure spectrum display
+        ax_left[2].grid( True )         
         ax_left[2].set_xlim (  0 , 10 )   
         ax_left[2].set_ylim (-40 ,  0 )   
-        ax_left[2].grid( True )         
-        
 
-        # Create dual y-axis and handles to datapoints, empty so far
-        ax_right    = []
-        graph_left  = []
-        graph_right = []
-        graph_marker = []
-        for k in range(3):
+        ax_right     = []        # Create dual y-axis (left and right) with handles to (empty) datapoints
+        graph_left   = []        # Left y-axis for Ch A. Full trace, zoomed section, and spectrum
+        graph_right  = []        # Right y-axis for Ch B
+        graph_marker = []        # Markers to indicate zoomed part
+        
+        for k in range(3):       # Loop over full trace, zoomed section, and spectrum
             ax_right.append( ax_left[k].twinx() )
+            ax_left[k].tick_params ( labelcolor='C0' )
+            ax_right[k].tick_params( labelcolor='C1' )
             graph_left.append ( ax_left[k].plot ( [], [], color='C0' )[0] )     # Empty placeholder for datapoints
             graph_right.append( ax_right[k].plot( [], [], color='C1' )[0] )
 
-        for k in range(3):
-             ax_left[k].tick_params(labelcolor='C0')
-             ax_right[k].tick_params(labelcolor='C1')
-             
-        for k in range(2):                    
-             ax_left[k].set_ylabel('Voltage [V]', color='C0' )
-             ax_right[k].set_ylabel('Voltage [V]', color='C1' )
-             
-        ax_left[2].set_ylabel('Power [dB re. max]', color='C0' )
-        ax_right[2].set_ylabel('Power [dB re. max]', color='C1' )
-                 
-        
         graph_marker = ax_left[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
 
-        fig.show()        
-        self.graph_left  = graph_left
+        for k in range(2):       # Loop over full trace, zoomed section, and spectrum
+             ax_left[k].set_ylabel ( 'Voltage [V]', color='C0' )
+             ax_right[k].set_ylabel( 'Voltage [V]', color='C1' )
+             
+        ax_left[2].set_ylabel ( 'Power [dB re. max]', color='C0' )
+        ax_right[2].set_ylabel( 'Power [dB re. max]', color='C1' )        
+
+        fig.show()   
+        
+        self.graph_left  = graph_left        # Make axes and graphs available for class
         self.graph_right = graph_right
-        self.graph_marker = graph_marker
+        self.graph_marker= graph_marker
         self.ax_left     = ax_left
         self.ax_right    = ax_right
         self.fig         = fig      
@@ -167,17 +163,15 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         # Initialise GUI with messages         
         self.update_connected_box( "Not connected", background_color="red", text_color="white" )
         
-        self.acquire_button.setEnabled( False )
+        self.acquire_button.setEnabled( False )   # Enable or disable buttons according to state
         self.save_button.setEnabled   ( False )
         self.connect_button.setEnabled( True )
-        self.acquisition_tabWidget.setCurrentIndex( 0 )
 
         self.statusBar.showMessage('Program started')
         
-        self.dso =ps.communication( )
-        self.status = {}
+        self.dso =ps.communication( )       # Interface to c-style wrappers from manufacturer
+        self.status = {}                    # Status messages from instrument via c-style wrappers
         self.status["initialisation"]= 0
-        
 
     #%% Interact with instrument 
 
@@ -362,7 +356,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
         return self.status, errorcode 
     
-    # NOT ACTIVE: Stop acquisition without closing
+    # Stop acquisition without closing
     def stop_acquisition( self ): 
         if not(self.runstate.stop ):
             self.runstate.stop = True
@@ -376,8 +370,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.save_button.setEnabled   ( False )
         self.acquire_button.setEnabled( True )
 
-        return 0
-        
+        return 0        
     
     #%% General GUI read and write
     

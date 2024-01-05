@@ -27,6 +27,7 @@ import ps5000a_ultrasound_wrappers as ps   # Interface to Picoscope c-style libr
 matplotlib.use('Qt5Agg')
 oscilloscope_main_window, QtBaseClass = uic.loadUiType('aquire_ultrasound_gui.ui')
 
+# Classes
 class dso_filter:   # Digital oscilloscope trigger settings
     type  = "No filter"
     fmin  = 100
@@ -38,18 +39,18 @@ class displayscale:
     tmax = 10    
 
 class acquisition_control:  
-    def __init__( self ):
-        self.finished = False
-        self.stop     = False
-        self.ready    = False
+    finished = False
+    stop     = False
+    ready    = False
        
         
-#%% Classes and defs
+#%% Main classes with defs
 class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def __init__(self):
 
+        # Set up GUI, following example 
         QtWidgets.QMainWindow.__init__(self)
-        oscilloscope_main_window.__init__(self)
+        oscilloscope_main_window.__init__(self)     # Qt GUI window
         self.setupUi(self)
 
         self.runstate = acquisition_control()
@@ -72,7 +73,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         
         self.zoom_start_spinBox.valueChanged.connect( self.update_display )
         self.zoom_end_spinBox.valueChanged.connect( self.update_display)
-        self.zoom_vertical_comboBox.activated.connect( self.update_display)
+        self.zoom_vertical_a_comboBox.activated.connect( self.update_display)
+        self.zoom_vertical_b_comboBox.activated.connect( self.update_display)
         self.zoom_fmin_spinBox.valueChanged.connect( self.update_display)
         self.zoom_fmax_spinBox.valueChanged.connect( self.update_display)
         self.zoom_dbmin_spinBox.valueChanged.connect( self.update_display)
@@ -114,27 +116,38 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         
         # Initialise result graph
         plt.ion()         # Does not seem to make any difference
-        fig, axs = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
+        fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
         for k in range( 0, 2):   # Common for both time-trace subplots
-             axs[k].set_xlabel('Time [us]')
-             axs[k].set_ylabel('Voltage [V]')
-             axs[k].grid( True )              
+             ax_left[k].set_xlabel('Time [us]')
+             ax_left[k].set_ylabel('Voltage [V]')
+             ax_left[k].grid( True )              
         
-        axs[0].set_xlim (-200 , 200 )   
-        axs[1].set_xlim (  10,   20 )   
+        ax_left[0].set_xlim (-200 , 200 )   
+        ax_left[1].set_xlim (  10,   20 )   
         
-        axs[2].set_xlabel('Frequency [MHz]')
-        axs[2].set_ylabel('Power [dB re. max]')
-        axs[2].set_xlim (  0 , 10 )   
-        axs[2].set_ylim (-40 ,  0 )   
-        axs[2].grid( True )              
+        ax_left[2].set_xlabel('Frequency [MHz]')
+        ax_left[2].set_ylabel('Power [dB re. max]')
+        ax_left[2].set_xlim (  0 , 10 )   
+        ax_left[2].set_ylim (-40 ,  0 )   
+        ax_left[2].grid( True )         
+        
 
-        # Create handle to datapoints, empty so far
-        graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ] 
+        # Create dual y-axis and handles to datapoints, empty so far
+        ax_right    = []
+        graph_left  = []
+        graph_right = []
+        for k in range(3):
+            ax_right.append( ax_left[k].twinx() )
+            graph_left.append ( ax_left[k].plot ( [], [], color='C0' ) )     # Emptu placeholder for datapoints
+            graph_right.append( ax_right[k].plot( [], [], color='C1' ) )
+        
+        #graphs=[ axs[0].plot( [], [] )[0] , axs[1].plot( [], [] )[0], axs[2].plot( [], [] )[0] ] 
         fig.show()        
-        self.graph= graphs
-        self.axs  = axs
-        self.fig  = fig      
+        self.graph_left  = graph_left
+        self.graph_right = graph_right
+        self.ax_left     = ax_left
+        self.ax_right    = ax_right
+        self.fig         = fig      
 
         # Initialise GUI with messages         
         self.update_status_box( "Not connected", background_color="red", text_color="white" )
@@ -191,14 +204,14 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
     # Read vertical settings from GUI and send to instrument    
     def update_vertical( self ):
-        self.ch[0].enabled   = not self.ch_a_pushButton.isChecked() 
+        self.ch[0].enabled   = True   # not self.ch_a_pushButton.isChecked()     # Always aquire, may not display
         self.ch[0].vr        = self.read_scaled_value ( self.range_a_comboBox.currentText() )
         self.ch[0].vr        = self.ch[0].vmax()
         self.ch[0].coupling  = self.coupling_a_comboBox.currentText()
         self.ch[0].offset    = self.offset_a_spinBox.value()
         self.ch[0].bwl       = self.bwl_a_comboBox.currentText()        
 
-        self.ch[1].enabled   = not self.ch_b_pushButton.isChecked() 
+        self.ch[1].enabled   = True   # not self.ch_b_pushButton.isChecked() 
         self.ch[1].vr        = self.read_scaled_value ( self.range_b_comboBox.currentText() )
         self.ch[1].vr        = self.ch[1].vmax()
         self.ch[1].coupling  = self.coupling_b_comboBox.currentText()
@@ -258,6 +271,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
             self.update_status_box( "Acquiring data", background_color="darkgreen", text_color="white" )
             self.statusBar.showMessage('Acquiring data ...')
             self.close_button.setEnabled( False )
+            self.acquire_button.setEnabled( False )
             while not( self.runstate.stop):
                 self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
                 self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
@@ -276,17 +290,18 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
     def plot_result ( self ):
         wfmz= self.wfm.zoom( [ self.display.tmin, self.display.tmax ] )
-
-        self.graph[0].set_data( self.wfm.t()*1e6, self.wfm.y[:,0] )                  # Full trace
-        self.graph[1].set_data( wfmz.t()*1e6, wfmz.y[:,0] )                          # Zoomed interval       
-        self.graph[2].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
+        
+        self.graph_left[0][0].set_data ( self.wfm.t()*1e6, self.wfm.y[:,0] )                  # Full trace
+        self.graph_right[0][0].set_data( self.wfm.t()*1e6, self.wfm.y[:,1] )                  
+        self.graph_left[1][0].set_data (     wfmz.t()*1e6,     wfmz.y[:,0] )                  # Selected interval       
+        self.graph_right[1][0].set_data(     wfmz.t()*1e6,     wfmz.y[:,1] )                  
+        self.graph_left[2][0].set_data ( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
+        self.graph_right[2][0].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,1] )  
 
         self.fig.canvas.draw()            # --- TRY: Probably necessary
         self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program                 
         self.update_display( )
-        
-
-        
+                
         return 0
         
     # Save result to binary file, automatically generated filename
@@ -329,7 +344,9 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.runstate.stop     = True
         self.runstate.finished = True            
         self.runstate.ready    = True            
-        self.close_button.setEnabled( True )
+        self.close_button.setEnabled  ( True )
+        self.acquire_button.setEnabled( True )
+
         return 0
         
     
@@ -385,22 +402,24 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         return 0
     
     def update_display( self ):
-        tmin = self.zoom_start_spinBox.value()  # Display in us, calculations in s
-        tmax = self.zoom_end_spinBox.value()        
-        vzoom= self.read_scaled_value ( self.zoom_vertical_comboBox.currentText() )        
-        fmin = self.zoom_fmin_spinBox.value()  
-        fmax = self.zoom_fmax_spinBox.value()  
-        dbmin= self.zoom_dbmin_spinBox.value()
+        tmin   = self.zoom_start_spinBox.value()  # Display in us, calculations in s
+        tmax   = self.zoom_end_spinBox.value()        
+        vzoom_a= self.read_scaled_value ( self.zoom_vertical_a_comboBox.currentText() )        
+        vzoom_b= self.read_scaled_value ( self.zoom_vertical_b_comboBox.currentText() )        
+        fmin   = self.zoom_fmin_spinBox.value()  
+        fmax   = self.zoom_fmax_spinBox.value()  
+        dbmin  = self.zoom_dbmin_spinBox.value()
         
-        self.axs[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
-        self.axs[1].set_xlim(  tmin, tmax  )
-        self.axs[2].set_xlim(  fmin, fmax  )
+        self.ax_left[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
+        self.ax_left[1].set_xlim(  tmin, tmax  )
+        self.ax_left[2].set_xlim(  fmin, fmax  )
         
-        self.axs[0].set_ylim( -self.ch[0].vmax(), self.ch[0].vmax() )
-        self.axs[1].set_ylim( -vzoom , vzoom )
-        self.axs[2].set_ylim(  dbmin , 0 )
-       # self.axs[0].axvline( tmin, color='darkgreen')  # No point using axvine: Returns line object that must be updated
-       # self.axs[0].axvline( tmax, color='darkgreen')  # Use normal plot instead
+        self.ax_left[0].set_ylim ( -self.ch[0].vmax(), self.ch[0].vmax() )
+        self.ax_right[0].set_ylim( -self.ch[1].vmax(), self.ch[1].vmax() )
+        self.ax_left[1].set_ylim ( -vzoom_a , vzoom_a )
+        self.ax_right[1].set_ylim( -vzoom_b , vzoom_b )
+        self.ax_left[2].set_ylim (  dbmin , 0 )
+        self.ax_right[2].set_ylim(  dbmin , 0 )
 
         self.display.tmin = tmin*1e-6    
         self.display.tmax = tmax*1e-6 

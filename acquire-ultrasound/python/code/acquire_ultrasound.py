@@ -34,9 +34,10 @@ class dso_filter:   # Digital oscilloscope trigger settings
     fmax  = 10e6
     order = 2
     
-class displayscale:
+class display:
     tmin = 0
     tmax = 10    
+    ch   = [ True, True ]
 
 class acquisition_control:  
     finished = False
@@ -65,33 +66,34 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.sampling = ps.horizontal()     # Horisontal configuration (time sampling)  
         self.rf_filter= dso_filter()        # Filtering of acquired data
         self.wfm      = us.waveform( )      # Result, storing acquired traces
-        self.display  = displayscale()      # Scaling and diplay options
+        self.display  = display()           # Scaling and diplay options
         
         # Connect GUI elements
         self.connect_button.clicked.connect( self.connect_dso )
         self.acquire_button.clicked.connect( self.acquire_trace )
         
         self.zoom_start_spinBox.valueChanged.connect( self.update_display )
-        self.zoom_end_spinBox.valueChanged.connect( self.update_display)
-        self.zoom_vertical_a_comboBox.activated.connect( self.update_display)
-        self.zoom_vertical_b_comboBox.activated.connect( self.update_display)
-        self.zoom_fmin_spinBox.valueChanged.connect( self.update_display)
-        self.zoom_fmax_spinBox.valueChanged.connect( self.update_display)
-        self.zoom_dbmin_spinBox.valueChanged.connect( self.update_display)
+        self.zoom_end_spinBox.valueChanged.connect  ( self.update_display )
+        self.zoom_vertical_a_comboBox.activated.connect( self.update_display )
+        self.zoom_vertical_b_comboBox.activated.connect( self.update_display )
+        self.zoom_fmin_spinBox.valueChanged.connect ( self.update_display )
+        self.zoom_fmax_spinBox.valueChanged.connect ( self.update_display )
+        self.zoom_dbmin_spinBox.valueChanged.connect( self.update_display )
 
-        self.ch_a_pushButton.clicked.connect( self.update_vertical )
-        self.range_a_comboBox.activated.connect( self.update_vertical)
+        self.ch_a_pushButton.clicked.connect( self.update_display )
+        self.ch_b_pushButton.clicked.connect( self.update_display )
+        
+        self.range_a_comboBox.activated.connect   ( self.update_vertical )
         self.coupling_a_comboBox.activated.connect( self.update_vertical )
         self.offset_a_spinBox.valueChanged.connect( self.update_vertical )
         self.coupling_a_comboBox.activated.connect( self.update_vertical )
-        self.bwl_a_comboBox.activated.connect( self.update_vertical )
+        self.bwl_a_comboBox.activated.connect     ( self.update_vertical )
 
-        self.ch_b_pushButton.clicked.connect( self.update_vertical )
-        self.range_b_comboBox.activated.connect( self.update_vertical )
+        self.range_b_comboBox.activated.connect   ( self.update_vertical )
         self.coupling_b_comboBox.activated.connect( self.update_vertical )
         self.offset_b_spinBox.valueChanged.connect( self.update_vertical )
         self.coupling_b_comboBox.activated.connect( self.update_vertical )
-        self.bwl_b_comboBox.activated.connect( self.update_vertical )
+        self.bwl_b_comboBox.activated.connect     ( self.update_vertical )
 
         self.trigger_source_comboBox.activated.connect( self.update_trigger )
         self.trigger_position_spinBox.valueChanged.connect( self.update_trigger )
@@ -119,14 +121,12 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
         for k in range( 0, 2):   # Common for both time-trace subplots
              ax_left[k].set_xlabel('Time [us]')
-             ax_left[k].set_ylabel('Voltage [V]')
              ax_left[k].grid( True )              
         
         ax_left[0].set_xlim (-200 , 200 )   
         ax_left[1].set_xlim (  10,   20 )   
         
         ax_left[2].set_xlabel('Frequency [MHz]')
-        ax_left[2].set_ylabel('Power [dB re. max]')
         ax_left[2].set_xlim (  0 , 10 )   
         ax_left[2].set_ylim (-40 ,  0 )   
         ax_left[2].grid( True )         
@@ -139,8 +139,20 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         graph_marker = []
         for k in range(3):
             ax_right.append( ax_left[k].twinx() )
-            graph_left.append ( ax_left[k].plot ( [], [], color='C0' ) )     # Empty placeholder for datapoints
-            graph_right.append( ax_right[k].plot( [], [], color='C1' ) )
+            graph_left.append ( ax_left[k].plot ( [], [], color='C0' )[0] )     # Empty placeholder for datapoints
+            graph_right.append( ax_right[k].plot( [], [], color='C1' )[0] )
+
+        for k in range(3):
+             ax_left[k].tick_params(labelcolor='C0')
+             ax_right[k].tick_params(labelcolor='C1')
+             
+        for k in range(2):                    
+             ax_left[k].set_ylabel('Voltage [V]', color='C0' )
+             ax_right[k].set_ylabel('Voltage [V]', color='C1' )
+             
+        ax_left[2].set_ylabel('Power [dB re. max]', color='C0' )
+        ax_right[2].set_ylabel('Power [dB re. max]', color='C1' )
+                 
         
         graph_marker = ax_left[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
 
@@ -154,11 +166,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
         # Initialise GUI with messages         
         self.update_connected_box( "Not connected", background_color="red", text_color="white" )
-        self.enable_controls( state=True, active='connect' )  
-
+        
         self.acquire_button.setEnabled( False )
         self.save_button.setEnabled   ( False )
         self.connect_button.setEnabled( True )
+        self.acquisition_tabWidget.setCurrentIndex( 0 )
 
         self.statusBar.showMessage('Program started')
         
@@ -187,7 +199,6 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.dso.connected = True
         
         # Send initial configuration to oscilloscope
-        self.status = {}
         self.status = self.update_vertical()
         self.status = self.update_trigger()
         self.update_sampling()
@@ -209,14 +220,14 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
     # Read vertical settings from GUI and send to instrument    
     def update_vertical( self ):
-        self.ch[0].enabled   = True   # not self.ch_a_pushButton.isChecked()     # Always aquire, may not display
+        self.ch[0].enabled   = True # not self.ch_a_pushButton.isChecked()     # Always aquire, may not display
         self.ch[0].vr        = self.read_scaled_value ( self.range_a_comboBox.currentText() )
         self.ch[0].vr        = self.ch[0].vmax()
         self.ch[0].coupling  = self.coupling_a_comboBox.currentText()
         self.ch[0].offset    = self.offset_a_spinBox.value()
         self.ch[0].bwl       = self.bwl_a_comboBox.currentText()        
 
-        self.ch[1].enabled   = True   # not self.ch_b_pushButton.isChecked() 
+        self.ch[1].enabled   = True # not self.ch_b_pushButton.isChecked() 
         self.ch[1].vr        = self.read_scaled_value ( self.range_b_comboBox.currentText() )
         self.ch[1].vr        = self.ch[1].vmax()
         self.ch[1].coupling  = self.coupling_b_comboBox.currentText()
@@ -297,13 +308,25 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
     def plot_result ( self ):
         wfmz= self.wfm.zoom( [ self.display.tmin, self.display.tmax ] )
         
-        self.graph_left[0][0].set_data ( self.wfm.t()*1e6, self.wfm.v[:,0] )                  # Full trace
-        self.graph_right[0][0].set_data( self.wfm.t()*1e6, self.wfm.v[:,1] )                  
-        self.graph_left[1][0].set_data (     wfmz.t()*1e6,     wfmz.v[:,0] )                  # Selected interval       
-        self.graph_right[1][0].set_data(     wfmz.t()*1e6,     wfmz.v[:,1] )                  
-        self.graph_left[2][0].set_data ( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
-        self.graph_right[2][0].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,1] )  
-        
+        # Temporary, Should be replaved by organising graphs in lists
+        if self.display.ch[0]:
+            self.graph_left[0].set_data ( self.wfm.t()*1e6, self.wfm.v[:,0] )                  # Full trace
+            self.graph_left[1].set_data (     wfmz.t()*1e6,     wfmz.v[:,0] )                  # Selected interval       
+            self.graph_left[2].set_data ( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,0] )  # Power spectrum
+        else:
+            self.graph_left[0].set_data ( [], [] )   # Full trace
+            self.graph_left[1].set_data ( [], [] )   # Selected interval       
+            self.graph_left[2].set_data ( [], [] )   # Power spectrum
+
+        if self.display.ch[1]:
+            self.graph_right[0].set_data( self.wfm.t()*1e6, self.wfm.v[:,1] )                  
+            self.graph_right[1].set_data(     wfmz.t()*1e6,     wfmz.v[:,1] )                  
+            self.graph_right[2].set_data( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,1] )  
+        else:
+            self.graph_right[0].set_data ( [], [] )   # Full trace
+            self.graph_right[1].set_data ( [], [] )   # Selected interval       
+            self.graph_right[2].set_data ( [], [] )   # Power spectrum
+            
         self.fig.canvas.draw()            # --- TRY: Probably necessary
         self.fig.canvas.flush_events()    # --- TRY: Probably unnecessary if called in program                 
         self.update_display( )
@@ -395,24 +418,11 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
                 mult = 1
         value = float( valuestr[0] ) * mult
         return value
-    
-    # Enable or disable GUI controls to avoid illegal comands
-    def enable_controls( self, state=False, active='connect' ):
-        self.acquisition_tabWidget.setTabEnabled( 0, state )
-        self.acquisition_tabWidget.setTabEnabled( 1, state )
-        self.acquisition_tabWidget.setTabEnabled( 2, state )
-        self.acquisition_tabWidget.setTabEnabled( 3, state )
-        self.acquire_button.setEnabled( state )
-        match active.lower():
-            case 'control':
-                self.acquisition_tabWidget.setCurrentIndex( 0 )
-            case 'connect':
-                self.acquisition_tabWidget.setCurrentIndex( 2 )
-            case 'scale':
-                self.acquisition_tabWidget.setCurrentIndex( 3 )        
-        return 0
-    
+       
     def update_display( self ):
+        self.display.ch[0] = not self.ch_a_pushButton.isChecked()
+        self.display.ch[1] = not self.ch_b_pushButton.isChecked()
+        
         tmin   = self.zoom_start_spinBox.value()  # Display in us, calculations in s
         tmax   = self.zoom_end_spinBox.value()        
         vzoom_a= self.read_scaled_value ( self.zoom_vertical_a_comboBox.currentText() )        

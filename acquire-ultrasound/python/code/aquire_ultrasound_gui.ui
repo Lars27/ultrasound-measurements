@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
-    <height>705</height>
+    <width>463</width>
+    <height>572</height>
    </rect>
   </property>
   <property name="cursor">
@@ -70,9 +70,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>240</y>
-      <width>311</width>
+      <x>10</x>
+      <y>280</y>
+      <width>421</width>
       <height>241</height>
      </rect>
     </property>
@@ -80,7 +80,7 @@
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="vertical_tab">
      <property name="enabled">
@@ -95,408 +95,16 @@
      <attribute name="title">
       <string>Vertical</string>
      </attribute>
-     <widget class="QWidget" name="gridLayoutWidget_2">
+     <widget class="QWidget" name="formLayoutWidget_4">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>10</y>
-        <width>213</width>
-        <height>129</height>
+        <y>20</y>
+        <width>247</width>
+        <height>167</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Coupling</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QComboBox" name="coupling_b_comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentText">
-          <string>DC</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>DC</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>AC</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="coupling_a_comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentText">
-          <string>DC</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>DC</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>AC</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>BW limit</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="offset_a_spinBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>2</number>
-         </property>
-         <property name="minimum">
-          <double>-1.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.010000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="ch_a_pushButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: darkblue;
-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="text">
-          <string>Ch A</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="ch_b_pushButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: darkred;
-color: white;</string>
-         </property>
-         <property name="text">
-          <string>Ch B</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="bwl_a_comboBox">
-         <property name="currentText">
-          <string>None</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 MHz</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QDoubleSpinBox" name="offset_b_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>2</number>
-         </property>
-         <property name="minimum">
-          <double>-1.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.010000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QComboBox" name="bwl_b_comboBox">
-         <property name="currentText">
-          <string>None</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 MHz</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Offset [V]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QComboBox" name="range_b_comboBox">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>19</height>
-          </size>
-         </property>
-         <property name="currentText">
-          <string>1</string>
-         </property>
-         <property name="currentIndex">
-          <number>6</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>10 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="range_a_comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>60</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentIndex">
-          <number>6</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>10 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10</string>
-          </property>
-         </item>
-        </widget>
-       </item>
+      <layout class="QFormLayout" name="formLayout_5">
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
          <property name="minimumSize">
@@ -513,6 +121,757 @@ color: white;</string>
          </property>
         </widget>
        </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QComboBox" name="range_a_comboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentIndex">
+            <number>8</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>10 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>50 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>100 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>200 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>500 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="range_b_comboBox">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>19</height>
+            </size>
+           </property>
+           <property name="currentText">
+            <string>5</string>
+           </property>
+           <property name="currentIndex">
+            <number>8</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>10 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>50 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>100 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>200 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>500 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QPushButton" name="ch_a_pushButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(31, 119, 180);
+color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>Ch A</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ch_b_pushButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 127, 14);
+color: white;</string>
+           </property>
+           <property name="text">
+            <string>Ch B</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Coupling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QComboBox" name="coupling_a_comboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentText">
+            <string>DC</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>DC</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>AC</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="coupling_b_comboBox">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentText">
+            <string>DC</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>DC</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>AC</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Offset [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QDoubleSpinBox" name="offset_a_spinBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="minimum">
+            <double>-1.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="offset_b_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="minimum">
+            <double>-1.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_22">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Display scale [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QComboBox" name="zoom_vertical_a_comboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentIndex">
+            <number>10</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>1 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>50 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>100 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>200 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>500 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="zoom_vertical_b_comboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentIndex">
+            <number>10</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>1 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>50 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>100 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>200 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>500 m</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>BW limit</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QComboBox" name="bwl_b_comboBox">
+           <property name="currentText">
+            <string>None</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 MHz</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="bwl_a_comboBox">
+           <property name="currentText">
+            <string>None</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>20 MHz</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="sampling_tab">
+     <attribute name="title">
+      <string>Horizontal</string>
+     </attribute>
+     <widget class="QWidget" name="formLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>231</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Sample Rate [MS/s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="sample_rate_spinBox">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>250.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>100.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>No. of sample points [kpts]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="no_samples_spinBox">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>100.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>20.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_18">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Select interval [us]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_start_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>200.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_end_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>200.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>10.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -526,7 +885,7 @@ color: white;</string>
         <x>20</x>
         <y>10</y>
         <width>191</width>
-        <height>181</height>
+        <height>151</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="formLayout_4">
@@ -669,10 +1028,10 @@ color: white;</string>
           <double>50.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>1.000000000000000</double>
+          <double>0.000000000000000</double>
          </property>
          <property name="value">
-          <double>0.000000000000000</double>
+          <double>10.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -787,81 +1146,6 @@ color: white;</string>
          </property>
          <property name="value">
           <double>100.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="sampling_tab">
-     <attribute name="title">
-      <string>Sampling</string>
-     </attribute>
-     <widget class="QWidget" name="formLayoutWidget_3">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>195</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <layout class="QFormLayout" name="formLayout_5">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Sample Rate [MS/s]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="sample_rate_spinBox">
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>250.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>100.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>No. of sample points [kpts]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="no_samples_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
-         <property name="minimum">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>20.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -1013,6 +1297,163 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Spectrum</string>
+     </attribute>
+     <widget class="QWidget" name="formLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>250</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_19">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Frequency range [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_fmin_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>200.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_fmax_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>200.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>10.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_24">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Dynamic range [dB]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_dbmin_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>-40.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="zoom_dbmax_spinBox">
+           <property name="locale">
+            <locale language="English" country="UnitedKingdom"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="minimum">
+            <double>-100.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
       <string>Resultfile</string>
@@ -1029,425 +1470,12 @@ color: white;</string>
      </widget>
     </widget>
    </widget>
-   <widget class="QTabWidget" name="display_tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>270</y>
-      <width>291</width>
-      <height>141</height>
-     </rect>
-    </property>
-    <property name="cursor">
-     <cursorShape>ArrowCursor</cursorShape>
-    </property>
-    <property name="currentIndex">
-     <number>1</number>
-    </property>
-    <widget class="QWidget" name="zoom_tab">
-     <attribute name="title">
-      <string>Zoomed interval</string>
-     </attribute>
-     <widget class="QWidget" name="gridLayoutWidget_3">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>221</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_18">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Interval [us]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="zoom_vertical_a_comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>60</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentIndex">
-          <number>8</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>1 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_22">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Vertical scale [V]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="zoom_start_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>200.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QComboBox" name="zoom_vertical_b_comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>60</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="currentIndex">
-          <number>8</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>1 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500 m</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QDoubleSpinBox" name="zoom_end_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>200.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="value">
-          <double>10.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="spectrum">
-     <attribute name="title">
-      <string>Spectrum</string>
-     </attribute>
-     <widget class="QWidget" name="gridLayoutWidget_9">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>221</width>
-        <height>74</height>
-       </rect>
-      </property>
-      <property name="locale">
-       <locale language="English" country="UnitedKingdom"/>
-      </property>
-      <layout class="QGridLayout" name="parameter_gridLayout_6">
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_19">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Frequencies [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_24">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Dynamic range [dB]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QDoubleSpinBox" name="zoom_dbmin_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>100.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>-40.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="zoom_fmin_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>200.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QDoubleSpinBox" name="zoom_fmax_spinBox">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="decimals">
-          <number>1</number>
-         </property>
-         <property name="minimum">
-          <double>-100.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>200.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-         <property name="value">
-          <double>10.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </widget>
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
       <x>40</x>
       <y>80</y>
-      <width>181</width>
+      <width>161</width>
       <height>160</height>
      </rect>
     </property>
@@ -1566,8 +1594,8 @@ color: white;</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="connected_Edit">
+     <item row="3" column="0" colspan="2">
+      <widget class="QLineEdit" name="status_Edit">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -1585,8 +1613,8 @@ color: white;</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLineEdit" name="status_Edit">
+     <item row="1" column="0" colspan="2">
+      <widget class="QLineEdit" name="connected_Edit">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>

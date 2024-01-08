@@ -7,6 +7,8 @@ Created on Tue Sep 13 21:46:41 2022
 
 import copy 
 import numpy as np
+from scipy import signal
+from scipy.signal import windows
 import matplotlib.pyplot as plt
 import os
 import datetime
@@ -141,6 +143,8 @@ class waveform:
         
         return wfm
     
+
+
     """ 
     Load and save 'waveform' files in binary format 
     Data points saved as 4-byte sgl-values
@@ -187,5 +191,69 @@ class waveform:
             fid.write( self.v.astype('>f4')  )
         return 0                  
                 
-        
+    
+#%%
+""" pulse-class. Define standard test-pulse for function generator
+    """    
+class pulse:
+    envelope = "rectangular"
+    shape    = "sine"
+    f0       = 2.0e6    
+    nc       = 2.0    
+    phi      = 0.0    
+    a        = 1.0    
+    dt       = 8e-9
+    
+    def T0 ( self ):
+        return 1/self.f0
+    
+    def Tp ( self ):
+        return self.T0() * self.nc
+    
+    def t ( self):
+        return np.arange ( 0, self.Tp(), self.dt )
+    
+    def ns ( self ):
+        return ( len( self.t() ) )
+    
+    def nfft(self):
+        return 2**(3+( self.ns()-1 ).bit_length() )     # Interpolate spectum by padding zeros
+    
+    def x ( self ):
+        match ( self.envelope[0:3].lower() ):
+            case "rec":
+                win = windows.boxcar( self.ns() )
+            case "han":
+                win = windows.hann( self.ns() )
+            case "ham":
+                win = windows.hamming( self.ns() )
+            case "tri":
+                win = windows.triang( self.ns() )
+            case "tri":
+                win = windows.triang( self.ns() )
+            case "tuk":
+                win = windows.tukey( self.ns(), alpha=0.5  )
+            case _:
+               win = windows.boxcar( self.ns() )
+
+        arg = 2*np.pi *self.f0 *self.t() + np.radians( self.phi )
+        match ( self.shape.lower()[0:3] ):
+            case "squ":
+                y = 1/2* signal.square  ( arg, duty  = 0.5 )  
+            case "tri":
+                y = 1/2* signal.sawtooth( arg, width = 0.5 )  
+            case "saw":
+                y = 1/2* signal.sawtooth( arg, width = 1 )  
+            case _:
+                y = np.cos ( arg ) 
+          
+        return self.a * win * y
+    
+    def powerspectrum ( self, scale="linear" ):
+        f, psd = signal.periodogram( self.x(), fs=1/self.dt, nfft=self.nfft(), detrend=False )
+        psd = psd/psd.max()
+        if scale.lower() == "db":
+            psd = 10*np.log10(psd)
+        return f, psd
+            
             

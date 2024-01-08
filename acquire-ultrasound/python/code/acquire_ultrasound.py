@@ -66,6 +66,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.sampling = ps.horizontal()     # Horisontal configuration (time sampling)  
         self.rf_filter= dso_filter()        # Filtering of acquired data
         self.wfm      = us.waveform( )      # Result, storing acquired traces
+        self.pulse    = us.pulse( )         # Pulse for function generator output
         self.display  = display()           # Scaling and diplay options
         
         # Connect GUI elements
@@ -105,6 +106,13 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
         self.sample_rate_spinBox.valueChanged.connect( self.update_sampling )
         self.no_samples_spinBox.valueChanged.connect( self.update_sampling )
+        
+        self.pulse_envelope_comboBox.activated.connect    ( self.update_pulser )
+        self.pulse_shape_comboBox.activated.connect       ( self.update_pulser )
+        self.pulse_frequency_spinBox.valueChanged.connect ( self.update_pulser )
+        self.pulse_duration_spinBox.valueChanged.connect  ( self.update_pulser )
+        self.pulse_phase_spinBox.valueChanged.connect     ( self.update_pulser )
+        self.pulse_amplitude_spinBox.valueChanged.connect ( self.update_pulser )        
 
         self.filter_comboBox.activated.connect( self.update_rf_filter )
         self.fmin_spinBox.valueChanged.connect( self.update_rf_filter )
@@ -118,50 +126,88 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         
         # Initialise result graph
         plt.ion()         # Does not seem to make any difference
-        fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       
-        for k in range( 0, 2):   # Common for both time-trace subplots
-             ax_left[k].set_xlabel('Time [us]')
-             ax_left[k].grid( True )              
+        #fig = plt.figure( figsize=(12, 12) )
         
-        ax_left[0].set_xlim (-200 , 200 )   
-        ax_left[1].set_xlim (  10,   20 )   
+        fig, ax = plt.subplot_mosaic( [ ['trace', 'trace'    , 'trace'    ],
+                                        ['pulse', 'zoom'     , 'zoom'     ],
+                                        ['pspec', 'spectrum' , 'spectrum' ] ],
+                                         figsize=(16, 12))
         
-        ax_left[2].set_xlabel('Frequency [MHz]')
-        ax_left[2].set_xlim (  0 , 10 )   
-        ax_left[2].set_ylim (-40 ,  0 )   
-        ax_left[2].grid( True )         
+        ax_main = ax['trace']
+        ax_zoom = ax['zoom']
+        ax_spectrum = ax['spectrum']
+        ax_pulse = ax['pulse']
+        ax_pulse_spectrum = ax['pspec']
         
+        col = [ 'C0' , 'C1' ]   # Colors for the two channels
 
-        # Create dual y-axis and handles to datapoints, empty so far
-        ax_right    = []
-        graph_left  = []
+        ax_main.set_xlabel('Time [us]')
+        ax_main.set_xlim (-200 , 200 )   
+        ax_main.grid  ( True )
+
+        ax_zoom.set_xlabel('Time [us]')
+        ax_zoom.set_xlim (  10,   20 )   
+        ax_zoom.grid  ( True )
+
+        ax_spectrum.set_xlabel('Frequency [MHz]')
+        ax_spectrum.set_xlim (  0 , 10 )   
+        ax_spectrum.set_ylim (-40 ,  0 )   
+        ax_spectrum.grid( True )    
+
+        ax_pulse.set_xlim (  0 , 10 )   
+        ax_pulse.set_ylim (-10 , 10 )   
+        ax_pulse.set_xlabel('Time [us]')
+        ax_pulse.set_ylabel('Voltage [us]')
+        ax_pulse.grid( True )    
+        ax_pulse.set_facecolor("aliceblue")
+        
+        ax_pulse_spectrum.set_xlim (  0 , 10 )   
+        ax_pulse_spectrum.set_ylim (-40 ,  0 )   
+        ax_pulse_spectrum.grid ( True )   
+        ax_pulse_spectrum.set_xlabel('Frequency [MHz]')
+        ax_pulse_spectrum.set_ylabel('Power [dB re. max]')
+        ax_pulse_spectrum.set_facecolor("aliceblue")
+        
+        ax_main    = [ ax_main,     ax_main.twinx()     ]    # Creat duale y-axis for all plots
+        ax_zoom    = [ ax_zoom,     ax_zoom.twinx()     ]
+        ax_spectrum= [ ax_spectrum, ax_spectrum.twinx() ]
+
+        for k in range(2):
+            ax_main[k].tick_params    ( labelcolor= col[k] )
+            ax_zoom[k].tick_params    ( labelcolor= col[k] )
+            ax_spectrum[k].tick_params( labelcolor= col[k] )
+            
+        for k in range(2):
+            ax_main[k].set_ylabel('Voltage [V]',            color= col[k] )
+            ax_zoom[k].set_ylabel('Voltage [V]',            color= col[k] )
+            ax_spectrum[k].set_ylabel('Power [dB re. max]', color= col[k] )
+
+        graph_left  = []        # Create handles to datapoints, empty so far
         graph_right = []
         graph_marker = []
-        for k in range(3):
-            ax_right.append( ax_left[k].twinx() )
-            graph_left.append ( ax_left[k].plot ( [], [], color='C0' )[0] )     # Empty placeholder for datapoints
-            graph_right.append( ax_right[k].plot( [], [], color='C1' )[0] )
 
-        for k in range(3):
-             ax_left[k].tick_params(labelcolor='C0')
-             ax_right[k].tick_params(labelcolor='C1')
-             
-        for k in range(2):                    
-             ax_left[k].set_ylabel('Voltage [V]', color='C0' )
-             ax_right[k].set_ylabel('Voltage [V]', color='C1' )
-             
-        ax_left[2].set_ylabel('Power [dB re. max]', color='C0' )
-        ax_right[2].set_ylabel('Power [dB re. max]', color='C1' )
-                 
+        graph_left.append ( ax_main[0].plot     ( [], [], color= col[0] )[0] )     # Empty placeholder for datapoints
+        graph_left.append ( ax_zoom[0].plot     ( [], [], color= col[0] )[0] )    
+        graph_left.append ( ax_spectrum[0].plot ( [], [], color= col[0] )[0] )
+
+        graph_right.append ( ax_main[1].plot     ( [], [], color= col[1] )[0] )   
+        graph_right.append ( ax_zoom[1].plot     ( [], [], color= col[1] )[0] )   
+        graph_right.append ( ax_spectrum[1].plot ( [], [], color= col[1] )[0] )
         
-        graph_marker = ax_left[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
+        graph_marker = ax_main[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
+        
+        self.graph_pulse = ax_pulse.plot( [], [], color=col[0] )[0]
+        self.graph_pulse_spectrum = ax_pulse_spectrum.plot( [], [], color=col[0] )[0]
 
         fig.show()        
         self.graph_left  = graph_left
         self.graph_right = graph_right
-        self.graph_marker = graph_marker
-        self.ax_left     = ax_left
-        self.ax_right    = ax_right
+        self.graph_marker= graph_marker
+        self.ax_main     = ax_main
+        self.ax_zoom     = ax_zoom
+        self.ax_spectrum = ax_spectrum
+        self.ax_pulse    = ax_pulse
+        self.ax_pulse_spectrum = ax_pulse_spectrum
         self.fig         = fig      
 
         # Initialise GUI with messages         
@@ -202,6 +248,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.status = self.update_vertical()
         self.status = self.update_trigger()
         self.update_sampling()
+        self.update_pulser()
         self.update_rf_filter()
         self.update_display()
         
@@ -267,6 +314,27 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
             self.sampling.dt  = ps.get_dt( self.dso.handle, self.sampling)
             self.sample_rate_spinBox.setValue( self.sampling.fs() * 1e-6 )      # Sample rate in MS/s
         
+        return 0
+    
+    def update_pulser( self ):
+        self.pulse.envelope = self.pulse_envelope_comboBox.currentText()
+        self.pulse.shape    = self.pulse_shape_comboBox.currentText()
+        self.pulse.f0       = self.pulse_frequency_spinBox.value()*1e6
+        self.pulse.nc       = self.pulse_duration_spinBox.value()
+        self.pulse.phi      = self.pulse_phase_spinBox.value()
+        self.pulse.a        = self.pulse_amplitude_spinBox.value()
+        
+        Tp   = self.pulse.Tp()*1e6;
+        vlim = 1.2*self.pulse.a
+        self.graph_pulse.set_data( self.pulse.t()*1e6, self.pulse.x() )
+        self.ax_pulse.set_xlim( -0.2*Tp, 1.2*Tp )
+        self.ax_pulse.set_ylim( -vlim,   vlim   )              
+
+        f, psd = self.pulse.powerspectrum( scale= "dB" )
+        self.graph_pulse_spectrum.set_data( f/1e6, psd )
+        
+        # ps.set_signal ( self.dso, self.status, self.sampling,self.pulse )
+
         return 0
     
     # Read RF noise filter settings from GUI 
@@ -431,17 +499,20 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         fmax   = self.zoom_fmax_spinBox.value()  
         dbmin  = self.zoom_dbmin_spinBox.value()
         
-        self.ax_left[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
+        self.ax_main[0].set_xlim( self.sampling.t0()*1e6, self.sampling.tmax()*1e6 )
         if tmax>tmin:
-            self.ax_left[1].set_xlim(  tmin, tmax  )
-        self.ax_left[2].set_xlim(  fmin, fmax  )
+            self.ax_zoom[0].set_xlim( tmin, tmax  )
+            
+        self.ax_spectrum[0].set_xlim   ( fmin, fmax  )
+        self.ax_pulse_spectrum.set_xlim( fmin, fmax  )
         
-        self.ax_left[0].set_ylim ( -self.ch[0].vmax(), self.ch[0].vmax() )
-        self.ax_right[0].set_ylim( -self.ch[1].vmax(), self.ch[1].vmax() )
-        self.ax_left[1].set_ylim ( -vzoom_a , vzoom_a )
-        self.ax_right[1].set_ylim( -vzoom_b , vzoom_b )
-        self.ax_left[2].set_ylim (  dbmin , 0 )
-        self.ax_right[2].set_ylim(  dbmin , 0 )
+        self.ax_main[0].set_ylim ( -self.ch[0].vmax(), self.ch[0].vmax() )
+        self.ax_main[1].set_ylim ( -self.ch[1].vmax(), self.ch[1].vmax() )
+        self.ax_zoom[0].set_ylim ( -vzoom_a , vzoom_a )
+        self.ax_zoom[1].set_ylim ( -vzoom_b , vzoom_b )
+        self.ax_spectrum[0].set_ylim   ( dbmin , 0 )
+        self.ax_spectrum[1].set_ylim   ( dbmin , 0 )
+        self.ax_pulse_spectrum.set_ylim( dbmin , 0 )
 
         self.graph_marker[0].set_data ( np.full( (2,1), tmin ) , np.array( [ -100, 100 ] ) ) 
         self.graph_marker[1].set_data ( np.full( (2,1), tmax ) , np.array( [ -100, 100 ] ) ) 

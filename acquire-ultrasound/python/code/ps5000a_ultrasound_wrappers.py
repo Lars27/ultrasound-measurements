@@ -220,6 +220,20 @@ def acquire_trace( dso, status, sampling, ch ):
 
     return status, dso, v
 
+def set_signal ( dso, status, sampling, pulse ):    # Send signal to arbitrary waveform generator
+    vpp_uV = ctypes.c_uint32( int(2*pulse.a) )
+    ns     = ctypes.c_int32 ( pulse.ns() )
+    triggersource = 1     # Use scope trigger, always
+    
+    awgBuffer = pulse.x()
+    awgbufferPointer = awgBuffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
+
+    status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(dso.handle, 0, vpp_uV, 0, 0, 0, 0, awgbufferPointer, ns, 0, 0, 0, 0, 0, 0, triggersource, 0)
+    assert_pico_ok(status["setSigGenArbitrary"])
+    
+    return status
+
+
 
 def stop_adc(dsohandle, status):
     status["stop"] = picoscope.ps5000aStop(dsohandle)

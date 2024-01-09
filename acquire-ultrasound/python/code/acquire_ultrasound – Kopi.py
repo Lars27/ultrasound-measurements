@@ -103,6 +103,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.trigger_auto_delay_spinBox.valueChanged.connect    ( self.update_trigger )
         self.internal_trigger_delay_spinBox.valueChanged.connect( self.update_trigger )
 
+<<<<<<< HEAD
         self.sample_rate_spinBox.valueChanged.connect( self.update_sampling )
         self.no_samples_spinBox.valueChanged.connect( self.update_sampling )
         
@@ -112,9 +113,10 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.pulse_duration_spinBox.valueChanged.connect  ( self.update_pulser )
         self.pulse_phase_spinBox.valueChanged.connect     ( self.update_pulser )
         self.pulse_amplitude_spinBox.valueChanged.connect ( self.update_pulser )        
-
+=======
         self.sample_rate_spinBox.valueChanged.connect( self.update_sampling )      # Horizontal  osciloscope settings (Time)
         self.no_samples_spinBox.valueChanged.connect ( self.update_sampling ) 
+>>>>>>> 5dc11c8976bd8195c83b23c9998d9ffb4239ce9f
 
         self.filter_comboBox.activated.connect( self.update_rf_filter )            # Display filter settings
         self.fmin_spinBox.valueChanged.connect( self.update_rf_filter )
@@ -127,6 +129,7 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.close_button.clicked.connect  ( self.close_app ) 
         
         # Initialise result graph
+<<<<<<< HEAD
         plt.ion()         # Does not seem to make any difference
         #fig = plt.figure( figsize=(12, 12) )
         
@@ -204,6 +207,32 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         plt.ion()         # Does not seem to make any difference, 
         fig, ax_left = plt.subplots( nrows=3, ncols=1, figsize=(8, 12) )       # Define result figure with axes
 
+        for k in range( 0, 2):                      # Configure time trace graphs 
+             ax_left[k].set_xlabel('Time [us]')
+             ax_left[k].grid( True )                      
+        ax_left[0].set_xlim (-200 , 200 )   
+        ax_left[1].set_xlim (  10,   20 )           
+        
+        ax_left[2].set_xlabel('Frequency [MHz]')    # Configure spectrum display
+        ax_left[2].grid( True )         
+        ax_left[2].set_xlim (  0 , 10 )   
+        ax_left[2].set_ylim (-40 ,  0 )   
+
+        ax_right     = []        # Create dual y-axis (left and right) with handles to (empty) datapoints
+        graph_left   = []        # Left y-axis for Ch A. Full trace, zoomed section, and spectrum
+        graph_right  = []        # Right y-axis for Ch B
+        graph_marker = []        # Markers to indicate zoomed part
+        
+        for k in range(3):       # Loop over full trace, zoomed section, and spectrum
+            ax_right.append( ax_left[k].twinx() )
+            ax_left[k].tick_params ( labelcolor='C0' )
+            ax_right[k].tick_params( labelcolor='C1' )
+            graph_left.append ( ax_left[k].plot ( [], [], color='C0' )[0] )     # Empty placeholder for datapoints
+            graph_right.append( ax_right[k].plot( [], [], color='C1' )[0] )
+
+        graph_marker = ax_left[0].plot ( [], [], [], [], color='C7' )        # Extra plots for interval markers
+>>>>>>> 5dc11c8976bd8195c83b23c9998d9ffb4239ce9f
+
         for k in range(2):       # Loop over full trace, zoomed section, and spectrum
              ax_left[k].set_ylabel ( 'Voltage [V]', color='C0' )
              ax_right[k].set_ylabel( 'Voltage [V]', color='C1' )
@@ -216,12 +245,16 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.graph_left  = graph_left        # Make axes and graphs available for class
         self.graph_right = graph_right
         self.graph_marker= graph_marker
-
+<<<<<<< HEAD
         self.ax_main     = ax_main
         self.ax_zoom     = ax_zoom
         self.ax_spectrum = ax_spectrum
         self.ax_pulse    = ax_pulse
         self.ax_pulse_spectrum = ax_pulse_spectrum
+=======
+        self.ax_left     = ax_left
+        self.ax_right    = ax_right
+>>>>>>> 5dc11c8976bd8195c83b23c9998d9ffb4239ce9f
         self.fig         = fig      
 
         # Initialise GUI with messages         

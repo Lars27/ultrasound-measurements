@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
+    <width>477</width>
     <height>740</height>
    </rect>
   </property>
@@ -739,7 +739,7 @@ color: white;</string>
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>254</width>
+        <width>262</width>
         <height>76</height>
        </rect>
       </property>
@@ -1161,7 +1161,7 @@ color: white;</string>
        <rect>
         <x>20</x>
         <y>10</y>
-        <width>139</width>
+        <width>143</width>
         <height>111</height>
        </rect>
       </property>
@@ -1640,7 +1640,7 @@ color: white;</string>
       <x>30</x>
       <y>540</y>
       <width>181</width>
-      <height>152</height>
+      <height>131</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout_6">

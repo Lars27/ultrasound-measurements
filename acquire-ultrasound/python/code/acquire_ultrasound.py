@@ -80,8 +80,6 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.display  = display()           # Scaling and diplay options       
 
         # Connect functions to elements from GUI-file (aquire_ultrasound_gui.ui)  
-        self.connect_button.clicked.connect( self.connect_dso )
-        self.acquire_button.clicked.connect( self.acquire_trace )
         
         self.zoom_start_spinBox.valueChanged.connect   ( self.update_display )    # Display
         self.zoom_end_spinBox.valueChanged.connect     ( self.update_display )
@@ -129,9 +127,9 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.fmax_spinBox.valueChanged.connect( self.update_rf_filter )
         self.filter_order_spinBox.valueChanged.connect( self.update_rf_filter )
                
-        self.acquire_button.clicked.connect( self.acquire_trace )                # Control buttons
+        self.connect_button.clicked.connect( self.connect_dso )
+        self.acquire_button.clicked.connect( self.control_acquisition )
         self.save_button.clicked.connect   ( self.save_result )      
-        self.stop_button.clicked.connect   ( self.stop_acquisition ) 
         self.close_button.clicked.connect  ( self.close_connection ) 
         
         # Initialise result graph  
@@ -145,14 +143,14 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         
         # Set x-axis scales and labels
         for g in ['trace', 'zoom', 'awg']:
-            ax[g].set_xlabel('Time [us]')
-            ax[g].set_ylabel('Voltage [V]' )
-            ax[g].set_xlim (-100 , 100 )   
+            ax[g].set_xlabel ( 'Time [us]'   )
+            ax[g].set_ylabel ( 'Voltage [V]' )
+            ax[g].set_xlim   ( -100 , 100 )   
             ax[g].grid  ( True )       
         
         for g in ['spectrum', 'awgspec']:
-            ax[g].set_xlabel('Frequency [MHz]')
-            ax[g].set_ylabel('Power [dB re. max]')
+            ax[g].set_xlabel ( 'Frequency [MHz]'    )
+            ax[g].set_ylabel ( 'Power [dB re. max]' )
             ax[g].set_xlim (  0 , 10 )   
             ax[g].grid( True )    
 
@@ -166,8 +164,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 
         for k in range(2):
             for g in ['trace', 'zoom' ]:                                
-                ax[g][k].set_ylabel('Voltage [V]' )
-            ax['spectrum'][k].set_ylabel('Frequency [MHz]' )
+                ax[g][k].set_ylabel     ( 'Voltage [V]' )
+            ax['spectrum'][k].set_ylabel( 'Power [dB re. max]' )
 
             for g in ['trace', 'zoom', 'spectrum']:                         
                 ax[g][k].yaxis.label.set_color(col[k])
@@ -361,22 +359,30 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
 # =============================================================================
 # Read and save results
 # =============================================================================    
+    ''' 
+    Acquire data from oscilloscope
     '''
-    Acquire trace from instrument, scaled in mV
-    '''
+    def control_acquisition (self):
+        if self.acquire_button.isChecked():
+            self.acquire_trace()
+        else:
+            self.stop_acquisition()
+        
+        return 0
+
+    # Acquire trace from instrument, scaled in mV
     def acquire_trace( self ):      
         if self.runstate.ready:
             self.runstate.ready = False
-            self.update_status_box( "Acquiring data", background_color="darkgreen", text_color="white" )
+            self.update_status_box( "Acquiring", background_color="darkgreen", text_color="white" )
             self.statusBar.showMessage('Acquiring data ...')
             self.close_button.setEnabled( False )
-            self.acquire_button.setEnabled( False )
             self.save_button.setEnabled   ( True )
             while not( self.runstate.stop):
                 self.status, self.dso     = ps.configure_acquisition( self.dso, self.status, self.sampling )        
-                self.status, self.dso, v  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
+                self.status, self.dso, y  = ps.acquire_trace( self.dso, self.status, self.sampling, self.ch )
                 
-                self.wfm.v  = v
+                self.wfm.y  = y
                 self.wfm.dt = self.sampling.dt
                 self.wfm.t0 = self.sampling.t0()
                 
@@ -386,10 +392,8 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.statusBar.showMessage( 'Ready' )       
         self.runstate.stop = False
         return 0
-    
-    '''
-    Stop acquisition of traces, does not close instrument connection
-    '''
+        
+    # Stop acquisition of traces, does not close instrument connection
     def stop_acquisition( self ): 
         if not(self.runstate.stop ):
             self.runstate.stop = True
@@ -401,7 +405,6 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         self.runstate.ready    = True            
         self.close_button.setEnabled  ( True )
         self.save_button.setEnabled   ( False )
-        self.acquire_button.setEnabled( True )
 
         return 0        
 
@@ -414,9 +417,10 @@ class read_ultrasound( QtWidgets.QMainWindow, oscilloscope_main_window ):
         chname = [ 'a', 'b' ]
         for k in range(2): 
             if self.display.ch[k]:
-                self.graph[ chname[k] ][0].set_data ( self.wfm.t()*1e6, self.wfm.v[:,k] )                  # Full trace
-                self.graph[ chname[k] ][1].set_data (     wfmz.t()*1e6,     wfmz.v[:,k] )                  # Selected interval       
-                self.graph[ chname[k] ][2].set_data ( wfmz.f()/1e6, wfmz.powerspectrum(scale="dB")[:,k] )  # Power spectrum
+                self.graph[ chname[k] ][0].set_data ( self.wfm.t()*1e6, self.wfm.y[:,k] )                  # Full trace
+                self.graph[ chname[k] ][1].set_data (     wfmz.t()*1e6,     wfmz.y[:,k] )                  # Selected interval       
+                f, psd = wfmz.powerspectrum( scale="dB" )
+                self.graph[ chname[k] ][2].set_data ( f/1e6, psd[:,k] )  # Power spectrum
             else:
                 self.graph[ chname[k] ][0].set_data ( [], [] )   # Full trace
                 self.graph[ chname[k] ][1].set_data ( [], [] )   # Selected interval       

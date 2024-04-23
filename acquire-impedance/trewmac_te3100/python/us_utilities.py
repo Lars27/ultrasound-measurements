@@ -173,34 +173,28 @@ class waveform    :
             fid.write( np.array(self.dtr).astype('>f8'))
             fid.write( self.y.astype('>f4') )
         return 0       
-    
-#%%
-# =============================================================================
-#     """ 
-#     Impedance measurement formats 
-#     """
-#     
-#     """ Save result of impedance measurement. 
-#         Accepts struct with fields f and Z=[Zmag, Zphase] """
-#     def save_impedance_result( resultfile, Zresult ):
-#         header   = "<Z_mag_phase_Python_bef4>"
-#         n_hd     = len( header )       
-#         meastime = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-#         n_tm     = len( meastime )
-#         
-#         f    = np.expand_dims( Zresult.f, axis=1 )        # freq as column-vector, 2D
-#         res  = np.concatenate( ( f, Zresult.Z ), axis=1 ) # Result 2D aray, [f Z]
-#         res  = np.require( res, requirements='C' )        # Ensure 'c-contiguous' array for saving        
-#         with open(resultfile, 'xb') as fid:
-#             fid.write( np.array(n_hd).astype('>i4') )     # Header lenght
-#             fid.write( bytes(header, 'utf-8') )           # Header as string bytes
-#             fid.write( np.array(n_tm).astype('>i4') )     # Time string lenght
-#             fid.write( bytes(meastime, 'utf-8') )         # Measurement time as string bytes
-#             fid.write( np.array( 3 ).astype('>u4') )      # No of channels: freq, Zmag and Zphase
-#             fid.write( res.astype('>f4') )                # Impedance mag and phase
-#         return 0
-# 
-#                 
-#         
-# =============================================================================
+
+        
+    """ Save result of impedance measurement. 
+        Accepts struct with fields f and Z=[Zmag, Zphase] """
+def save_impedance_result( resultfile, Zresult ):
+    header   = "<Z_mag_phase_Python_bef4>"
+    n_hd     = len( header )       
+    meastime = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+    n_tm     = len( meastime )
+        
+    f    = np.expand_dims( Zresult.f, axis=1 )        # freq as column-vector, 2D
+    res  = np.concatenate( ( f, Zresult.Z ), axis=1 ) # Result 2D aray, [f Z]
+    res  = np.require( res, requirements='C' )        # Ensure 'c-contiguous' array for saving        
+    with open(resultfile, 'xb') as fid:
+        fid.write( np.array(n_hd).astype('>i4') )     # Header lenght
+        fid.write( bytes(header, 'utf-8') )           # Header as string bytes
+        fid.write( np.array(n_tm).astype('>i4') )     # Time string lenght
+        fid.write( bytes(meastime, 'utf-8') )         # Measurement time as string bytes
+        fid.write( np.array( 3 ).astype('>u4') )      # No of channels: freq, Zmag and Zphase
+        fid.write( res.astype('>f4') )                # Impedance mag and phase
+    return 0
+
+                
+        
             

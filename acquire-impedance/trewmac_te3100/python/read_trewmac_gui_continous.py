@@ -21,7 +21,7 @@ from PyQt5 import QtWidgets, uic
 import matplotlib.pyplot as plt     # For plotting
 import matplotlib                   # For setup with Qt
 import us_utilities as us           # Utilities made fro USN ultrasound lab
-import trewmac300x_serial as te     # Serial inerface to Trewmac analysers
+import trewmac300x_serial as te     # Serial interface to Trewmac analysers
 
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')

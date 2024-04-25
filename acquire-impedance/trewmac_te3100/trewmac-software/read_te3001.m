@@ -1,5 +1,5 @@
-function trace = ReadTE3001(src)
-% function trace = ReadTE3001(src)
+function trace = read_te3001(src)
+% function trace = read_te3001(src)
 %
 % Read csv-file from Trewmac Network Analyser
 %

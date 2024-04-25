@@ -3,8 +3,8 @@
 % Example on plotting reflection coefficients and impedance from
 % measurement with Trewmac TE3001
 
-src= 'test_4.csv';
-trace = ReadTE3001(src);
+src= 'helene-rfid-impedans.csv';
+trace = read_te3001(src);
 
 subplot( 2,2,1 )
 plot( trace.f/1e6, abs(trace.S11) )
@@ -17,18 +17,23 @@ subplot( 2,2,3 )
 plot( trace.f/1e6, rad2deg( angle( trace.S11 ) ) )
 xlabel( 'Frequency [MHz] ')
 ylabel( 'Reflection phase \angleS_{11} [Degrees]')
-ylim ( [ -90 90 ] )
+ymax= 180;
+ylim  ( ymax*[ -1 1 ] )
+yticks( -ymax:45:ymax )
+
 grid on
 
 subplot( 2,2,2 )
 plot( trace.f/1e6, abs(trace.Z) )
 xlabel( 'Frequency [MHz] ')
-ylabel( 'Impedance magnitude \angleZ[\Omega]')
+ylabel( 'Impedance magnitude |Z| [\Omega]')
 grid on
 
 subplot( 2,2,4 )
 plot( trace.f/1e6, rad2deg( angle( trace.Z ) ) )
 xlabel( 'Frequency [MHz] ')
-ylabel( 'Impedance phase |Z| [Degrees]')
-ylim ( [ -90 90 ] )
+ylabel( 'Impedance phase \angleZ [Degrees]')
+ymax = 90;
+ylim  ( ymax*[ -1 1 ] )
+yticks( -ymax :30:ymax   )
 grid on

@@ -1,0 +1,18 @@
+[project]
+name = "acquire_ultrasound"
+version = "0.0.1"
+authors = [
+  { name="Lars Hoff", email="lars.hoff@usn.no" },
+]
+description = "Read and analyse ultrasound traces from Picoscope digital osciloscopes"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/lars-usn/ultrasound_measurement"
+Issues = "https://github.com/lars-usn/ultrasound_measurement/issues"

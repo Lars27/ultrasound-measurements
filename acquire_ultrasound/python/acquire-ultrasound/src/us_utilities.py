@@ -26,7 +26,7 @@ class Waveform:
     The fundametal parts are 
         t0  Scalar      Start time
         dt  Scalar      Sample interval
-        x   2D array    Results. Each column is a channel, samples as rows
+        y   2D array    Results. Each column is a channel, samples as rows
                     
     Other parameters are methods calculated from these: time vector, 
     no. of channels, no. of points, sample rate, etc.
@@ -39,13 +39,13 @@ class Waveform:
                         compatible to formats used with e.g. LabVIEW and Matlab 
     '''
     
-    def __init__(self, x=np.zeros((100,1)), dt=1, t0=0):
-        self.x = x        # Voltage traces as 2D numpy array
-        if x.ndim == 1:   # Ensure v is 2D
-            self.x = self.x.reshape((1, len(x)))
-        self.dt = dt      # [s]  Sample interval
-        self.t0 = t0      # [s]  Time of first sample 
-        self.dtr= 0       # [s]  Interval between blocks.Rarely used
+    def __init__(self, y=np.zeros((100,1)), dt=1, t0=0):
+        self.y = y        # Voltage traces as 2D numpy array
+        if y.ndim == 1:   # Ensure v is 2D
+            self.y = self.y.reshape((1, len(y)))
+        self.dt= dt      # [s]  Sample interval
+        self.t0= t0      # [s]  Time of first sample 
+        self.dtr= 0      # [s]  Interval between blocks.Rarely used
               
     
     def n_channels(self):
@@ -57,15 +57,15 @@ class Waveform:
         return self.y.shape[0]   
     
     
-    def n_fft(self):
+    def n_fft(self, upsample=2):
         ''' Number of points to calculate spectrum, interpolated by padding zeros '''
-        n_up = 2**(1+self.n_samples()-1).bit_length()  # Next power of 2
+        n_up = 2**(self.n_samples().bit_length() +upsample)  # Next power of 2
         return max(n_up, 1024)
 
     
     def t(self):             
         '''Time vector calculated from start time and sample interval [s] '''
-        return np.linspace(self.t0, self.t0+self.dt*self.ns(), self.ns() )
+        return np.linspace(self.t0, self.t0+self.dt*self.n_samples(), self.n_samples())
 
         
     def fs(self):          
@@ -84,8 +84,8 @@ class Waveform:
 
     
     def powerspectrum (self, normalise=False, scale="linear"):
-        ''' Calculate power spectrum of trace '''
-        f, psd = powerspectrum( self.x, self.dt, nfft=self.n_fft(), 
+        ''' Calculate power spectrum of trace '''  
+        f, psd = powerspectrum( self.y, self.dt, nfft=self.n_fft(), 
                                scale=scale, normalise=normalise)       
         return f, psd      
 
@@ -93,7 +93,7 @@ class Waveform:
     def plot_spectrum ( self, time_unit="s", frequnit="Hz", fmax=None, 
                       normalise=True, scale="dB" ):
         ''' Plot trace and power spectrum '''        
-        plot_spectrum ( self.t(), self.x, time_unit=time_unit, f_max=None, 
+        plot_spectrum ( self.t(), self.y, time_unit=time_unit, f_max=None, 
                        nfft=self.n_fft(), normalise=normalise, scale=scale)            
         return 0
 
@@ -143,7 +143,7 @@ class Waveform:
             self.t0 = t0
             self.dt = dt
             self.dtr= dtr     # Rarely used, for backward compatibility
-            self.x  = np.reshape(x, (-1, n_ch))  
+            self.y  = np.reshape(x, (-1, n_ch))  
             
         return 0
     
@@ -169,11 +169,11 @@ class Waveform:
         with open(filename, 'xb') as fid:
             fid.write(np.array(n_header).astype('>i4') )
             fid.write(bytes(header, 'utf-8') )
-            fid.write(np.array(self.n_ch()).astype('>u4'))
+            fid.write(np.array(self.n_channels()).astype('>u4'))
             fid.write(np.array(self.t0).astype('>f8'))
             fid.write(np.array(self.dt).astype('>f8'))
             fid.write(np.array(self.dtr).astype('>f8'))
-            fid.write(self.x.astype('>f4')  )
+            fid.write(self.y.astype('>f4')  )
         return 0                  
     
 #%%
@@ -238,7 +238,7 @@ class Pulse:
         return max(n_up, 2048)
     
     
-    def x(self):  
+    def y(self):  
         ''' Create pulse from input specification '''
         match(self.envelope[0:3].lower()):
             case "rec":  
@@ -257,27 +257,27 @@ class Pulse:
         arg = 2*np.pi * self.f0 * self.t() + np.radians(self.phase)
         match(self.shape.lower()[0:3]):
             case "squ":
-                y = 1/2*signal.square(arg, duty=0.5)
+                s = 1/2*signal.square(arg, duty=0.5)
             case "tri":
-                y = 1/2*signal.sawtooth(arg, width=0.5)  
+                s = 1/2*signal.sawtooth(arg, width=0.5)  
             case "saw":
-                y = 1/2*signal.sawtooth(arg, width=1)  
+                s = 1/2*signal.sawtooth(arg, width=1)  
             case _:
-                y = np.cos(arg)
+                s = np.cos(arg)
           
-        return self.a * win * y
+        return self.a*win*s
 
     
     def plot(self):
         ''' Plot pulse in time domain '''
             
-        plot_pulse (self.t(), self.x(), self.time_unit() )
+        plot_pulse (self.t(), self.y(), self.time_unit() )
         return 0    
     
 
     def powerspectrum(self):
         ''' Calculate power spectrum of trace '''
-        f, psd = powerspectrum(self.x(), self.dt, nfft=self.n_fft(), 
+        f, psd = powerspectrum(self.y(), self.dt, nfft=self.n_fft(), 
                                scale="dB", normalise=True)
         
         return f, psd
@@ -286,7 +286,7 @@ class Pulse:
     def plot_spectrum(self):   
         ''' Plot trace and power spectrum '''        
         f_max = scale_125(3*self.f0)       
-        plot_spectrum ( self.t(), self.x(), time_unit=self.time_unit(), f_max=f_max, 
+        plot_spectrum ( self.t(), self.y(), time_unit=self.time_unit(), f_max=f_max, 
                        n_fft=self.n_fft(), normalise=True, scale="db")
         
         return 0
@@ -302,11 +302,28 @@ def scale_125(x):
     prefixes = np.array([1, 2, 5, 10])
     exp = int(np.floor(np.log10(abs(x))))    
     mant= abs(x) / (10**exp)    
-    valid = np.where((prefixes-mant+0.001) > 0) 
+    valid = np.where(prefixes >= mant-0.001)
     mn = np.min(prefixes[valid])    
     xn = mn*10**exp    
         
     return xn
+
+def find_timescale(time_unit="s"):
+    match(time_unit):
+        case "ns":
+            multiplier= 1e9
+            freq_unit = "GHz"
+        case "us":
+            multiplier= 1e6
+            freq_unit = "MHz"
+        case "ms":
+            multiplier= 1e3
+            freq_unit = "kHz"
+        case _:
+            multiplier= 1
+            freq_unit = "Hz"
+
+    return multiplier, freq_unit           
 
 
 def find_filename( prefix='us', ext='wfm', resultdir= "..\\results" ):   
@@ -361,45 +378,48 @@ def plot_pulse(t, x, time_unit="s"):
     Outputs     0     
     '''
     
-    match(time_unit):
-        case "ns":
-            mult= 1e9
-        case "us":
-            mult= 1e6
-        case "ms":
-            mult= 1e3
-        case _:
-            mult= 1
+    multiplier, freq_unit = find_timescale(time_unit)
             
-    plt.plot(t*mult, x)
+    plt.plot(t*multiplier, x)
     plt.xlabel(f'Time [{time_unit}]')
     plt.ylabel('Ampltude')
     plt.grid(True)
-    #plt.show()    
+
     return 0    
 
 
-def powerspectrum(x, dt, nfft=None, scale="linear", normalise=False): 
+def powerspectrum(y, dt, nfft=None, scale="linear", normalise=False, transpose=True): 
     '''
     Calculate power spectrum of pulse. Finite length signal, no window    
     Inputs     x  : Time trace
               dt : Sample interval
-            nfft : No of points in FFT,, zero-padding
+            nfft : No of points in FFT, zero-padding
            scale : Linear or dB
        normalise : Normalise spectrum to max value 
        
-    Outputs    0   
-    
-    '''
-    f, psd= signal.periodogram(x, fs=1/dt, nfft=nfft, detrend=False)
-
+    Outputs    
+               f : Frequency vector
+             psd : Power spectral density       
+    '''        
+    # Datapoints in rows (dimension 0),columns (dimension 1) are channels  
+    # The periodogram function calculates FT along dimension 1. 
+        
+    y=y.transpose()         
+    f, psd= signal.periodogram(y, fs=1/dt, nfft=nfft, detrend=False)
+    psd = psd.transpose()
+            
     if normalise:
-        psd = psd/psd.max(axis=0)
-
+        if psd.ndim==1:
+            psd = psd/psd.max()
+        else:
+            n_ch= psd.shape[1]     
+            for k in range(n_ch):
+                psd[:,k] = psd[:,k]/psd[:,k].max()
+        
     if scale.lower() == "db":
         psd = 10*np.log10(psd)
-
-    return f, psd    
+       
+    return f, psd
 
 
 def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None, 
@@ -426,26 +446,14 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
     plt.subplot (2, 1, 2)     
     dt = t[1]-t[0]   # Assumes even sampling 
 
-    match(time_unit):
-        case "ns":
-            freq_unit = "GHz"
-            freq_mult = 1e-9
-        case "us":
-            freq_unit = "MHz"
-            freq_mult = 1e-6
-        case "ms":
-            freq_unit = "kHz"
-            freq_mult = 1e-3
-        case _:
-            freq_unit = "Hz"
-            freq_mult = 1
+    multiplier, freq_unit = find_timescale(time_unit)
             
     f, psd = powerspectrum (x, dt, nfft=n_fft, normalise=normalise, scale=scale)
     
-    plt.plot(f*freq_mult, psd)
+    plt.plot(f/multiplier, psd)
     plt.xlabel(f'Frequency [{freq_unit}]')
     plt.grid(True)       
-    plt.xlim((0, f_max*freq_mult))
+    plt.xlim((0, f_max/multiplier))
         
     if scale.lower() == "db":
         plt.ylabel('Power [dB re. max]')

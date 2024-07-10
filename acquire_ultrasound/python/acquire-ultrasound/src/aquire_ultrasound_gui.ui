@@ -9,9 +9,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>792</width>
-    <height>856</height>
+    <width>459</width>
+    <height>826</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="cursor">
    <cursorShape>ArrowCursor</cursorShape>
@@ -23,12 +29,12 @@
    <locale language="English" country="UnitedKingdom"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="title_label">
+   <widget class="QLabel" name="titleLabel">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>341</width>
+      <width>431</width>
       <height>31</height>
      </rect>
     </property>
@@ -43,12 +49,12 @@
      <string>Acquire Ultrasound Traces</string>
     </property>
    </widget>
-   <widget class="QLabel" name="subtitle_label">
+   <widget class="QLabel" name="subtitleLabel">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>50</y>
-      <width>181</width>
+      <width>381</width>
       <height>21</height>
      </rect>
     </property>
@@ -64,7 +70,7 @@
      <string>Picoscope 5000 series</string>
     </property>
    </widget>
-   <widget class="QTabWidget" name="acquisition_tabWidget">
+   <widget class="QTabWidget" name="acquisitionTabWidget">
     <property name="enabled">
      <bool>true</bool>
     </property>
@@ -72,8 +78,8 @@
      <rect>
       <x>10</x>
       <y>280</y>
-      <width>421</width>
-      <height>241</height>
+      <width>401</width>
+      <height>221</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -82,7 +88,7 @@
     <property name="currentIndex">
      <number>0</number>
     </property>
-    <widget class="QWidget" name="vertical_tab">
+    <widget class="QWidget" name="verticalTab">
      <property name="enabled">
       <bool>true</bool>
      </property>
@@ -100,13 +106,13 @@
        <rect>
         <x>20</x>
         <y>20</y>
-        <width>247</width>
-        <height>167</height>
+        <width>231</width>
+        <height>161</height>
        </rect>
       </property>
-      <layout class="QFormLayout" name="formLayout_5">
+      <layout class="QFormLayout" name="verticalFormLayout">
        <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="range_Label">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -124,7 +130,7 @@
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QComboBox" name="range_a_comboBox">
+          <widget class="QComboBox" name="rangeAComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -199,7 +205,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="range_b_comboBox">
+          <widget class="QComboBox" name="rangeBComboBox">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -269,7 +275,7 @@
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QPushButton" name="ch_a_pushButton">
+          <widget class="QPushButton" name="chAButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -298,7 +304,7 @@ color: rgb(255, 255, 255);</string>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="ch_b_pushButton">
+          <widget class="QPushButton" name="chBButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -326,7 +332,7 @@ color: white;</string>
         </layout>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="couplingLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -338,7 +344,7 @@ color: white;</string>
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
-          <widget class="QComboBox" name="coupling_a_comboBox">
+          <widget class="QComboBox" name="couplingAComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -376,7 +382,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="coupling_b_comboBox">
+          <widget class="QComboBox" name="couplingBComboBox">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -404,7 +410,7 @@ color: white;</string>
         </layout>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="offset_Label">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -416,7 +422,7 @@ color: white;</string>
        <item row="3" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QDoubleSpinBox" name="offset_a_spinBox">
+          <widget class="QDoubleSpinBox" name="offsetASpinBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -450,7 +456,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="offset_b_spinBox">
+          <widget class="QDoubleSpinBox" name="offsetBSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -480,7 +486,7 @@ color: white;</string>
         </layout>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="label_22">
+        <widget class="QLabel" name="displayscaleLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -492,7 +498,7 @@ color: white;</string>
        <item row="5" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
-          <widget class="QComboBox" name="zoom_vertical_a_comboBox">
+          <widget class="QComboBox" name="displayrangeAComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -582,7 +588,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="zoom_vertical_b_comboBox">
+          <widget class="QComboBox" name="displayrangeBComboBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -674,7 +680,7 @@ color: white;</string>
         </layout>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="bwLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -686,7 +692,7 @@ color: white;</string>
        <item row="4" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
-          <widget class="QComboBox" name="bwl_b_comboBox">
+          <widget class="QComboBox" name="bwlBComboBox">
            <property name="currentText">
             <string>None</string>
            </property>
@@ -706,7 +712,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="bwl_a_comboBox">
+          <widget class="QComboBox" name="bwlAComboBox">
            <property name="currentText">
             <string>None</string>
            </property>
@@ -730,7 +736,7 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="sampling_tab">
+    <widget class="QWidget" name="samplingTab">
      <attribute name="title">
       <string>Horizontal</string>
      </attribute>
@@ -739,13 +745,13 @@ color: white;</string>
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>262</width>
-        <height>76</height>
+        <width>261</width>
+        <height>81</height>
        </rect>
       </property>
-      <layout class="QFormLayout" name="formLayout">
+      <layout class="QFormLayout" name="sampligFormLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
+        <widget class="QLabel" name="samplerateLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -755,7 +761,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="sample_rate_spinBox">
+        <widget class="QDoubleSpinBox" name="samplerateSpinBox">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
@@ -771,7 +777,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="nSamplesLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -781,7 +787,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="no_samples_spinBox">
+        <widget class="QDoubleSpinBox" name="nSamplesSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -803,7 +809,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_18">
+        <widget class="QLabel" name="zoomLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -815,7 +821,7 @@ color: white;</string>
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_start_spinBox">
+          <widget class="QDoubleSpinBox" name="zoomStartSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -843,7 +849,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_end_spinBox">
+          <widget class="QDoubleSpinBox" name="zoomEndSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -875,7 +881,7 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="trigger_tab">
+    <widget class="QWidget" name="triggerTab">
      <attribute name="title">
       <string>Trigger</string>
      </attribute>
@@ -885,12 +891,12 @@ color: white;</string>
         <x>20</x>
         <y>10</y>
         <width>191</width>
-        <height>178</height>
+        <height>171</height>
        </rect>
       </property>
-      <layout class="QFormLayout" name="formLayout_4">
+      <layout class="QFormLayout" name="triggerFormLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="triggerSourceLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -900,7 +906,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="trigger_source_comboBox">
+        <widget class="QComboBox" name="triggerSourceComboBox">
          <property name="currentText">
           <string>A</string>
          </property>
@@ -930,7 +936,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_13">
+        <widget class="QLabel" name="triggerModeLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -940,7 +946,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QComboBox" name="trigger_mode_comboBox">
+        <widget class="QComboBox" name="triggerModeComboBox">
          <property name="currentText">
           <string>Rising</string>
          </property>
@@ -960,7 +966,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_17">
+        <widget class="QLabel" name="triggerLevelLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -970,7 +976,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_level_spinBox">
+        <widget class="QDoubleSpinBox" name="triggerLevelSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -998,7 +1004,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="triggerPositionLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1008,7 +1014,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_position_spinBox">
+        <widget class="QDoubleSpinBox" name="triggerPositionSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1036,7 +1042,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="triggerDelayLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1046,7 +1052,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_delay_spinBox">
+        <widget class="QDoubleSpinBox" name="triggerDelaySpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1074,7 +1080,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="triggerAutoDelayLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1084,7 +1090,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QDoubleSpinBox" name="trigger_auto_delay_spinBox">
+        <widget class="QDoubleSpinBox" name="triggerAutoDelaySpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1112,7 +1118,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_16">
+        <widget class="QLabel" name="internalTriggerLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1122,7 +1128,7 @@ color: white;</string>
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QDoubleSpinBox" name="internal_trigger_delay_spinBox">
+        <widget class="QDoubleSpinBox" name="internalTriggerDelaySpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1152,7 +1158,7 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="filter_tab">
+    <widget class="QWidget" name="filterTab">
      <attribute name="title">
       <string>Filter</string>
      </attribute>
@@ -1161,13 +1167,13 @@ color: white;</string>
        <rect>
         <x>20</x>
         <y>10</y>
-        <width>143</width>
-        <height>111</height>
+        <width>161</width>
+        <height>101</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QComboBox" name="filter_comboBox">
+        <widget class="QComboBox" name="filterComboBox">
          <property name="currentText">
           <string>No filter</string>
          </property>
@@ -1192,9 +1198,9 @@ color: white;</string>
         </widget>
        </item>
        <item>
-        <layout class="QFormLayout" name="formLayout_2">
+        <layout class="QFormLayout" name="filterFormLayout">
          <item row="0" column="0">
-          <widget class="QLabel" name="label_26">
+          <widget class="QLabel" name="fminLabel">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1204,7 +1210,7 @@ color: white;</string>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="fmin_spinBox">
+          <widget class="QDoubleSpinBox" name="fminSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1232,7 +1238,7 @@ color: white;</string>
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_31">
+          <widget class="QLabel" name="fmaxLabel">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1242,7 +1248,7 @@ color: white;</string>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="fmax_spinBox">
+          <widget class="QDoubleSpinBox" name="fmaxSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1270,7 +1276,7 @@ color: white;</string>
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="label_29">
+          <widget class="QLabel" name="filterOrderLabel">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1280,7 +1286,7 @@ color: white;</string>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QSpinBox" name="filter_order_spinBox">
+          <widget class="QSpinBox" name="filterOrderSpinBox">
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1297,7 +1303,7 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="spectrumTab">
      <attribute name="title">
       <string>Spectrum</string>
      </attribute>
@@ -1306,13 +1312,13 @@ color: white;</string>
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>250</width>
-        <height>52</height>
+        <width>241</width>
+        <height>62</height>
        </rect>
       </property>
-      <layout class="QFormLayout" name="formLayout_3">
+      <layout class="QFormLayout" name="spectrumFormLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_19">
+        <widget class="QLabel" name="frequencyrangeLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1324,7 +1330,7 @@ color: white;</string>
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_fmin_spinBox">
+          <widget class="QDoubleSpinBox" name="zoomFminSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1352,7 +1358,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_fmax_spinBox">
+          <widget class="QDoubleSpinBox" name="zoomFmaxSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1382,7 +1388,7 @@ color: white;</string>
         </layout>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_24">
+        <widget class="QLabel" name="dbrangeLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1394,7 +1400,7 @@ color: white;</string>
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_dbmin_spinBox">
+          <widget class="QDoubleSpinBox" name="dbMinSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1422,7 +1428,7 @@ color: white;</string>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="zoom_dbmax_spinBox">
+          <widget class="QDoubleSpinBox" name="dbMaxSpinBox">
            <property name="locale">
             <locale language="English" country="UnitedKingdom"/>
            </property>
@@ -1454,17 +1460,17 @@ color: white;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="resultfileTab">
      <attribute name="title">
       <string>Resultfile</string>
      </attribute>
-     <widget class="QTextEdit" name="resultpath_Edit">
+     <widget class="QTextEdit" name="resultpathEdit">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>241</width>
-        <height>171</height>
+        <width>351</width>
+        <height>131</height>
        </rect>
       </property>
      </widget>
@@ -1476,12 +1482,12 @@ color: white;</string>
       <x>30</x>
       <y>80</y>
       <width>161</width>
-      <height>141</height>
+      <height>160</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="controlGridLayout">
      <item row="0" column="0">
-      <widget class="QPushButton" name="connect_button">
+      <widget class="QPushButton" name="connectButton">
        <property name="styleSheet">
         <string notr="true"/>
        </property>
@@ -1494,7 +1500,7 @@ color: white;</string>
       </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QPushButton" name="save_button">
+      <widget class="QPushButton" name="saveButton">
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -1513,7 +1519,7 @@ color: white;</string>
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QPushButton" name="acquire_button">
+      <widget class="QPushButton" name="acquireButton">
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -1541,7 +1547,7 @@ color: white;</string>
       </widget>
      </item>
      <item row="5" column="0" colspan="2">
-      <widget class="QLineEdit" name="resultfile_Edit">
+      <widget class="QLineEdit" name="resultfileEdit">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1572,10 +1578,10 @@ color: white;</string>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QSpinBox" name="filecounter_spinBox"/>
+      <widget class="QSpinBox" name="filecounterSpinBox"/>
      </item>
      <item row="0" column="1">
-      <widget class="QPushButton" name="close_button">
+      <widget class="QPushButton" name="closeButton">
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -1594,7 +1600,7 @@ color: white;</string>
       </widget>
      </item>
      <item row="1" column="0" colspan="2">
-      <widget class="QLineEdit" name="connected_Edit">
+      <widget class="QLineEdit" name="connectedEdit">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -1613,7 +1619,7 @@ color: white;</string>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="status_Edit">
+      <widget class="QLineEdit" name="statusEdit">
        <property name="autoFillBackground">
         <bool>true</bool>
        </property>
@@ -1633,34 +1639,53 @@ color: white;</string>
      </item>
     </layout>
    </widget>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="pulserTabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>550</y>
-      <width>411</width>
-      <height>201</height>
+      <y>530</y>
+      <width>401</width>
+      <height>261</height>
      </rect>
     </property>
     <property name="currentIndex">
      <number>0</number>
     </property>
-    <widget class="QWidget" name="tab_3">
+    <widget class="QWidget" name="pulserTab">
      <attribute name="title">
       <string>Pulser</string>
      </attribute>
      <widget class="QWidget" name="formLayoutWidget_5">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>40</x>
         <y>10</y>
-        <width>177</width>
-        <height>152</height>
+        <width>191</width>
+        <height>211</height>
        </rect>
       </property>
-      <layout class="QFormLayout" name="formLayout_6">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_20">
+      <layout class="QFormLayout" name="pulserFormLayout">
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="transmitStatusEdit">
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="pulseEnvelopeLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1669,8 +1694,8 @@ color: white;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="pulse_envelope_comboBox">
+       <item row="7" column="1">
+        <widget class="QComboBox" name="pulseEnvelopeComboBox">
          <property name="currentText">
           <string>Rectangular</string>
          </property>
@@ -1704,8 +1729,8 @@ color: white;</string>
          </item>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_23">
+       <item row="8" column="0">
+        <widget class="QLabel" name="pulseShapeLabel">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1714,48 +1739,8 @@ color: white;</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_25">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Frequency[MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_33">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Duration [Cycles]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_34">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Phase [Deg]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_35">
-         <property name="locale">
-          <locale language="English" country="UnitedKingdom"/>
-         </property>
-         <property name="text">
-          <string>Amplitude [V]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="pulse_shape_comboBox">
+       <item row="8" column="1">
+        <widget class="QComboBox" name="pulseShapeComboBox">
          <property name="currentText">
           <string>Sine</string>
          </property>
@@ -1784,8 +1769,18 @@ color: white;</string>
          </item>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="pulse_frequency_spinBox">
+       <item row="9" column="0">
+        <widget class="QLabel" name="pulseFrequencySpinBoxLabel">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Frequency[MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QDoubleSpinBox" name="pulseFrequencySpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1812,8 +1807,18 @@ color: white;</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="pulse_duration_spinBox">
+       <item row="10" column="0">
+        <widget class="QLabel" name="pulseDurationLabel">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Duration [Cycles]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QDoubleSpinBox" name="pulseDurationSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1833,15 +1838,25 @@ color: white;</string>
           <double>50.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>0.500000000000000</double>
          </property>
          <property name="value">
           <double>2.000000000000000</double>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QDoubleSpinBox" name="pulse_phase_spinBox">
+       <item row="11" column="0">
+        <widget class="QLabel" name="pulsePhaseLabel">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Phase [Deg]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QDoubleSpinBox" name="pulsePhaseSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1861,15 +1876,25 @@ color: white;</string>
           <double>360.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>1.000000000000000</double>
+          <double>15.000000000000000</double>
          </property>
          <property name="value">
           <double>0.000000000000000</double>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QDoubleSpinBox" name="pulse_amplitude_spinBox">
+       <item row="12" column="0">
+        <widget class="QLabel" name="pulseAmplitudeLabel">
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Amplitude [V]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QDoubleSpinBox" name="pulseAmplitudeSpinBox">
          <property name="locale">
           <locale language="English" country="UnitedKingdom"/>
          </property>
@@ -1893,6 +1918,25 @@ color: white;</string>
          </property>
          <property name="value">
           <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QPushButton" name="transmitButton">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="locale">
+          <locale language="English" country="UnitedKingdom"/>
+         </property>
+         <property name="text">
+          <string>Transmit</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
          </property>
         </widget>
        </item>

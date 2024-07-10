@@ -56,7 +56,7 @@ class Channel:
     bwl = 0           #     Bandwidth limit
         
     def v_max(self):     # [V] Find allowed voltage range from requested range
-        vm=find_scale(self.vr)
+        vm=find_scale(self.v_range)
         if vm <= 10e-3:
             vm = 10e-3
         if vm>50:
@@ -70,10 +70,10 @@ class Channel:
         return  picoscope.PS5000A_COUPLING[f"PS5000A_{self.coupling}"]
                 
     def adc_range(self):
-        if self.vmax()<1:
-            adc_range_name= f"PS5000A_{int(self.vmax()*1000)}MV"           
+        if self.v_max()<1:
+            adc_range_name= f"PS5000A_{int(self.v_max()*1000)}MV"           
         else:
-            adc_range_name= f"PS5000A_{int(self.vmax())}V"                              
+            adc_range_name= f"PS5000A_{int(self.v_max())}V"                              
         return picoscope.PS5000A_RANGE[adc_range_name]
 
 
@@ -163,7 +163,7 @@ def open_adc(dso, status):
         assert_pico_ok(status["changePowerSource"])
         
         status["maximumValue"] = picoscope.ps5000aMaximumValue(
-            dso.handle, ctypes.byref(dso.maxADC))
+            dso.handle, ctypes.byref(dso.max_adc))
         
         assert_pico_ok(status["maximumValue"])        
     
@@ -198,7 +198,7 @@ def set_vertical(dso, status, ch):
     status_name = f"setCh{name}"  
         
     status[status_name] = picoscope.ps5000aSetChannel(
-        dso.handle, ch.no, ch.enabled, ch.coupling_code(), ch.adcrange(), ch.offset)
+        dso.handle, ch.no, ch.enabled, ch.coupling_code(), ch.adc_range(), ch.offset)
     assert_pico_ok(status[status_name])    
     
     return status 
@@ -211,12 +211,12 @@ def set_trigger(dso, status, trigger, ch, sampling):
     if trigger.source=="EXT":
         source = picoscope.PS5000A_CHANNEL["PS5000A_EXTERNAL"]
         relative_level = np.clip(trigger.level / 5.0, -1, 1)
-        threshold = int(relative_level * trigger.adcmax)
+        threshold = int(relative_level * trigger.adc_max)
     elif trigger.source in ("A", "B"):
         source = picoscope.PS5000A_CHANNEL[f"PS5000A_CHANNEL_{trigger.source}"]
         no = channel_name_to_no(trigger.source)
-        relative_level = np.clip( trigger.level / ch[no].vmax(), -1, 1)       
-        threshold = int( relative_level * ch[no].adcmax )
+        relative_level = np.clip( trigger.level / ch[no].v_max(), -1, 1)       
+        threshold = int( relative_level * ch[no].adc_max )
     else:
         status["trigger"] = -1
         return status
@@ -257,15 +257,15 @@ def configure_acquisition(dso, status, sampling):
     '''
     Configure acquisition of data from oscilloscope
     '''    
-    dso.maxSamples.value = sampling.n_samples
+    dso.max_samples.value = sampling.n_samples
     dso.buffer_a = (ctypes.c_int16 *sampling.n_samples)()
     dso.buffer_b = (ctypes.c_int16 *sampling.n_samples)()
 
     status["setDataBuffersA"] = picoscope.ps5000aSetDataBuffer(
-        dso.handle, 0, ctypes.byref( dso.bufferA ), sampling.n_samples, 0, 0)
+        dso.handle, 0, ctypes.byref( dso.buffer_a ), sampling.n_samples, 0, 0)
     assert_pico_ok(status["setDataBuffersA"])
     status[ "setDataBuffersB" ] = picoscope.ps5000aSetDataBuffer(
-        dso.handle, 1, ctypes.byref( dso.bufferB ), sampling.n_samples, 0, 0)
+        dso.handle, 1, ctypes.byref( dso.buffer_b ), sampling.n_samples, 0, 0)
     assert_pico_ok( status[ "setDataBuffersB" ] )
 
     return status, dso
@@ -291,15 +291,15 @@ def acquire_trace(dso, status, sampling, ch):
 
     # Transfer data values
     status["getValues"] = picoscope.ps5000aGetValues(
-        dso.handle, 0, ctypes.byref(dso.maxSamples), 0, 0, 0, 
+        dso.handle, 0, ctypes.byref(dso.max_samples), 0, 0, 0, 
         ctypes.byref( dso.overflow))
     assert_pico_ok(status["getValues"])
     
     # Convert ADC counts data to Volts
-    mV_a = adc2mV( dso.buffer_a, ch[0].adcrange(), dso.maxADC)
-    mV_b = adc2mV( dso.buffer_b, ch[1].adcrange(), dso.maxADC)
+    mv_a = adc2mV( dso.buffer_a, ch[0].adc_range(), dso.max_adc)
+    mv_b = adc2mV( dso.buffer_b, ch[1].adc_range(), dso.max_adc)
     
-    v = 1e-3*np.column_stack( [mV_a, mV_b] )    
+    v = 1e-3*np.column_stack( [mv_a, mv_b] )    
 
     return status, dso, v
 
@@ -347,14 +347,8 @@ def find_scale(x):
     prefixes = np.array([1, 2, 5, 10])
     exp = int(np.floor(np.log10(abs(x))))    
     mant= abs(x) / (10**exp)    
-    valid = np.where((prefixes-mant-0.01) > 0)
+    valid = np.where(prefixes >= mant-0.001)
     mn = np.min(prefixes[valid])    
     xn = mn*10**exp    
         
     return xn
-    
-
-
-
-
-

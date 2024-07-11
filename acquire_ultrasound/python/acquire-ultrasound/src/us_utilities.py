@@ -34,19 +34,18 @@ class Waveform:
     Other methods 
     plot()              Plots the traces at standardised format
     powerspectrum()     Returns frequency and power spectral density
-    zoom()              Picks a selected interval
     load() and save()   Load from and save to binary format, backwards 
                         compatible to formats used with e.g. LabVIEW and Matlab 
     '''
     
     def __init__(self, y=np.zeros((100,1)), dt=1, t0=0):
-        self.y = y        # Voltage traces as 2D numpy array
-        if y.ndim == 1:   # Ensure v is 2D
+        self.y = y              # Voltage traces as 2D numpy array
+        if y.ndim == 1:         # Ensure v is 2D
             self.y = self.y.reshape((1, len(y)))
-        self.dt= dt      # [s]  Sample interval
-        self.t0= t0      # [s]  Time of first sample 
-        self.dtr= 0      # [s]  Interval between blocks.Rarely used
-              
+        self.dt= dt             # [s]  Sample interval
+        self.t0= t0             # [s]  Time of first sample 
+        self.dtr= 0             # [s]  Interval between blocks. Obsolete
+            
     
     def n_channels(self):
         ''' # Number of channels in trace '''
@@ -71,11 +70,42 @@ class Waveform:
     def fs(self):          
         ''' Sample rate [Hz] '''
         return 1/self.dt   
+    
+    
+    def filtered(self, filter):
+        wfm  = copy.deepcopy(self)
+        match(filter.type[0:2].lower()):
+            case "no":
+                y=self.y
+            case "ac":
+                dc_level = self.y.mean(axis=0)
+                y= self.y - dc_level 
+            case _:
+                y= self.y
+               
+        wfm.y= y
+        return wfm    
 
     
-    def plot(self, time_unit="s"):
-        ''' Unit for plotting time traces, also used to scale spectra '''
-        plot_pulse(self.t(), self.y, time_unit=time_unit)    
+    def zoomed (self, tlim ):  
+        ''' Extract copy of trace from specified interval '''
+        wfm  = copy.deepcopy(self)
+        nlim = np.flatnonzero((self.t() >= min(tlim)) 
+                              & (self.t() <= max(tlim)))       
+        t0= self.t()[np.min(nlim)]
+        y = self.y[nlim]
+        
+        wfm.t0= t0
+        wfm.y = y
+        
+        return wfm                 
+
+    
+    def plot(self, time_unit="us", filtered=True):
+        ''' Plot time traces '''
+        plot_pulse (self.t(), self.y(), self.time_unit() )
+
+        return 0
 
         
     def f (self):
@@ -96,21 +126,8 @@ class Waveform:
         plot_spectrum ( self.t(), self.y, time_unit=time_unit, f_max=None, 
                        nfft=self.n_fft(), normalise=normalise, scale=scale)            
         return 0
-
-            
-    def zoom (self, tlim ):  
-        ''' Extract copy of trace from specified interval '''
-        wfm  = copy.deepcopy(self)
-        nlim = np.flatnonzero((self.t() >= min(tlim)) 
-                              & (self.t() <= max(tlim)))       
-        t0= self.t()[np.min(nlim)]
-        y = self.y[nlim]
-        
-        wfm.t0= t0
-        wfm.y = y
-        
-        return wfm
-    
+ 
+  
 
     def load(self, filename):   
         '''
@@ -176,7 +193,7 @@ class Waveform:
             fid.write(self.y.astype('>f4')  )
         return 0                  
     
-#%%
+#%% Generated signals
   
 class Pulse:
     '''
@@ -269,8 +286,7 @@ class Pulse:
 
     
     def plot(self):
-        ''' Plot pulse in time domain '''
-            
+        ''' Plot pulse in time domain '''        
         plot_pulse (self.t(), self.y(), self.time_unit() )
         return 0    
     
@@ -290,6 +306,16 @@ class Pulse:
                        n_fft=self.n_fft(), normalise=True, scale="db")
         
         return 0
+    
+#%% Utility classes
+    
+class WaveformFilter:  
+    ''' Digital filtering of waveform '''
+    type = "No filter" # Filter type: None, AC removal, bandpass, ...
+    f_min = 100        # [Hz] Lower cutoff frequency
+    f_max = 10e6       # [Hz] Upper cutoff frequency
+    order = 2          # Filter order
+    
     
 #%% Utility functions    
 
@@ -368,7 +394,7 @@ def find_filename( prefix='us', ext='wfm', resultdir= "..\\results" ):
     return resultpath, resultdir, resultfile, n_result
 
 
-def plot_pulse(t, x, time_unit="s"):
+def plot_pulse(t, x, time_unit="us"):
     '''
     Plot pulse on standardised graph
     Inputs      t : Time vector
@@ -437,7 +463,7 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
        
     Outputs    0   
     '''
-
+    
     # Plot pulse in time-domain
     plt.subplot(2, 1, 1)    
     plot_pulse(t, x, time_unit)

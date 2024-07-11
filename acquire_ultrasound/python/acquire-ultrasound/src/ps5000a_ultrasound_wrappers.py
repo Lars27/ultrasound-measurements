@@ -57,10 +57,6 @@ class Channel:
         
     def v_max(self):     # [V] Find allowed voltage range from requested range
         vm=find_scale(self.v_range)
-        if vm <= 10e-3:
-            vm = 10e-3
-        if vm>50:
-            vm = 50
         return vm   
 
     def name(self):             
@@ -341,14 +337,20 @@ def channel_name_to_no(name):
 
 def find_scale(x):
     '''
-    Find next number in an 1-2-5-10-20 ... sequence, selected to match 
+    Find next number in an 1-2-5-10-20 ... sequence, matching 
     oscilloscope ranges
     '''
-    prefixes = np.array([1, 2, 5, 10])
-    exp = int(np.floor(np.log10(abs(x))))    
-    mant= abs(x) / (10**exp)    
-    valid = np.where(prefixes >= mant-0.001)
-    mn = np.min(prefixes[valid])    
-    xn = mn*10**exp    
+    
+    if x <= 10e-3:
+        xn = 10e-3
+    elif x>=50:
+        xn = 50
+    else:
+        prefixes = np.array([1, 2, 5, 10])
+        exp = int(np.floor(np.log10(abs(x))))    
+        mant= abs(x) / (10**exp)    
+        valid = np.where(prefixes >= mant-0.001)
+        mn = np.min(prefixes[valid])    
+        xn = mn*10**exp    
         
     return xn

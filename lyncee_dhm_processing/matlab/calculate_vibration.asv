@@ -1,0 +1,53 @@
+function [z, zmax] = calculate_vibration(phase, dz, Lfilter, removeStatic)
+% function [z, zmax] = calculate_vibration(phi, hconv, L, removeStatic)
+%
+% Calculate vertical vibration from phase data
+% Lyncee Tec DHM
+%
+%            phi  Phase data from DHM [radians]
+%          hconv  Conversion factor, radians to m
+%              L  Spatial averaging filter length, 2D filter
+%   removeStatic  Remove static displacement to visualise motion (default)
+%
+%        z  Vertical deflection [m]
+%     zmax  Max vertical deflection (aliasing limit)
+%
+% Requires 
+%   Image Processing Toolbox   for 2D median filter
+%   signal Processing Toolbox  for 2D linear filter
+
+% Lars Hoff, USN, 2022
+
+if nargin<4
+    removeStatic = 0;
+end
+
+[~,~,nFrames] = size(phase);
+
+%% Calculate vertical deflection 
+if removeStatic % Remove static displacements
+    phaseMean= mean(phase,3);
+    phaseMean= repmat(phaseMean, 1, 1, nFrames);
+    phase= phase-phaseMean;    % Phase after removing static deflection
+end
+z= phase*dz;   % [m] Deflection 
+zmax= pi*dz;    % Displacement axis scale (aliasing limit). Max phase shift is pi radians
+
+%% Filters
+% Median filter to remove outliers   
+fprintf('Median filter ... ')
+M = 3;          
+for k=1:nFrames
+    z(:,:,k)=medfilt2(z(:,:,k), [M,M]);
+end
+
+% Linear 2D filter for lateral smoothing
+fprintf('Low pass filter ... ')
+b= ones(Lfilter,Lfilter);    % Running average filter
+b= b/sum(sum(b));
+for k=1:nFrames
+    z(:,:,k)=filter2(b,z(:,:,k));
+end
+
+end
+ 

@@ -6,158 +6,190 @@ function animate_DHM
 %
 % View as animated intensity and deflection images in one figure 
 %
-% Add folder to the Matlab-path
-% Move to directory containing results from Koala (format 'yyyy.mm.dd hh-mm-ss')
-% The program will load and process results from sub-folders 'intensity' and 'phase'
+% Operation
+%   1) Add folder with this function to the Matlab-path
+%   2) Move to directory containing results from Koala (format 'yyyy.mm.dd hh-mm-ss')
+%   3) Run this file. The program will load and process DHM-results stored in sub-folders 'intensity' and 'phase'
 %
 
-% Lars Hoff, USN, 2022
-
-global CONTINUE    % Controls animation loop
+% Lars Hoff, USN, 2022. Revised and updated July 2024
+%       
 
 %% Parameters for acquisition and display
 
-writevideo = 0;                  % Export result to video
-videofile  = 'Butterfly_1.avi';  % Name and format of videop file 
+% Animation
+Animation.save= false;           %     Export result to video
+Animation.filename= 'test.avi';  %     Name and format of video file 
+Animation.framerate= 4;          %     Frame rate of saved video file
+Animation.imageinterval= 0.1;    % [s] Animation speed, interval between frames
 
-dynamic       = 0;          % Remove static displacements
-filterorder   = 3;          % 2D lowpass filter length
-%viewangle     = [-15 50];   % 3D animation view angle
-viewangle     = [ 0 90];    % View from above, like intensity image
-imageinterval = 0.3;        % [s] Animation speed as pause between frames
+% Display
+Display.removestatic = false;    % Remove static displacements
+Display.filterlength = 1;        % 2D lowpass filter length
+%Display.viewangle = [-15 50];  % 3D animation view angle
+Display.viewangle = [ 0 90];    % Flat from from above, intensity image
+Display.colormap= colorbrewerdiverging1;   % Colormap for deflection image
+Display.zunit= 1e-9;             % Displacement unit, deflection (z)
+Display.xunit= 1e-6;             % Lateral dimension unit (x and y)
+Display.zMax= 200;               % [nm] Max displacement scale 
+Display.intensityscale = [-20 0];% [dB] Scaling of intensity image
 
-ys    = [ 650 950 ;  50 400 ]*1e-6;   % y-rangefor deflection measurement lines
-xs    = [ 500 490 ; 520 490 ]*1e-6;   % x-range for deflection measurement lines
-zscale= 200;                % [nm] Max displacement scale 
-deflectioncolor = colorbrewerdiverging1;   % Colormap for deflection imagex
+% Analysis. Deflection curves
+Deflectioncurve.start= [];
+Deflectioncurve.end= [];
+Deflectioncurve.color= [];
+Deflectioncurve.x= [];   
+Deflectioncurve.d= [];
+Deflectioncurve.z= [];  
+Deflectioncurve.handle= [];
 
-zunit= 1e-9;   % Displacement unit, nanometer
-xunit= 1e-6;   % Lateral image unit, micrometer
+Deflectioncurve(1).start= [ 17 89]*Display.xunit; 
+Deflectioncurve(1).end  = [450 25]*Display.xunit;
+Deflectioncurve(1).color = 'b';
+
+Deflectioncurve(2).start= [ 17 169]*Display.xunit;
+Deflectioncurve(2).end  = [450 105]*Display.xunit;
+Deflectioncurve(2).color = 'r';
+
+nDeflectioncurves= length(Deflectioncurve);
+
+% Data from Lyncee DHM used in calculations
+DHMdata.source = ' ';
+DHMdata.intensity= [];
+DHMdata.phase = [];
+
+% Processed results
+Image.intensitydb = [];
+Image.deflection = [];
+
+if Animation.save
+    fprintf('Video exported to %s', Animation.filename)
+else
+    fprintf('Video not exported')
+    
+end
 
 %% Load raw data
-fprintf('Video export %d. ', writevideo)
-fprintf('Loading raw data ... ')
+DHMdata.source= cd;
+fprintf('\nLoading raw data from %s', DHMdata.source )
 
-srcpath  = fullfile(cd, 'Intensity', 'Float', 'Bin');
-intensity= read_DHM('*_intensity.bin' , srcpath);
+intensitySource = fullfile(DHMdata.source, 'Intensity', 'Float', 'Bin');
+DHMdata.intensity= read_dhm('*_intensity.bin' , intensitySource);
 
-srcpath = fullfile(cd, 'Phase', 'Float', 'Bin');
-phase   = read_DHM('*_phase.bin' , srcpath);
+[Image.nX, Image.nY, Image.nFrames ] = size(DHMdata.intensity.data);
+
+phaseSource  = fullfile(DHMdata.source, 'Phase', 'Float', 'Bin');
+DHMdata.phase = read_dhm('*_phase.bin' , phaseSource);
 
 %% Process raw data
-fprintf('Processing ... ')
-I = 10*log10(intensity.data);    % Intensity in dB
-I = I-max(I,[],'all');           % Normalise to max over all values, space and time
+fprintf('\nProcessing raw data. ')
+I = 10*log10(DHMdata.intensity.data);    
+Image.intensitydb = I-max(I,[],'all');   % Normalised intensity in dB
  
-[z,zmax] = calculate_vibration_DHM( phase.data, phase.hconv, filterorder, dynamic );  % Vibration from phase
-z = z/zunit;                     % Scale deflection to selected unit 
-zmax=zmax/zunit;
+[z,zMax]= calculate_vibration(DHMdata.phase.data, ...
+                              DHMdata.phase.dz, ...
+                              Display.filterlength, 0, ...
+                              Display.removestatic );  % Vibration from phase
 
-[w,h,n] = size(I);
+Image.deflection = z/Display.zunit;  
+Display.zMax=zMax/Display.zunit;
 
-%% Setup image
-% Load first image frame to define image dimensions
-Xmax= intensity.xmax/xunit;
-Ymax= intensity.ymax/xunit;
-
-% Intensity image
-subplot(1,2,1)
-h_int=imagesc( [0 Xmax], [0 Ymax], I(:,:,1), [-15 0]);
-
-format_DHM_image( [0 Xmax], [0 Ymax], 0, 'Intensity [dB]' );
-ttl= title(' ');
-
-%% Deflection along selected line
-[ms,ns] = size(xs);
-col= {'r', 'b'};
-hold on
-for k=1:ms
-    [Xsi, Ysi, Xdi, zs{k} ] = find_deflectionline( xs(k,:), ys(k,:), z, phase.pxsize );
-    Xs{k}= Xsi/xunit;
-    Ys{k}= Ysi/xunit;
-    Xd{k}= Xdi/xunit;
-    plot( Xs{k},    Ys{k},    'color', col{k}, 'LineStyle', '-' )
-    plot( Xs{k}(1), Ys{k}(1), 'color', col{k}, 'Marker',    '*' );
+for k=1:nDeflectioncurves
+    Deflectioncurve(k)= find_deflectioncurve(Deflectioncurve(k), ...
+                                            Image.deflection, ...
+                                            DHMdata.phase.dx );
 end
 
-%% Deflection image
-subplot(2,2,2)
-[X,Y] = meshgrid( linspace( 0, Xmax, w ), linspace( 0, Ymax, h ) );
-h_vib= surf(X,Y, z(:,:,1), 'edgecolor', 'none');
-set(gca, 'View', viewangle); 
-set(gca,'DataAspectRatio',[Xmax Ymax 3*zscale])
+%% Plot first images in animation 
+Display.xMax= DHMdata.intensity.xMax/Display.xunit;
+Display.yMax= DHMdata.intensity.yMax/Display.xunit;
+kFrame = 1;
 
-format_DHM_image( [0 Xmax], [0 Ymax], zmax, 'Deflection [nm]' )
-title('s: Stop    x: Quit    c: Continue')
+% Intensity 
+subplot(2,2,1)
+Image.hIntensity=imagesc([0 Display.xMax], [0 Display.yMax], ...
+                         Image.intensitydb(:,:,kFrame), ...
+                         Display.intensityscale);
 
-set(h_int.Parent, 'Colormap', gray )            % May cause Matlab warning,
-set(h_vib.Parent, 'Colormap', deflectioncolor ) % not critical, may be bug in Matlab
+Image.hTitle= title(' ');
+format_image([0 Display.xMax], [0 Display.yMax], 0, 'Intensity [dB]');
+set(Image.hIntensity.Parent, 'Colormap', gray )    
 
-%% Deflection graph
-subplot(2,2,4)
-for k=1:ms
-    h_zline(k)= plot( Xd{k}, zs{k}(:,1), 'color', col{k}, 'LineStyle', '-' );
-    hold on
+% Mark lines where deflection curves are measured
+hold on
+for k=1:nDeflectioncurves
+    plot( Deflectioncurve(k).x(1,:)/Display.xunit, ...
+          Deflectioncurve(k).x(2,:)/Display.xunit, ...
+          Color=Deflectioncurve(k).color, LineStyle='-' );
+
+    plot( Deflectioncurve(k).x(1,1)/Display.xunit, ...
+          Deflectioncurve(k).x(2,1)/Display.xunit, ...
+          Color=Deflectioncurve(k).color, Marker="*" );
 end
 hold off
-ylim(zmax*[-1 1])
+
+% Deflection image
+subplot(1,2,2)
+xScale= linspace(0, Display.xMax, Image.nX);
+yScale= linspace(0, Display.yMax, Image.nY);
+[X,Y]= meshgrid(xScale, yScale );
+
+Image.hDeflection= surf(X, Y, Image.deflection(:,:,kFrame), 'edgecolor', 'none');
+
+set(gca, 'View', Display.viewangle); 
+set(gca, 'DataAspectRatio',[Display.xMax Display.yMax 3*Display.zMax])
+
+format_image([0 Display.xMax], [0 Display.yMax], Display.zMax, 'Deflection [nm]' )
+
+set(Image.hDeflection.Parent, 'Colormap', Display.colormap )
+
+%% Deflection graph
+subplot(2,2,3)
+for k=1:nDeflectioncurves
+    Deflectioncurve(k).handle= plot(Deflectioncurve(k).d/Display.xunit, ...
+                                    Deflectioncurve(k).z(:,kFrame), ...
+                                    Color=Deflectioncurve(k).color, ...
+                                    LineStyle='-' );
+    hold on
+end
+
+ylim(Display.zMax*[-1 1])
 grid on
 
-xlabel('x-position [\mum]')
+xlabel('Position [\mum]')
 ylabel('Deflection [nm]')
 
-set(gcf,'KeyPressFcn',@keypress);
 
-%% Loop through all frames, update by replacing z-data
+%% Loop through all frames, update by replacing data in existing image
 fprintf('Running animation ... ')
-CONTINUE = 'c';
-k=1;
 
-if writevideo
-    v = VideoWriter(videofile);
-    v.FrameRate=4;
+if Animation.save   % Set up video recorder
+    v= VideoWriter(Animation.filename);
+    v.FrameRate= Animation.framerate;
     open(v);
 end
 
-while not(CONTINUE=='x')
-    switch CONTINUE
-        case 'x', break   % Exit program
-        case 's'          % Do not update, i.e. freeze image
-        otherwise         % Any other key resumes animation
-            h_int.CData  = I( :, :, k );
-            h_vib.ZData  = z( :, :, k );
+for kFrame= 1:Image.nFrames
+    Image.hIntensity.CData= Image.intensitydb(:, :, kFrame);
+    Image.hDeflection.ZData= Image.deflection(:, :, kFrame);
 
-            for m=1:ms
-                h_zline(m).YData= zs{m}(:,k);
-            end
-            
-            ttl.String=sprintf('%d of %d', k, n);
-
-            k=k+1;
-            if writevideo
-                if k>n, CONTINUE='x'; end  % Run through loop once
-            else
-                if k>n, k=1; end           % Restart loop until stopped
-            end
+    for k=1:nDeflectioncurves
+        Deflectioncurve(k).handle.YData= Deflectioncurve(k).z(:,kFrame);
     end
-    if writevideo
-        frame = getframe(gcf);
+            
+   Image.hTitle.String=sprintf('%d of %d', kFrame, Image.nFrames);
+
+    if Animation.save
+        frame= getframe(gcf);
         writeVideo(v,frame);
     else
-        pause(imageinterval)
+        pause(Animation.imageinterval)
     end
 end
-if writevideo
+
+if Animation.save
     close(v);
 end
-fprintf('Finished\n')
+fprintf('\nFinished\n')
 
-end
-
-%% Local functions
-
-% Start and stop animation
-function keypress( src, event )
-    global CONTINUE
-    CONTINUE= lower( event.Key );
 end

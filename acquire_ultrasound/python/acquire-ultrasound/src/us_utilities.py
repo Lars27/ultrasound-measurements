@@ -76,12 +76,13 @@ class Waveform:
         wfm  = copy.deepcopy(self)
         match(filter.type[0:2].lower()):
             case "no":
-                y=self.y
-            case "ac":
-                dc_level = self.y.mean(axis=0)
-                y= self.y - dc_level 
-            case _:
                 y= self.y
+            case "ac":
+                dc_level= self.y.mean(axis=0)
+                y= self.y -dc_level 
+            case _:
+                b,a= filter.coefficients()
+                y= signal.filtfilt(b, a, self.y, axis=0)
                
         wfm.y= y
         return wfm    
@@ -210,12 +211,13 @@ class Pulse:
     '''    
     shape = "sine"
     envelope = "rectangular"
-    n_cycles= 2.0  #       No. of cycles  
-    f0 = 2.0e6     # [Hz]  Centre frequency
-    a  = 1.0       #       Amplitude
-    phase= 0.0     # [deg] Phase, rel. cosine
-    dt = 8e-9      # [s]   Sample interval
-    alpha = 0.5    #       Tukey window cosine-fraction
+    n_cycles= 2.0       #       No. of cycles  
+    f0 = 2.0e6          # [Hz]  Centre frequency
+    a  = 1.0            # [V]   Amplitude
+    phase= 0.0          # [deg] Phase, rel. cosine
+    dt = 8e-9           # [s]   Sample interval
+    alpha = 0.5         #       Tukey window cosine-fraction
+    trigger_source = 1  # Use osciloscope trigger, always
     
     
     def period(self):
@@ -311,10 +313,18 @@ class Pulse:
     
 class WaveformFilter:  
     ''' Digital filtering of waveform '''
-    type = "No filter" # Filter type: None, AC removal, bandpass, ...
-    f_min = 100        # [Hz] Lower cutoff frequency
-    f_max = 10e6       # [Hz] Upper cutoff frequency
-    order = 2          # Filter order
+    type= "No filter"             # Filter type: None, AC removal, bandpass, ...
+    f_min= 100e3                  # [Hz] Lower cutoff frequency
+    f_max= 10e6                   # [Hz] Upper cutoff frequency
+    order= 2                      # Filter order
+    sample_rate= 100e6            # Sample rate
+     
+    def wc(self):      # Cutoff normalised to Nyquist-frequency
+        return np.array([self.f_min, self.f_max])/(self.sample_rate/2) 
+    
+    def coefficients(self):
+        b, a = signal.butter(self.order, self.wc(), btype='bandpass', output='ba')
+        return b,a
     
     
 #%% Utility functions    

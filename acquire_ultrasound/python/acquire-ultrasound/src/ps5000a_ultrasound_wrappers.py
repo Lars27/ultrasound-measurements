@@ -305,17 +305,39 @@ def set_signal(dso, status, sampling, pulse):
     Send pulse to arbitrary waveform generator 
     UNTESTED
     '''
-    vpp_uV = ctypes.c_uint32(int(2*pulse.a))
-    ns     = ctypes.c_int32(pulse.ns())
-    triggersource = 1     # Use scope trigger, always
+   
+    # Settings in use
+    trigger_source= ctypes.c_uint16(pulse.trigger_source)   
+    vpp_uv= ctypes.c_uint32(int(2*pulse.a*1e6))       # Peak-to-peak, uV
+    n_awgpoints= ctypes.c_int32(pulse.n_samples())
     
-    awgBuffer = pulse.x()
-    awgbufferPointer = awgBuffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
+    awg_buffer = pulse.y()
+    awg_buffer_pointer = awg_buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
 
-    status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
-        dso.handle, 0, vpp_uV, 0, 0, 0, 0, 
-        awgbufferPointer, ns, 0, 0, 0, 0, 0, 0, triggersource, 0)
-    assert_pico_ok(status["setSigGenArbitrary"])
+    # Settings not in use    
+    offset_voltage_uv= ctypes.c_int32(0)
+    start_delta_phase= ctypes.c_uint32(0)
+    stop_delta_phase= ctypes.c_uint32(0)
+    delta_phase_increment= ctypes.c_uint32(0)
+    dwell_count= ctypes.c_uint32(0)
+    sweep_type= ctypes.c_uint16(0)
+    operation= ctypes.c_uint16(0)
+    index_mode= ctypes.c_uint16(0)   
+    shots= ctypes.c_uint32(0)
+    sweeps= ctypes.c_uint32(0)
+    trigger_type= ctypes.c_uint16(0)
+    ext_in_threshold= ctypes.c_uint16(0)    
+    
+# =============================================================================
+#     status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
+#         dso.handle, offset_voltage_uv, vpp_uv, 
+#         start_delta_phase, stop_delta_phase, delta_phase_increment, dwell_count, 
+#         awg_buffer_pointer, n_awgpoints, 
+#         sweep_type, operation, index_mode, shots, sweeps, 
+#         trigger_type, trigger_source, ext_in_threshold )
+#     
+#     assert_pico_ok(status["setSigGenArbitrary"])
+# =============================================================================
     
     return status
 

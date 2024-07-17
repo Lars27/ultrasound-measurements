@@ -6,7 +6,7 @@ Created on Tue Dec 20 22:20:43 2022
 
 Analysis program made for USN ultrasound lab
 
-Investigate and save pulses from single-element ultrasound transducers using 
+Investigate and save traces from single-element ultrasound transducers using 
 Picoscope 5000-series osciloscopes.
 GUI interface made in Qt Designer, ver. 5.
 Based on earlier NI LabWindows, LabVIEW and Matlab programs. Formats of 
@@ -37,6 +37,9 @@ WARNING= ["white", "red"]
 OK= ["white", "darkgreen"]
 NEUTRAL= ["black", "white"]
 
+TIMESCALE = 1E-6      # Display time in us
+FREQUENCYSCALE= 1E6   # Display frequency in MHz
+
 
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')
@@ -57,7 +60,7 @@ class Display:
 
 class AcquisitionControl:  
     '''
-    Control running of program
+    Status flags to control running of program
     '''
     ready = False     # Osciloscope configured and ready to start
     finished = False  # Acquisition finished
@@ -78,21 +81,21 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.runstate = AcquisitionControl()
 
         # Initialise instrument variables. 
-        # Interface to oscilloscope (ps5000a_ultrasound_wrappers.py) 
-        self.dso = ps.Communication()   # Instrument connection and status. 
-        self.ch = []
+        # Interface to oscilloscope. From ps5000a_ultrasound_wrappers.py
+        self.dso= ps.Communication()   # Instrument connection and status. 
+        self.ch= []
         self.ch.append(ps.Channel(0))   # Vertical channel configuration
         self.ch.append(ps.Channel(1))        
-        self.trigger = ps.Trigger()     # Trigger configuration
-        self.sampling = ps.Horizontal() # Horisontal configuration (time)  
+        self.trigger= ps.Trigger()     # Trigger configuration
+        self.sampling= ps.Horizontal() # Horisontal configuration (time)  
         
         # Ultrasound pulse data (us_utilities_py)        
-        self.wfm = us.Waveform()             # Result, storing acquired traces
-        self.pulse = us.Pulse()              # Pulse for function generator output
+        self.wfm= us.Waveform()             # Result, storing acquired traces
+        self.pulse= us.Pulse()              # Pulse for function generator output
         self.rf_filter = us.WaveformFilter() # Filtering, for display only
 
         # Display of results 
-        self.display = Display()        # Scaling and display options       
+        self.display= Display()        # Scaling and display options       
 
         # Connect functions to elements from GUI-file. QT naming convention
         # Display
@@ -109,15 +112,15 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.filterOrderSpinBox.valueChanged.connect(self.update_rf_filter)
                
         # Oscilloscope configuration
-        # Vertical, 2 channels (Voltage)
-        self.chButton = [self.chAButton, 
-                              self.chBButton]
+        # Vertical, 2 channels, A and B (Voltage)
+        self.chButton= [self.chAButton, 
+                         self.chBButton]
         self.rangeComboBox = [self.rangeAComboBox, 
-                               self.rangeBComboBox]  
+                              self.rangeBComboBox]  
         self.couplingComboBox = [self.couplingAComboBox, 
-                                  self.couplingBComboBox]
+                                 self.couplingBComboBox]
         self.offsetSpinBox = [self.offsetASpinBox, 
-                               self.offsetBSpinBox]
+                              self.offsetBSpinBox]
         self.couplingComboBox = [self.couplingAComboBox, 
                                  self.couplingBComboBox]
         self.bwlComboBox = [self.bwlAComboBox, 
@@ -168,7 +171,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         color = {'a':'C0', 'b':'C1', 'awg':'C2', 'marker':'C7'}
         plt.ion()               # Does not seem to make any difference?
         
-        # result grapphs layout
+        # Result grapphs layout
         fig, ax = plt.subplot_mosaic([['trace', 'trace', 'trace'],
                                       ['awg', 'zoom', 'zoom'],
                                       ['awgspec', 'spectrum', 'spectrum']],
@@ -189,11 +192,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
             ax[g].set_xlim(0, 10)   
             ax[g].grid(True)    
 
-        # Separate color for generated results
+        # Bckgroiund  color for generated results
         for g in [ 'awg', 'awgspec']:
             ax[g].set_facecolor("mintcream")
 
-        # Create dual y-axis 
+        # Dual y-axis for two channels
         ax['trace'] = [ax['trace'], ax['trace'].twinx()]    
         ax['zoom'] = [ax['zoom'], ax['zoom'].twinx()]
         ax['spectrum'] = [ax['spectrum'], ax['spectrum'].twinx()]
@@ -212,6 +215,13 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         # Define empty graphs to be updated with data during measurement
         graph = {}
 
+        graph['marker'] = ax['trace'][0].plot([], [], [], [], color=color['marker'])
+
+        # Single graph plots
+        graph['awg'] = ax['awg'].plot([], [], color=color['awg'])[0]
+        graph['awgspec'] = ax['awgspec'].plot([], [], color=color['awg'])[0]
+
+        # Two channels plots
         ch_no = 0
         for ch in ch_names: 
             graph[ch] = []
@@ -223,9 +233,6 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                 ax['spectrum'][ch_no].plot([], [], color=color[ch])[0])
             ch_no+=1
             
-        graph['marker'] = ax['trace'][0].plot([], [], [], [], color=color['marker'])
-        graph['awg'] = ax['awg'].plot([], [], color=color['awg'])[0]
-        graph['awgspec'] = ax['awgspec'].plot([], [], color=color['awg'])[0]
 
         fig.show()   
         
@@ -248,13 +255,14 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.status = {}               # Instrument status via c-style wrappers
         self.status["initialisation"]= 0
 
+
 #%% Functions to interact with instrument 
 
     def connect_dso(self):                                         
         '''
         Connect, configure and start instrument  
         '''
-        self.statusBar.showMessage('Connecting instrument ...')
+        self.statusBar.showMessage('Connecting instrument')
         errorcode = 0      
         
         # Try to close if an old handle is still resident. May not work
@@ -274,11 +282,14 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         # Send initial configuration to oscilloscope
         self.status = self.update_vertical()
         self.status = self.update_trigger()
+        
+        # Update configuration parameters
         self.update_sampling()
         self.update_pulser()
         self.update_rf_filter()
         self.update_display()
         
+        # Update GUI status
         self.acquireButton.setEnabled(True)
         self.saveButton.setEnabled(False)
         self.connectButton.setEnabled(False)
@@ -286,9 +297,9 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.statusBar.showMessage("Instrument connected")
         self.update_connected_box("Connected", OK)
 
-        self.runstate.finished = True
-        self.runstate.ready = True
-        self.runstate.stop = False
+        self.runstate.finished= True
+        self.runstate.ready=True
+        self.runstate.stop= False
 
         return errorcode 
 
@@ -297,13 +308,13 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         '''
         Close instrument connection, does not stop program    
         '''
-        self.statusBar.showMessage("Closing ...")
+        self.statusBar.showMessage("Closing")
         plt.close(self.fig)
         try:
-            self.status =  ps.close_adc(self.dso, self.status)
-            errorcode = 0
+            self.status=  ps.close_adc(self.dso, self.status)
+            errorcode= 0
         except:
-            errorcode =-1
+            errorcode=-1
         finally:
             self.close()       
 
@@ -316,16 +327,16 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         '''
         Read vertical settings from GUI and send to instrument      
         '''
-        self.ch[0].enabled = True  # Display or not, traces are always aquired 
-        self.ch[1].enabled = True 
+        self.ch[0].enabled= True  # Display or not, traces are always aquired 
+        self.ch[1].enabled= True 
         
         for k in range(2):
-            self.ch[k].v_range = self.read_scaled_value(
-                self.rangeComboBox[k].currentText())
-            self.ch[k].v_range = self.ch[k].v_max()
-            self.ch[k].coupling = self.couplingComboBox[k].currentText()
-            self.ch[k].offset = self.offsetSpinBox[k].value()
-            self.ch[k].bwl = self.bwlComboBox[k].currentText()        
+            self.ch[k].v_range= self.read_scaled_value(
+                                  self.rangeComboBox[k].currentText())
+            self.ch[k].v_range= self.ch[k].v_max()
+            self.ch[k].coupling= self.couplingComboBox[k].currentText()
+            self.ch[k].offset= self.offsetSpinBox[k].value()
+            self.ch[k].bwl= self.bwlComboBox[k].currentText()        
         
         if self.dso.connected: 
             for k in range(2):
@@ -344,7 +355,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.trigger.position = self.triggerPositionSpinBox.value()
         self.trigger.direction = self.triggerModeComboBox.currentText()
         self.trigger.level = self.triggerLevelSpinBox.value()
-        self.trigger.delay = self.triggerDelaySpinBox.value()*1e-6
+        self.trigger.delay = self.triggerDelaySpinBox.value()*TIMESCALE
         self.trigger.autodelay = self.triggerAutoDelaySpinBox.value()*1e-3
         self.trigger.internal = self.internalTriggerDelaySpinBox.value()*1e-3        
         self.sampling.pretrigger= self.trigger.position/100  # Convert % 
@@ -365,7 +376,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.sampling.n_samples = int(self.nSamplesSpinBox.value()*1e3)
         if self.dso.connected: 
             self.sampling.dt = ps.get_dt(self.dso, self.sampling)
-            self.samplerateSpinBox.setValue(self.sampling.fs() * 1e-6)
+            self.samplerateSpinBox.setValue(self.sampling.fs()/FREQUENCYSCALE)
         
         return 0
     
@@ -375,26 +386,26 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         Read settings for arbitrary waveform generator (awg)
         Plot pulse and send to instrument
         '''
-        time_unit="us"
-        multiplier, freq_scale = us.find_timescale(time_unit)
-        
+       
         transmitting = self.transmitButton.isChecked()
         if transmitting:
             self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
             self.pulse.shape = self.pulseShapeComboBox.currentText()
-            self.pulse.f0 = self.pulseFrequencySpinBox.value()*1e6
+            self.pulse.f0 = self.pulseFrequencySpinBox.value()*FREQUENCYSCALE
             self.pulse.n_cycles = self.pulseDurationSpinBox.value()
             self.pulse.phase = self.pulsePhaseSpinBox.value()
             self.pulse.a = self.pulseAmplitudeSpinBox.value()
         
-            t_end = self.pulse.t_end()*multiplier;
+            t_end = self.pulse.t_end()/TIMESCALE;
             vlim = 1.1 * self.pulse.a
-            self.graph['awg'].set_data(self.pulse.t()*multiplier, self.pulse.y())
+            self.graph['awg'].set_data(self.pulse.t()/TIMESCALE, self.pulse.y())
             self.ax['awg'].set_xlim(0, t_end )
             self.ax['awg'].set_ylim(-vlim, vlim)              
 
             f, psd = self.pulse.powerspectrum()
-            self.graph['awgspec'].set_data(f/multiplier, psd)
+            self.graph['awgspec'].set_data(f/FREQUENCYSCALE, psd)
+            
+            ps.set_signal( self.dso, self.status, self.sampling, self.pulse)
         
         else:
             self.graph['awg'].set_data([], [])
@@ -410,9 +421,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         '''
         Read RF noise filter settings from GUI 
         '''
+        self.rf_filter.sample_rate = self.sampling.fs()
+
         self.rf_filter.type = self.filterComboBox.currentText() 
-        self.rf_filter.fmin = self.fminSpinBox.value()
-        self.rf_filter.fmax = self.fmaxSpinBox.value()
+        self.rf_filter.f_min = self.fminSpinBox.value()*FREQUENCYSCALE
+        self.rf_filter.f_max = self.fmaxSpinBox.value()*FREQUENCYSCALE
         self.rf_filter.order = self.filterOrderSpinBox.value()
         
         return 0
@@ -481,8 +494,6 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         '''
         Plot measured trace on screen
         '''        
-        multiplier, freq_scale = us.find_timescale(time_unit)
-        
         wfm_filtered= self.wfm.filtered(self.rf_filter) 
         wfm_zoomed= wfm_filtered.zoomed([self.display.t_min, 
                                          self.display.t_max ])         
@@ -492,11 +503,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         chname = ['a','b']
         for k in range(2):             
             if self.display.channel[k]:
-                self.graph[chname[k]][0].set_data(wfm_filtered.t()*multiplier, 
+                self.graph[chname[k]][0].set_data(wfm_filtered.t()/TIMESCALE, 
                                                   wfm_filtered.y[:,k]) 
-                self.graph[chname[k]][1].set_data(wfm_zoomed.t()*multiplier, 
+                self.graph[chname[k]][1].set_data(wfm_zoomed.t()/TIMESCALE, 
                                                   wfm_zoomed.y[:,k])
-                self.graph[chname[k]][2].set_data(f/multiplier, psd[:,k])
+                self.graph[chname[k]][2].set_data(f/FREQUENCYSCALE, psd[:,k])
             else:
                 self.graph[chname[k]][0].set_data([],[]) # Full trace
                 self.graph[chname[k]][1].set_data([],[]) # Selected interval       
@@ -601,15 +612,31 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return value
     
     
+    def find_voltagescale(self, vmax):
+        '''
+        Find scale for voltage axis based on maximum value
+        '''
+        if vmax<1e-3:
+            voltage_scale= 1e-6
+            unit= "uV"
+        elif vmax<1:
+            voltage_scale= 1e-3
+            unit= "mV"
+        else:
+            voltage_scale= 1
+            unit= "V"
+
+        return voltage_scale, unit
+                        
+    
     def update_display(self,time_unit="us"):                
         '''
         Update values and markers on screen
         '''
-        multiplier, freq_scale = us.find_timescale(time_unit)
 
         # Full trace time-axis
-        self.ax["trace"][0].set_xlim(self.sampling.t0()*multiplier, 
-                                     self.sampling.t_max()*multiplier)    
+        self.ax["trace"][0].set_xlim(self.sampling.t0()/TIMESCALE, 
+                                     self.sampling.t_max()/TIMESCALE)    
         
         # Selected interval, 'zoom'
         tlim = [ self.zoomStartSpinBox.value(), self.zoomEndSpinBox.value()] 
@@ -617,9 +644,10 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
             self.graph['marker'][k].set_data(
                 np.full((2,1), tlim[k]), np.array([-100, 100])) 
 
-        self.display.t_min = min(tlim)*1e-6    
-        self.display.t_max = max(tlim)*1e-6       
         self.ax["zoom"][0].set_xlim(min(tlim), max(tlim) )
+
+        self.display.t_min= min(tlim)*TIMESCALE
+        self.display.t_max= max(tlim)*TIMESCALE
         
         # Vertical scale
         dbmin = self.dbMinSpinBox.value()        
@@ -628,9 +656,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
             vzoom= self.read_scaled_value(
                 self.displayrangeComboBox[k].currentText())        
+            #voltage_scale, voltage_unit = self.find_voltagescale(vzoom)
+            
             self.ax["zoom"][k].set_ylim(-vzoom, vzoom)
             self.ax["trace"][k].set_ylim(-self.ch[k].v_max(), 
-                                         self.ch[k].v_max())
+                                          self.ch[k].v_max())
             self.ax["spectrum"][k].set_ylim(dbmin, 0)
 
         self.ax["awgspec"].set_ylim(dbmin, 0)

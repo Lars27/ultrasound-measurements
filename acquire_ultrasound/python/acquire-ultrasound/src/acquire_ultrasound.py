@@ -22,9 +22,7 @@ Function generator to be implemented soon
 
 # General
 import sys
-#import time
 from PyQt5 import QtWidgets, uic
-import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib                        # For setup with Qt
 
@@ -172,13 +170,14 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         color = {'a':'C0', 'b':'C1', 
                  'awg':'C2', 'awg_background': 'mintcream',
                  'marker':'darkslategrey', 'patch':'azure'}
-        plt.ion()               # Does not seem to make any difference?
+        matplotlib.pyplot.ion()               # Does not seem to make any difference?
         
         # Result grapphs layout
-        fig, ax = plt.subplot_mosaic([['trace', 'trace', 'trace'],
-                                      ['awg', 'zoom', 'zoom'],
-                                      ['awgspec', 'spectrum', 'spectrum']],
-                                      figsize=(16, 12))
+        fig, ax= matplotlib.pyplot.subplot_mosaic(
+                        [['trace', 'trace', 'trace', 'trace'],
+                         ['awg', 'zoom', 'zoom', 'zoom'],
+                         ['awgspec', 'spectrum', 'spectrum', 'spectrum']],
+                        figsize=(16, 12))
         
         # Set x-axis scales and labels
         # Time traces
@@ -317,7 +316,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         Close instrument connection, does not stop program    
         '''
         self.statusBar.showMessage("Closing")
-        plt.close(self.fig)
+        matplotlib.pyplot.close(self.fig)
         try:
             self.status=  ps.close_adc(self.dso, self.status)
             errorcode= 0

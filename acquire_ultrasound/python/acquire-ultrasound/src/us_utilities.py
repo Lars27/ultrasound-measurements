@@ -284,8 +284,10 @@ class Pulse:
                 s = 1/2*signal.sawtooth(arg, width=1)  
             case _:
                 s = np.cos(arg)
-          
-        return self.a*win*s
+                
+        y= self.a*win*s
+        y[-1]= 0         # Avoid DC-level after pulse is over
+        return y
 
     
     def plot(self):

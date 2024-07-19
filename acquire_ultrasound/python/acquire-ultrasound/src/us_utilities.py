@@ -218,6 +218,7 @@ class Pulse:
     dt = 8e-9           # [s]   Sample interval
     alpha = 0.5         #       Tukey window cosine-fraction
     trigger_source = 1  # Use osciloscope trigger, always
+    on=False
     
     
     def period(self):
@@ -225,14 +226,14 @@ class Pulse:
         return 1/self.f0
     
     
-    def t_end(self):
-        ''' Time of last sample [s] '''
-        return self.period() * self.n_cycles
+    def duration(self):
+        ''' Duration of pulse [s] '''
+        return self.period()*self.n_cycles
     
     
     def t(self):
         ''' Time vector [s] '''
-        return np.arange(0, self.t_end(), self.dt)
+        return np.arange(0, self.duration(), self.dt)
     
     
     def time_unit(self):        

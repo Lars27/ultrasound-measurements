@@ -30,6 +30,10 @@ from picosdk.ps5000a import ps5000a as picoscope
 from picosdk.functions import adc2mV, assert_pico_ok #, mV2adc
 
 
+DAC_SAMPLERATE = 200e6   # [Samples/s] Fixed, see Programmer's guide
+DAC_MAX_AMPLITUDE= 2.0  # [v] Max. amplitude from signal generator
+
+
 #%% Classes
     
 class Status:
@@ -129,6 +133,11 @@ class Communication:
     channel = 'A'
     buffer_a = ( ctypes.c_int16 * 10 )()
     buffer_b = ( ctypes.c_int16 * 10 )() 
+    
+    awg_max_value= ctypes.c_int16(0)
+    awg_min_value= ctypes.c_int16(0)
+    awg_min_length= ctypes.c_int32(0)
+    awg_max_length= ctypes.c_int32(0)
       
     
 #%% 
@@ -150,7 +159,8 @@ def open_adc(dso, status):
         assert_pico_ok(status["openunit"])
     except: # PicoNotOkError:
         power_status = status["openunit"]
-        if power_status in [282, 286]:
+        if power_status in [picoscope.PICO_STATUS["PICO_POWER_SUPPLY_NOT_CONNECTED"], 
+                            picoscope.PICO_STATUS["PICO_USB3_0_DEVICE_NON_USB3_0_PORT"]]:
             status["changePowerSource"] = picoscope.ps5000aChangePowerSource(
                 dso.handle, power_status)
         else:
@@ -302,42 +312,83 @@ def acquire_trace(dso, status, sampling, ch):
 
 def set_signal(dso, status, sampling, pulse):  
     '''
-    Send pulse to arbitrary waveform generator 
-    UNTESTED
+    Send pulse to arbitrary waveform generator     
     '''
-   
-    # Settings in use
-    trigger_source= ctypes.c_uint16(pulse.trigger_source)   
-    vpp_uv= ctypes.c_uint32(int(2*pulse.a*1e6))       # Peak-to-peak, uV
-    n_awgpoints= ctypes.c_int32(pulse.n_samples())
-    
-    awg_buffer = pulse.y()
-    awg_buffer_pointer = awg_buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
 
-    # Settings not in use    
+    if pulse.on:
+        amplitude= min(pulse.a, DAC_MAX_AMPLITUDE)
+    else:
+        amplitude= 0
+                
+    status["sigGenArbMinMax"]= picoscope.ps5000aSigGenArbitraryMinMaxValues(
+        dso.handle, 
+        ctypes.byref(dso.awg_min_value), 
+        ctypes.byref(dso.awg_max_value),
+        ctypes.byref(dso.awg_min_length), 
+        ctypes.byref(dso.awg_max_length) )
+
+    assert_pico_ok(status["sigGenArbMinMax"])
+
+    # Scale pulse for awg buffer
+    y_scaled= pulse.y()/pulse.a*dso.awg_max_value
+        
+    pulsedata= y_scaled.astype(ctypes.c_int16)
+    buffer_length= ctypes.c_uint32(len(pulsedata))
+    
+    index_mode= ctypes.c_int32(0)
+    delta_phase= ctypes.c_uint32(0)
+    status["freqToPhase"]= picoscope.ps5000aSigGenFrequencyToPhase(
+                                   dso.handle, 
+                                   1/pulse.duration(), 
+                                   index_mode, 
+                                   buffer_length, 
+                                   ctypes.byref(delta_phase))
+
+    assert_pico_ok(status["freqToPhase"])     
+
+    '''
+    Settings not in use    
+    Values passed as c-type variables, type casting not checked for all 
+    See documentation in Programmer's Guide. 
+    Enum variables are problematic and not well defined
+    '''
+
     offset_voltage_uv= ctypes.c_int32(0)
-    start_delta_phase= ctypes.c_uint32(0)
-    stop_delta_phase= ctypes.c_uint32(0)
+    pp_voltage_uv= ctypes.c_uint32(int(2*amplitude*1e6)) # Peak-to-peak, uV
+    trigger_type= ctypes.c_int32(0)       
+    trigger_source= ctypes.c_int32(pulse.trigger_source)       
+    shots= ctypes.c_uint32(1)
+
+    # Parameters not used
     delta_phase_increment= ctypes.c_uint32(0)
     dwell_count= ctypes.c_uint32(0)
-    sweep_type= ctypes.c_uint16(0)
-    operation= ctypes.c_uint16(0)
-    index_mode= ctypes.c_uint16(0)   
-    shots= ctypes.c_uint32(0)
+    sweep_type= ctypes.c_int32(0)
+    operation= ctypes.c_int32(0)            
     sweeps= ctypes.c_uint32(0)
-    trigger_type= ctypes.c_uint16(0)
-    ext_in_threshold= ctypes.c_uint16(0)    
-    
-# =============================================================================
-#     status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
-#         dso.handle, offset_voltage_uv, vpp_uv, 
-#         start_delta_phase, stop_delta_phase, delta_phase_increment, dwell_count, 
-#         awg_buffer_pointer, n_awgpoints, 
-#         sweep_type, operation, index_mode, shots, sweeps, 
-#         trigger_type, trigger_source, ext_in_threshold )
-#     
-#     assert_pico_ok(status["setSigGenArbitrary"])
-# =============================================================================
+    ext_in_threshold= ctypes.c_int16(0) 
+
+    waveform_length= ctypes.c_int32(len(pulsedata))    
+    waveform_pointer= pulsedata.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
+    status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
+        dso.handle, 
+        offset_voltage_uv, 
+        pp_voltage_uv, 
+        delta_phase.value, 
+        delta_phase.value, 
+        delta_phase_increment, 
+        dwell_count, 
+        waveform_pointer, 
+        waveform_length, 
+        sweep_type, 
+        operation, 
+        index_mode, 
+        shots,
+        sweeps,
+        trigger_type, 
+        trigger_source, 
+        ext_in_threshold)
+
+    assert_pico_ok(status["setSigGenArbitrary"])
     
     return status
 

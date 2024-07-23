@@ -382,7 +382,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.sampling.timebase = 3
         self.sampling.n_samples = int(self.nSamplesSpinBox.value()*1e3)
         if self.dso.connected: 
+<<<<<<< HEAD
             self.sampling.dt = ps.get_sample_interval(self.dso, self.sampling)
+=======
+            self.sampling.dt = ps.get_dt(self.dso, self.sampling)
+>>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
             self.samplerateSpinBox.setValue(self.sampling.fs()/FREQUENCYSCALE)
         
         self.runstate.sampling_changed=True

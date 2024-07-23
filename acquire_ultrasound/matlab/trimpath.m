@@ -1,13 +1,21 @@
-function newpath= trimpath(filepath,n)
-% newpath= trimpath(filepath,n)
+function newPath= trimpath(filePath, nDirs)
+% function newpath= trimpath(filePath, nDirs)
 %
-% Remove n last files/folders in filepath
+% Remove last files/folders in filepath
 
 % Lars Hoff, USN, Nov 2020
+%     July 2024 Updated to allow only one argument
 
-ksep=find(filepath(1:end-1)==filesep);  % Fileseparator positions. Excludes last character, as this may or may not be filesep
-n=min(length(ksep),n);
-newpath= filepath(1:ksep(end-n+1)-1);
+if nargin<2
+    nDirs=1;
+end
+
+% Fileseparator positions. Last character may or may not be filesep
+separatorPositions=find(filePath(1:end-1)==filesep);  
+
+nDirs=min(length(separatorPositions), nDirs); 
+lastPosition= separatorPositions(end-nDirs+1);
+newPath= filePath(1:lastPosition);
 
 end
 

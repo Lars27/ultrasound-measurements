@@ -33,10 +33,6 @@ DAC_SAMPLERATE = 500e6   # [Samples/s] Fixed, see Programmer's guide
 DAC_MAX_AMPLITUDE= 2.0  # [v] Max. amplitude from signal generator
 
 
-DAC_SAMPLERATE = 200e6   # [Samples/s] Fixed, see Programmer's guide
-DAC_MAX_AMPLITUDE= 2.0  # [v] Max. amplitude from signal generator
-
-
 #%% Classes
     
 class Status:
@@ -124,7 +120,6 @@ class Communication:
     Communications with osciloscope 
     c-type variables for calling c-style functions from DLLs in Pico SDK
     '''
-<<<<<<< HEAD
     connected= False  
     status= {}    
     handle= ctypes.c_int16(0)
@@ -135,20 +130,6 @@ class Communication:
     overflow= ctypes.c_int16(0)
     channel= 'A'
     buffer= []   
-=======
-    connected = False  
-    status = {}    
-    handle = ctypes.c_int16(0)
-    max_adc = ctypes.c_int16(0)   
-    overflow = ctypes.c_int16(0)
-    max_samples = ctypes.c_int32(0)  
-    ready = ctypes.c_int16(0)
-    check = ctypes.c_int16(0)
-    channel = 'A'
-    buffer_a = ( ctypes.c_int16 * 10 )()
-    buffer_b = ( ctypes.c_int16 * 10 )() 
-    
->>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
     awg_max_value= ctypes.c_int16(0)
     awg_min_value= ctypes.c_int16(0)
     awg_min_length= ctypes.c_int32(0)
@@ -418,10 +399,6 @@ def set_signal(dso, status, sampling, pulse):
         ctypes.byref(dso.awg_max_value),
         ctypes.byref(dso.awg_min_length), 
         ctypes.byref(dso.awg_max_length) )
-<<<<<<< HEAD
-=======
-
->>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
     assert_pico_ok(status["sigGenArbMinMax"])
 
     # Scale pulse for awg buffer
@@ -433,33 +410,18 @@ def set_signal(dso, status, sampling, pulse):
     index_mode= ctypes.c_int32(0)
     delta_phase= ctypes.c_uint32(0)
     status["freqToPhase"]= picoscope.ps5000aSigGenFrequencyToPhase(
-<<<<<<< HEAD
         dso.handle, 
         1/pulse.duration(), 
         index_mode, 
         buffer_length, 
         ctypes.byref(delta_phase))
-=======
-                                   dso.handle, 
-                                   1/pulse.duration(), 
-                                   index_mode, 
-                                   buffer_length, 
-                                   ctypes.byref(delta_phase))
-
->>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
     assert_pico_ok(status["freqToPhase"])     
 
     '''
     Settings not in use    
     Values passed as c-type variables, type casting not checked for all 
     See documentation in Programmer's Guide. 
-<<<<<<< HEAD
     '''
-=======
-    Enum variables are problematic and not well defined
-    '''
-
->>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
     offset_voltage_uv= ctypes.c_int32(0)
     pp_voltage_uv= ctypes.c_uint32(int(2*amplitude*1e6)) # Peak-to-peak, uV
     trigger_type= ctypes.c_int32(0)       
@@ -494,10 +456,6 @@ def set_signal(dso, status, sampling, pulse):
         trigger_type, 
         trigger_source, 
         ext_in_threshold)
-<<<<<<< HEAD
-=======
-
->>>>>>> 12259ed00a78ae6965beacc4b508989621d2f497
     assert_pico_ok(status["setSigGenArbitrary"])
     
     return status

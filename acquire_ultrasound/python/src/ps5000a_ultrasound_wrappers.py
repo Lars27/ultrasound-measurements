@@ -31,6 +31,7 @@ from picosdk.functions import adc2mV, assert_pico_ok #, mV2adc
 
 DAC_SAMPLERATE = 500e6   # [Samples/s] Fixed, see Programmer's guide
 DAC_MAX_AMPLITUDE= 2.0  # [v] Max. amplitude from signal generator
+CH_NAMES = ["A", "B"]
 
 
 #%% Classes
@@ -168,6 +169,9 @@ def open_adc(dso, status):
             dso.handle, ctypes.byref(dso.max_adc))
         
         assert_pico_ok(status["maximumValue"])        
+        
+        dso.connected= ((status["changePowerSource"]==0) 
+                        and (status["maximumValue"]==0))
     
     return status, dso
 

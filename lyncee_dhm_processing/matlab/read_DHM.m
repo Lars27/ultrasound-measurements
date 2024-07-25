@@ -1,5 +1,5 @@
-function DHM= read_dhm(mask, rawdatadir)
-% function DHM= read_dhm(mask, rawdatadir)
+function dhm= read_dhm(mask, rawdatadir)
+% function dhm= read_dhm(mask, rawdatadir)
 % 
 % Read sequence of files from Lyncee DHM using 'read_mat_bin' from LynceeTec
 %
@@ -9,7 +9,7 @@ function DHM= read_dhm(mask, rawdatadir)
 %    mask     File names to include, using wildcards
 % rawdatadir  Path to search in. (Defaluts to current directory)
 %
-%        DHM  Result as struct, explained at end of file
+%        dhm  Result as struct, explained at end of file
 
 % Lars Hoff, USN, 2022
 
@@ -33,10 +33,10 @@ for kFile=1:nFiles
 end
 
 %% Format result into struct
-DHM.data= data;   % Raw data values
-DHM.dz= hconv;    % Conversion factor, phase to displacement [m/radian]
-DHM.dx= pxsize;   % Conversion factor, pixel to lateral dimension [m/pixel]
-DHM.xMax= pxsize*w;  % [m] Image width 
-DHM.yMax= pxsize*h;  % [m] Image height
+dhm.data= data;   % Raw data values
+dhm.dz= hconv;    % Conversion factor, phase to displacement [m/radian]
+dhm.dx= pxsize;   % Conversion factor, pixel to lateral dimension [m/pixel]
+dhm.xMax= pxsize*w;  % [m] Image width 
+dhm.yMax= pxsize*h;  % [m] Image height
 
 end

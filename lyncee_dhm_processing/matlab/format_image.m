@@ -1,5 +1,5 @@
-function format_DHM_image( xrange, yrange, zscale, ztext )
-% function format_DHM_image( xrange, yrange, zscale, ztext )
+function format_image( xrange, yrange, zscale, ztext )
+% function format_image( xrange, yrange, zscale, ztext )
 %
 % Format axes for image from Lyncee Tec DHM
 %

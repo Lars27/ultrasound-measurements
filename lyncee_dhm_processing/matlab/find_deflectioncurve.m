@@ -1,5 +1,5 @@
-function Deflectioncurve = find_deflectioncurve(Deflectioncurve, z, pxsize)
-% function Deflectioncurve = find_deflectioncurve(Deflectioncurve, z, pxsize)
+function Deflectioncurve = find_deflectioncurve(Deflectioncurve, z, pixelSize)
+% function Deflectioncurve = find_deflectioncurve(Deflectioncurve, z, pixelSize)
 %
 % Define line in 2D image
 % Find pixel positions and z-values along line
@@ -8,14 +8,15 @@ function Deflectioncurve = find_deflectioncurve(Deflectioncurve, z, pxsize)
 
 
 %% Find indices of line
-pStart = findIndex(Deflectioncurve.start, pxsize);
-pEnd = findIndex(Deflectioncurve.end, pxsize);
+[pxMax, pyMax, frameMax] = size(z);
+pStart = findIndex(Deflectioncurve.start, pixelSize, [1 pxMax]);
+pEnd = findIndex(Deflectioncurve.end, pixelSize, [1 pyMax]);
 nDeflectionpoints =max(abs(pEnd-pStart));
 
 for k=1:2       % Indices of points to calculate deflectioncurves
     p(k,:)= round(linspace(pStart(k), pEnd(k), nDeflectionpoints));
 end
-x= p*pxsize;                  % [m] Lataral position of deflectioncurves
+x= p*pixelSize;               % [m]  Lateral position of deflectioncurves
 d=sqrt(sum((x-x(:,1)).^2));   % [m]  Distance along deflection curve
  
 %% Find deflection values
@@ -31,7 +32,10 @@ Deflectioncurve.z= deflection;
 
 end
 
-function [n, N] = findIndex(x, pxsize)
-n= round(x/pxsize);
-N= max(n)-min(n)+1 ;
+function p= findIndex(x, pixelSize, pixelLim )
+p= round(x/pixelSize);
+
+p(p<min(pixelLim))= min(pixelLim);
+p(p>max(pixelLim))= max(pixelLim);
+
 end

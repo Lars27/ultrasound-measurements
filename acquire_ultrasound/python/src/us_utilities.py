@@ -55,7 +55,7 @@ class Waveform:
     def n_fft(self, upsample=2):
         ''' Number of points to calculate spectrum, interpolated by padding zeros '''
         n_up = 2**(self.n_samples().bit_length() +upsample)  # Next power of 2
-        return max(n_up, 1024)
+        return max(n_up, 2048)
     
     def t(self):             
         '''Time vector calculated from start time and sample interval [s] '''
@@ -79,11 +79,12 @@ class Waveform:
         wfm.y= y
         return wfm    
     
-    def zoomed (self, tlim ):  
+    def zoomed (self, tlim):  
         ''' Extract copy of trace from specified interval '''
         wfm= copy.deepcopy(self)
         nlim= np.flatnonzero((self.t() >= min(tlim)) 
                               & (self.t() <= max(tlim)))       
+
         t0= self.t()[np.min(nlim)]
         y= self.y[nlim]        
         wfm.t0= t0
@@ -99,10 +100,13 @@ class Waveform:
         ''' Frequency vector [Hz] '''
         return np.arange( 0, self.n_fft()/2 )/self.n_fft() * self.fs()
     
-    def powerspectrum (self, normalise=False, scale="linear"):
+    def powerspectrum (self, normalise=False, scale="linear", upsample=2):
         ''' Calculate power spectrum of trace '''  
-        f, psd = powerspectrum( self.y, self.dt, nfft=self.n_fft(), 
-                               scale=scale, normalise=normalise)       
+        f, psd = powerspectrum( self.y, 
+                               self.dt, 
+                               nfft=self.n_fft(upsample=2), 
+                               scale=scale, 
+                               normalise=normalise)       
         return f, psd      
     
     def plot_spectrum ( self, time_unit="s", frequnit="Hz", fmax=None, 
@@ -323,8 +327,35 @@ def find_timescale(time_unit="s"):
         case _:
             multiplier= 1
             freq_unit = "Hz"
-    return multiplier, freq_unit           
+    return multiplier, freq_unit       
 
+def find_limits(limits, min_diff=1):
+       min_value= min(limits)
+       max_value= max(max(limits), min_value+min_diff)
+       return np.array([min_value, max_value]) 
+
+def read_scaled_value(prefix): 
+    '''
+    Interpret a text as a scaled value (milli, kilo, Mega etc.)
+    '''
+    prefix= prefix.split(' ')     
+    if len(prefix) == 1:
+        multiplier = 1
+    else:
+        if prefix[1]== 'u':
+            multiplier = 1e-6;
+        if prefix[1]== 'm':
+            multiplier = 1e-3;
+        elif prefix[1] == 'k':
+            multiplier = 1e3;
+        elif prefix[1] == 'M':
+            multiplier = 1e6
+        elif prefix[1] == 'G':
+            multiplier = 1e9
+        else:
+            multiplier = 1
+    value= float(prefix[0]) *multiplier        
+    return value        
 
 def find_filename( prefix='us', ext='wfm', resultdir= "..\\results" ):   
     '''

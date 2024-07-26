@@ -45,6 +45,8 @@ COLOR_AWG_BACKGROUND= mcolors.CSS4_COLORS['mintcream']
 TIMESCALE= 1E-6      # Display scales for time and frequency
 FREQUENCYSCALE= 1E6  
 
+V_MAX= 20           # Absolute maximum voltage scale
+
 #%% Set up GUI from Qt5
 matplotlib.use('Qt5Agg')
 oscilloscope_main_window, QtBaseClass = uic.loadUiType(
@@ -101,8 +103,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.transmitButton.setEnabled(False)
         self.saveButton.setEnabled(False)
 
-#%% Functions to interact with instrument 
-
+#%% Connect and disconnect oscilloscope
     def connect_dso(self):                                         
         '''
         Connect, configure and start instrument  
@@ -170,6 +171,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.statusBar.showMessage('Closed')
         return self.status, errorcode     
 
+#%% Update oscilloscope settings
     def update_vertical(self):
         '''
         Read vertical settings from GUI and send to instrument      
@@ -178,7 +180,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.ch[1].enabled= True 
         
         for k in range(len(self.ch)):
-            self.ch[k].v_range= self.read_scaled_value(
+            self.ch[k].v_range= us.read_scaled_value(
                                       self.rangeComboBox[k].currentText())
             self.ch[k].v_range= self.ch[k].v_max()
             self.ch[k].coupling= self.couplingComboBox[k].currentText()
@@ -266,8 +268,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.rf_filter.order= self.filterOrderSpinBox.value()        
         return 0
     
-#%% Read and save results
-
+#%% Acquire, display, and save results
     def control_acquisition(self):
         ''' 
         Acquire data from oscilloscope
@@ -329,8 +330,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         Plot measured trace on screen
         '''        
         wfm_filtered= self.wfm.filtered(self.rf_filter) 
-        wfm_zoomed= wfm_filtered.zoomed([self.display.t_min, 
-                                         self.display.t_max ])                 
+        wfm_zoomed= wfm_filtered.zoomed(self.display.t_lim)                 
         f, psd= wfm_zoomed.powerspectrum(scale="dB", normalise="True")        
         ch_no=0
         for ch_name in ps.CH_NAMES:
@@ -370,7 +370,6 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0    
        
 #%% General GUI read and write
-
     def update_status(self, message, append=False):
         '''
         Status field, at bottom of window
@@ -413,30 +412,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.transmitStatusEdit.setText(message)
         self.transmitStatusEdit.setStyleSheet(
             f"color:{color[0]}; background-color:{color[1]}")
-        return 0    
-
-    def read_scaled_value(self, prefix): 
-        '''
-        Interpret a text as a scaled value (milli, kilo, Mega etc.)
-        '''
-        prefix= prefix.split(' ')     
-        if len(prefix) == 1:
-            multiplier = 1
-        else:
-            if prefix[1]== 'u':
-                multiplier = 1e-6;
-            if prefix[1]== 'm':
-                multiplier = 1e-3;
-            elif prefix[1] == 'k':
-                multiplier = 1e3;
-            elif prefix[1] == 'M':
-                multiplier = 1e6
-            elif prefix[1] == 'G':
-                multiplier = 1e9
-            else:
-                multiplier = 1
-        value= float(prefix[0]) *multiplier        
-        return value    
+        return 0               
     
     def find_voltagescale(self, vmax):
         '''
@@ -462,21 +438,27 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                                      self.sampling.t_max()/TIMESCALE)    
         
         # Selected interval, 'zoom'
-        tlim = [ self.zoomStartSpinBox.value(), self.zoomEndSpinBox.value()] 
+        t_lim= us.find_limits([self.zoomStartSpinBox.value(), 
+                               self.zoomEndSpinBox.value()],
+                              min_diff=0.1)
         for k in range(len(self.graph['marker'])):
-            self.graph['marker'][k].set_data(
-                np.full((2,1), tlim[k]), np.array([-100, 100]))         
-        self.graph['patch'].set_bounds(tlim[0], -20, tlim[1]-tlim[0], 40 )      
-        self.axis["zoom"][0].set_xlim(min(tlim), max(tlim) )
-        self.display.t_min= min(tlim)*TIMESCALE
-        self.display.t_max= max(tlim)*TIMESCALE
+            self.graph['marker'][k].set_data(np.full((2,1), 
+                                             t_lim[k]), 
+                                             np.array([-V_MAX, V_MAX]))         
+        self.graph['patch'].set_bounds(t_lim[0], 
+                                       -V_MAX, 
+                                       t_lim[1]-t_lim[0], 
+                                       2*V_MAX)      
+        self.axis["zoom"][0].set_xlim(t_lim)
+        self.display.t_lim= t_lim*TIMESCALE
         
         # Vertical scale
-        db_lim= [self.dbMinSpinBox.value(), self.dbMaxSpinBox.value()] 
+        db_lim= us.find_limits([self.dbMinSpinBox.value(),
+                                self.dbMaxSpinBox.value()])        
         for k in range(len(self.display.channel)):
             self.display.channel[k] = not self.chButton[k].isChecked()
-            vzoom= self.read_scaled_value(
-                self.displayrangeComboBox[k].currentText())                   
+            vzoom= us.read_scaled_value(
+                                self.displayrangeComboBox[k].currentText())                   
             self.axis["zoom"][k].set_ylim(-vzoom, vzoom)
             self.axis["trace"][k].set_ylim(-self.ch[k].v_max(), 
                                            self.ch[k].v_max())
@@ -484,10 +466,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.axis["awgspec"].set_ylim(db_lim)
 
         # Frequency axis
-        flim = [self.zoomFminSpinBox.value(), 
-                self.zoomFmaxSpinBox.value()]  
-        self.axis["spectrum"][0].set_xlim(min(flim), max(flim))
-        self.axis["awgspec"].set_xlim(min(flim), max(flim))
+        f_lim= us.find_limits([self.zoomFminSpinBox.value(), 
+                               self.zoomFmaxSpinBox.value()], 
+                              min_diff=0.1)
+        self.axis["spectrum"][0].set_xlim(f_lim)
+        self.axis["awgspec"].set_xlim(f_lim)
         
         self.fig.canvas.draw()        
         return 0   
@@ -567,8 +550,10 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                         f"color:white; background-color:{COLOR_CH[k]}")        
             self.chLabel[k].setStyleSheet(
                         f"color:white; background-color:{COLOR_CH[k]}")
+            # self.displayrangeComboBox[k].setStyleSheet(
+            #             f"color:white; background-color:{COLOR_CH[k]}")
             self.displayrangeComboBox[k].setStyleSheet(
-                        f"color:white; background-color:{COLOR_CH[k]}")
+                        f"color:{COLOR_CH[k]}")
         return 0
         
 #%% Define graphs
@@ -593,12 +578,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         for g in ['trace', 'zoom', 'awg']:
             axis[g].set_xlabel('Time [us]')
             axis[g].set_ylabel('Voltage [V]')
-            axis[g].set_xlim(-100, 100)   
+            axis[g].set_xlim(0, 1)   
             axis[g].grid(True)               
         for g in ['spectrum', 'awgspec']:
             axis[g].set_xlabel('Frequency [MHz]')
             #axis[g].set_ylabel('Power [dB re. max]')
-            axis[g].set_xlim(0, 10)   
+            axis[g].set_xlim(0, 1)   
             axis[g].grid(True)    
         for g in [ 'zoom', 'spectrum']:
             axis[g].set_facecolor(COLOR_MARKER_PATCH)
@@ -625,7 +610,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         zoomed_area= matplotlib.patches.Rectangle(
                             (0,0), 0, 0, color=COLOR_MARKER_PATCH, alpha=1)
         graph['patch']= axis['trace'][0].add_patch(zoomed_area)
-        graph['marker']= axis['trace'][0].plot([], [], [], [], COLOR_MARKER)
+        graph['marker']= axis['trace'][0].plot([], [], COLOR_MARKER, 
+                                               [], [], COLOR_MARKER)
         graph['awg']= axis['awg'].plot([], [], COLOR_AWG)[0]
         graph['awgspec']= axis['awgspec'].plot([], [], COLOR_AWG)[0]
 

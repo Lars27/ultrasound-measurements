@@ -43,20 +43,21 @@ class Channel:
     """Osciloscope vertical (voltage) channel settings and status."""
 
     def __init__(self, no):
+        """Initialise with default values."""
         self.no = no
-    v_range = 1       # [V] Requested full scale voltage
-    adc_max = 32767   # Picoscope 5000a, 12 to 16 bit resolution
-    offset = 0        # [V] Offset voltage
-    enabled = True    # hannel enabled or not
-    coupling = "DC"   # Oscilloscope coupling mode
-    bwl = 0           # Bandwidth limit
+        self.v_range = 1       # [V] Requested full scale voltage
+        self.adc_max = 32767   # Picoscope 5000a, 12 to 16 bit resolution
+        self.offset = 0        # [V] Offset voltage
+        self.enabled = True    # hannel enabled or not
+        self.coupling = "DC"   # Oscilloscope coupling mode
+        self.bwl = 0           # Bandwidth limit
 
     def v_max(self):
         """[V] Find allowed voltage range from requested range."""
         vm = find_scale(self.v_range)
         return vm
 
-    def name(self):
+    def channel_name(self):
         """Return Picoscope channel name (A,B, ...) from number (0,1, ...)."""
         return channel_no_to_name(self.no)
 

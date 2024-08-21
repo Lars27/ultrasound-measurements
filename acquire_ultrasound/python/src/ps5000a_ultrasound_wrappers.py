@@ -1,23 +1,22 @@
-'''
-Acquire ultrasound data from Picoscope 5000
-Wrappers for c-style function calls to DLLs
+"""Acquire ultrasound data from Picoscope 5000.
 
-Based on example program from Picotech
-  PS5000A BLOCK MODE EXAMPLE, # Copyright (C) 2018-2022 Pico Technology Ltd.
-  See LICENSE file for terms.
-
-Reference
-  PicoScope 5000 Series (A API) - Programmer's Guide. Pico Tecknology Ltd, 2018
+Wrappers to c-style function calls in DLLs from Picoscope SDK.
 
 Wraps c-style commands (ctypes.xx) to standard Python variables and sets
-scaling constants, ranges etc. spscific for the instrument.
+scaling constants, ranges etc. specific for the instrument.
 
 The classes and functions in this file shall provide an easy interface to
 Picoscope 5000a from any standard Pyton environment
 
+Based on example program from Picotech
+  PS5000A BLOCK MODE EXAMPLE, # Copyright (C) 2018-2022 Pico Technology Ltd.
+
+Reference
+  PicoScope 5000 Series (A API) - Programmer's Guide. Pico Tecknology Ltd, 2018
+
 Lars Hoff, USN, Sep 2022
-        Modified June 2024 to better follow PEP-8 style guide
-'''
+Modified June 2024 to better follow PEP-8 and numpy docstring style guides.
+"""
 
 import time
 import ctypes
@@ -33,18 +32,15 @@ CH_NAMES = ["A", "B"]
 # %% Classes
 
 class Status:
-    '''
-    Instrument connection status monitoring
-    '''
+    """Instrument connection status monitoring."""
+
     handle = ctypes.c_int16()
     connected = False
     status = {}
 
 
 class Channel:
-    '''
-    Osciloscope vertical (voltage) channel settings and status
-    '''
+    """Osciloscope vertical (voltage) channel settings and status."""
 
     def __init__(self, no):
         self.no = no
@@ -55,17 +51,21 @@ class Channel:
     coupling = "DC"   # Oscilloscope coupling mode
     bwl = 0           # Bandwidth limit
 
-    def v_max(self):     # [V] Find allowed voltage range from requested range
+    def v_max(self):
+        """[V] Find allowed voltage range from requested range."""
         vm = find_scale(self.v_range)
         return vm
 
     def name(self):
+        """Return Picoscope channel name (A,B, ...) from number (0,1, ...)."""
         return channel_no_to_name(self.no)
 
     def coupling_code(self):
+        """Return Picoscope coupling code from specified name."""
         return picoscope.PS5000A_COUPLING[f"PS5000A_{self.coupling}"]
 
     def adc_range(self):
+        """Return Picoscope range code from specified voltage."""
         if self.v_max() < 1:
             adc_range_name = f"PS5000A_{int(self.v_max()*1000)}MV"
         else:
@@ -74,9 +74,8 @@ class Channel:
 
 
 class Trigger:
-    '''
-    Osciloscope trigger settings and status
-    '''
+    """Osciloscope trigger settings and status."""
+
     source = "A"
     enable = True
     level = 0.5           # [V]
@@ -88,35 +87,41 @@ class Trigger:
 
 
 class Horizontal:
-    '''
-    Osciloscope horizontal (time) scale settings status
-    '''
+    """Osciloscope horizontal (time) scale settings status."""
+
     timebase = 3       # Oscilloscope internal timebase no
     n_samples = 1000   # Number of samples
     dt = 8e-9          # [s] Sample interval
     pretrigger = 0     # [%] Samples before trigger
 
-    def fs(self):      # [S/s] Sample rate
+    def fs(self):
+        """Return Picoscope samplig rate [S/s]."""
         return 1/self.dt
 
-    def n_pretrigger(self):   # No. of samples before trigger
+    def n_pretrigger(self):
+        """Return number of samples before trigger."""
         return int(self.n_samples * self.pretrigger)
 
-    def n_posttrigger(self):  # No. of samples after trigger
+    def n_posttrigger(self):
+        """Return number of samples after trigger."""
         return int(self.n_samples - self.n_pretrigger())
 
-    def t0(self):             # Time of first sample
+    def t0(self):
+        """Return start time, i.e., time of first sample."""
         return -self.n_pretrigger() * self.dt
 
-    def t_max(self):          # Time of last sample
+    def t_max(self):
+        """Return end time, i.e., time of last sample.
+
+        Note thet this is not the trace duration, but referred to the trigger
+        time. The start time may be negative
+        """
         return (self.n_samples - self.n_pretrigger() - 1) * self.dt
 
 
 class Communication:
-    '''
-    Communications with osciloscope
-    c-type variables for calling c-style functions from DLLs in Pico SDK
-    '''
+    """c-type variables for calling c-style functions in DLLs from Pico SDK."""
+
     connected = False
     status = {}
     handle = ctypes.c_int16(0)
@@ -134,24 +139,25 @@ class Communication:
 
 
 # %%
-'''
+"""
 Wrappers for original c-style library functions
 Instrument is controlled from Python using the function calls listed below
 Data are exchanged using the classes defined above
-'''
+"""
 
 
 def open_adc(dso, status):
-    '''
-    Open connection to oscilloscope. Resolution fixed to 15 bit, 2-channels
-    '''
+    """Open connection to oscilloscope.
+
+    Resolution is fixed to 15 bit and 2-channels
+    """
     resolution = picoscope.PS5000A_DEVICE_RESOLUTION["PS5000A_DR_15BIT"]
     status["openunit"] = picoscope.ps5000aOpenUnit(ctypes.byref(dso.handle),
                                                    None,
                                                    resolution)
     try:
         assert_pico_ok(status["openunit"])
-    except:  # PicoNotOkError:
+    except ValueError:  # PicoNotOkError:
         power_status = status["openunit"]
         if power_status in [
                 picoscope.PICO_STATUS["PICO_POWER_SUPPLY_NOT_CONNECTED"],
@@ -174,27 +180,21 @@ def open_adc(dso, status):
 
 
 def stop_adc(dso, status):
-    '''
-    Stop oscilloscope. Only applicable when in streaming mode
-    '''
+    """Stop oscilloscope. Only applicable when in streaming mode."""
     status["stop"] = picoscope.ps5000aStop(dso.handle)
     assert_pico_ok(status["stop"])
     return status
 
 
 def close_adc(dso, status):
-    '''
-    Close connection to ocsiloscope
-    '''
+    """Close connection to ocsiloscope."""
     status["close"] = picoscope.ps5000aCloseUnit(dso.handle)
     assert_pico_ok(status["close"])
     return status
 
 
 def set_vertical(dso, status, channel):
-    '''
-    Set vertical scale in oscilloscope (Voltage range)
-    '''
+    """Set vertical scale in oscilloscope (Voltage range)."""
     name = channel_no_to_name(channel.no)
     status_name = f"setCh{name}"
     status[status_name] = picoscope.ps5000aSetChannel(
@@ -209,9 +209,7 @@ def set_vertical(dso, status, channel):
 
 
 def set_trigger(dso, status, trigger, channel, sampling):
-    '''
-    Configure oscilloscope trigger
-    '''
+    """Configure oscilloscope trigger."""
     enable = int(trigger.enable)
     if trigger.source == "EXT":
         source = picoscope.PS5000A_CHANNEL["PS5000A_EXTERNAL"]
@@ -251,9 +249,7 @@ def set_trigger(dso, status, trigger, channel, sampling):
 
 
 def get_trigger_time_offset(dso, status):
-    '''
-    Read offset of last trigger
-    '''
+    """Read offset of last trigger."""
     segment_index = 0
     trigger_time = ctypes.c_int64(0)
     time_units = ctypes.c_int32(0)
@@ -268,9 +264,7 @@ def get_trigger_time_offset(dso, status):
 
 
 def get_sample_interval(dso, sampling):
-    '''
-    Read  actual sample interval from osciloscope
-    '''
+    """Read  actual sample interval from osciloscope."""
     sample_interval_ns = ctypes.c_float(0)
     max_n_samples = ctypes.c_int32(0)
     ok = picoscope.ps5000aGetTimebase2(dso.handle,
@@ -285,9 +279,7 @@ def get_sample_interval(dso, sampling):
 
 
 def configure_acquisition(dso, status, sampling):
-    '''
-    Configure acquisition of data from oscilloscope
-    '''
+    """Configure acquisition of data from oscilloscope."""
     dso.max_samples.value = sampling.n_samples
     segment_index = 0
     downsample_mode = 0
@@ -312,9 +304,7 @@ def configure_acquisition(dso, status, sampling):
 
 
 def acquire_trace(dso, status, sampling, ch):
-    '''
-    Acuire voltage trace from oscilloscope
-    '''
+    """Acuire voltage trace from oscilloscope."""
     start_index = 0
     downsample_ratio = 0
     downsample_mode = 0
@@ -361,9 +351,7 @@ def acquire_trace(dso, status, sampling, ch):
 
 
 def set_signal(dso, status, sampling, pulse):
-    '''
-    Send pulse to arbitrary waveform generator
-    '''
+    """Send pulse to arbitrary waveform generator."""
     if pulse.on:
         amplitude = min(pulse.a, DAC_MAX_AMPLITUDE)
     else:
@@ -390,11 +378,11 @@ def set_signal(dso, status, sampling, pulse):
                                                 ctypes.byref(delta_phase))
     assert_pico_ok(status["freqToPhase"])
 
-    '''
+    """
     Settings not in use
     Values passed as c-type variables, type casting not checked for all
     See documentation in Programmer's Guide.
-    '''
+    """
     offset_voltage_uv = ctypes.c_int32(0)
     pp_voltage_uv = ctypes.c_uint32(int(2*amplitude*1e6))  # Peak-to-peak, uV
     trigger_type = ctypes.c_int32(0)
@@ -435,24 +423,20 @@ def set_signal(dso, status, sampling, pulse):
 # %% Utility functions
 
 def channel_no_to_name(no):
-    '''
-    Convert number to Picoscope channel name ('A', 'B', etc. )
-    '''
+    """Convert number to Picoscope channel name (A, B, ...)."""
     return chr(ord("A")+no)
 
 
 def channel_name_to_no(name):
-    '''
-    Convert Picoscope channel name ('A', 'B', etc. ) to number
-    '''
+    """Convert Picoscope channel name (A, B, ...) to number."""
     return ord(name)-ord("A")
 
 
 def find_scale(x):
-    '''
-    Find next number in an 1-2-5-10-20 ... sequence, matching
-    oscilloscope ranges
-    '''
+    """Find next number in an 1-2-5-10-20 ... sequence.
+
+    This sequence matches the oscilloscope ranges.
+    """
     if x <= 10e-3:
         xn = 10e-3
     elif x >= 50:

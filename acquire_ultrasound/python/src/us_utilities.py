@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 13 21:46:41 2022
+"""Utility functions for ultrasound measurement systems at USN IMS.
 
-Utility functions for ultrasound measurement systems at USN IMS
 Based on former systems in LabVIEW and Matlab
 
+coding: utf-8 -*-
 @author: larsh
+Created on Tue Sep 13 21:46:41 2022
 """
 
 import copy
@@ -19,8 +18,10 @@ import datetime
 
 
 # %% Classes
+
 class Waveform:
-    '''
+    """Measurement results as 1D time-traces.
+
     Used to store traces sampled in time, one or several channels.
     Compatible with previous versions used in e.g. LabVIEW and Matlab
     Adapted from LabVIEW's waveform-type, similar to python's mccdaq-library
@@ -37,7 +38,7 @@ class Waveform:
     powerspectrum()     Returns frequency and power spectral density
     load() and save()   Load from and save to binary format, backwards
                         compatible to formats used with e.g. LabVIEW and Matlab
-    '''
+    """
 
     def __init__(self, y=np.zeros((100, 1)), dt=1, t0=0):
         self.y = y              # Voltage traces as 2D numpy array
@@ -48,34 +49,43 @@ class Waveform:
         self.dtr = 0             # [s]  Interval between blocks. Obsolete
 
     def n_channels(self):
-        ''' # Number of channels in trace '''
+        """Return number of data channels in trace."""
         return self.y.shape[1]
 
     def n_samples(self):
-        ''' Number of points in trace '''
+        """Return number of points in trace."""
         return self.y.shape[0]
 
     def n_fft(self, upsample=2):
-        '''
-        Number of points to calculate spectrum, interpolated by
-        padding zeros
-        '''
+        """Return number of points used to calculate spectrum.
+
+        Always a power of 2, zeros are padded if needed.
+        upsample : Extra powers of 2 added
+        """
         m, e = frexp(self.n_samples())
         n = 2**(e+upsample)
         # n = 2**(self.n_samples().bit_length() +upsample)  # Next power of 2
         return max(n, 2048)
 
     def t(self):
-        '''Time vector calculated from start time and sample interval [s] '''
+        """Return time vector [s].
+
+        Calculated from start time and sample interval [s]
+        """
         return np.linspace(self.t0,
                            self.t0+self.dt*self.n_samples(),
                            self.n_samples())
 
+    def f(self):
+        """Return frequency vector [Hz]."""
+        return np.arange(0, self.n_fft()/2)/self.n_fft() * self.fs()
+
     def fs(self):
-        ''' Sample rate [Hz] '''
+        """Return sample rate [Hz]."""
         return 1/self.dt
 
     def filtered(self, filter):
+        """Return bandpass filtered trace."""
         wfm = copy.deepcopy(self)
         match(filter.type[0:2].lower()):
             case "no":
@@ -90,7 +100,7 @@ class Waveform:
         return wfm
 
     def zoomed(self, tlim):
-        ''' Extract copy of trace from specified interval '''
+        """Extract copy of trace from interval in specified by tlim."""
         wfm = copy.deepcopy(self)
         nlim = np.flatnonzero((self.t() >= min(tlim))
                               & (self.t() <= max(tlim)))
@@ -102,16 +112,17 @@ class Waveform:
         return wfm
 
     def plot(self, time_unit="us", filtered=True):
-        ''' Plot time traces '''
+        """Plot time traces using unit time_unit."""
         plot_pulse(self.t(), self.y(), self.time_unit())
         return 0
 
-    def f(self):
-        ''' Frequency vector [Hz] '''
-        return np.arange(0, self.n_fft()/2)/self.n_fft() * self.fs()
-
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
-        ''' Calculate power spectrum of trace '''
+        """Calculate power spectrum of time trace.
+
+        normalise : Normalise to 1 (0 dB) as maximum
+        scale : linear (W)  or dB
+        upsample: Interpolate spectrum by padding zeros to next power of 2
+        """
         f, psd = powerspectrum(self.y,
                                self.dt,
                                nfft=self.n_fft(upsample=2),
@@ -119,16 +130,22 @@ class Waveform:
                                normalise=normalise)
         return f, psd
 
-    def plot_spectrum(self, time_unit="s", frequnit="Hz", fmax=None,
+    def plot_spectrum(self, time_unit="s", f_max=None,
                       normalise=True, scale="dB"):
-        ''' Plot trace and power spectrum '''
-        plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=None,
+        """Plot trace and power spectrum in one graph.
+
+        time_unit :  Unit in time trace plot
+        f_max : Maximum frequency to plot
+        normalise : Normalise powwer spectrum plot 1 (0 dB)
+        scale : Linear (Watt) or dB
+        """
+        plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
                       nfft=self.n_fft(), normalise=normalise, scale=scale)
         return 0
 
     def load(self, filename):
-        '''
-        Load 'Waveform' files in binary format as 4-byte (sgl) floats
+        """Load 'Waveform' files in binary format as 4-byte (sgl) floats.
+
         Compatible with internal format used since 1990s on a variety of
         platforms (LabWindows, C, LabVIEW, Matlab)
         Uses 'c-order' of arrays and IEEE big-endian byte order
@@ -139,7 +156,7 @@ class Waveform:
             dtr Interval between blocks. Used only in special cases
             v   Data points (often voltage)
         Companion to save()
-        '''
+        """
         with open(filename, 'rb') as fid:
             n_header = int(np.fromfile(fid, dtype='>i4', count=1))
             header_bytes = fid.read(n_header)
@@ -159,8 +176,8 @@ class Waveform:
         return 0
 
     def save(self, filename):
-        '''
-        Load 'Waveform' files in binary format as 4-byte (sgl) floats
+        """Save 'Waveform' files in binary format as 4-byte (sgl) floats.
+
         Compatible with internal format used since 1990s on a variety of
         platforms (LabWindows, C, LabVIEW, Matlab)
         Uses 'c-order' of arrays and IEEE big-endian byte order
@@ -171,7 +188,7 @@ class Waveform:
             dtr Interval between blocks. Used only in special cases
             v   Data points (often voltage)
         Companion to load()
-        '''
+        """
         header = "<WFM_Python_>f4>"    # Header gives source and data format
         n_header = len(header)
         # y = np.require( self.v, requirements='C' )
@@ -189,8 +206,8 @@ class Waveform:
 # %% Generated signals
 
 class Pulse:
-    '''
-    Pulse-class. Used for standardised theoretical ultrasound pulses
+    """Create standardised theoretical ultrasound pulses.
+
     For testing or transfering to a signal generator.
     Defines a standard pulse from
         envelope  Envelope from built-in window functions
@@ -200,7 +217,8 @@ class Pulse:
         phase     Phase in degrees
         a         Amplitude
         dt        Sample interval
-    '''
+    """
+
     shape = "sine"
     envelope = "rectangular"
     n_cycles = 2.0      # No. of cycles
@@ -213,18 +231,19 @@ class Pulse:
     on = False
 
     def period(self):
-        ''' Period of carrier wave [s]'''
+        """Return period of carrier wave [s]."""
         return 1/self.f0
 
     def duration(self):
-        ''' Duration of pulse [s] '''
+        """Returnd duration of pulse [s]."""
         return self.period()*self.n_cycles
 
     def t(self):
-        ''' Time vector [s] '''
+        """Return time vector [s]."""
         return np.arange(0, self.duration(), self.dt)
 
     def time_unit(self):
+        """Return unit for time trace plot, based on cantre frequency."""
         if self.f0 > 1e9:
             return "ns"
         if self.f0 > 1e6:
@@ -235,18 +254,21 @@ class Pulse:
             return "s"
 
     def n_samples(self):
-        ''' No. of samples in pulse '''
+        """Return number of samples in pulse."""
         return len(self.t())
 
     def n_fft(self):
-        ''' Number of points to calculate spectrum, zeros padded'''
+        """Find number of points to calculate spectrum.
+
+        Always as power of 2, zeros padded at end
+        """
         m, e = frexp(self.n_samples())
         n = 2**(e+3)
         # n = 2**(3+(self.n_samples()-1).bit_length())
         return max(n, 2048)
 
     def y(self):
-        ''' Create pulse from input specification '''
+        """Create pulse from input specification."""
         match(self.envelope[0:3].lower()):
             case "rec":
                 win = windows.boxcar(self.n_samples())
@@ -275,18 +297,18 @@ class Pulse:
         return y
 
     def plot(self):
-        ''' Plot pulse in time domain '''
+        """Plot pulse in time domain."""
         plot_pulse(self.t(), self.y(), self.time_unit())
         return 0
 
     def powerspectrum(self):
-        ''' Calculate power spectrum of trace '''
+        """Calculate power spectrum of trace."""
         f, psd = powerspectrum(self.y(), self.dt, nfft=self.n_fft(),
                                scale="dB", normalise=True)
         return f, psd
 
     def plot_spectrum(self):
-        ''' Plot trace and power spectrum '''
+        """Plot trace and power spectrum."""
         f_max = scale_125(3*self.f0)
         plot_spectrum(self.t(),
                       self.y(),
@@ -300,7 +322,8 @@ class Pulse:
 # %% Utility classes
 
 class WaveformFilter:
-    ''' Digital filtering of waveform '''
+    """Parameteres of digital filter for "Waveform" class."""
+
     type = "No filter"        # Filter type: None, AC removal, bandpass, ...
     f_min = 100e3             # [Hz] Lower cutoff frequency
     f_max = 10e6              # [Hz] Upper cutoff frequency
@@ -308,9 +331,11 @@ class WaveformFilter:
     sample_rate = 100e6       # Sample rate
 
     def wc(self):      # Cutoff normalised to Nyquist-frequency
+        """Return normalised cutoff-frequencies."""
         return np.array([self.f_min, self.f_max])/(self.sample_rate/2)
 
     def coefficients(self):
+        """Return filter coefficients (b,a) from filter description."""
         b, a = signal.butter(self.order,
                              self.wc(),
                              btype='bandpass',
@@ -321,11 +346,11 @@ class WaveformFilter:
 # %% Utility functions
 
 def scale_125(x):
-    '''
-    Find next number in an 1-2-5-10-20 ... sequence, e.g. for scaling axes.
+    """Find next number in an 1-2-5-10-20 ... sequence.
+
     Input  x  : Number, positive or negative
     Output xn : Next number in 1-2-5-10 sequence greater than magnitude of x
-    '''
+    """
     prefixes = np.array([1, 2, 5, 10])
     exponent = int(floor(log10(abs(x))))
     mant = abs(x) / (10**exponent)
@@ -336,6 +361,7 @@ def scale_125(x):
 
 
 def find_timescale(time_unit="s"):
+    """Return time and frequency axis scaling based on time unit."""
     match(time_unit):
         case "ns":
             multiplier = 1e9
@@ -353,15 +379,14 @@ def find_timescale(time_unit="s"):
 
 
 def find_limits(limits, min_diff=1):
+    """Return minimum and maximum values as numpy array."""
     min_value = min(limits)
     max_value = max(max(limits), min_value+min_diff)
     return np.array([min_value, max_value])
 
 
 def read_scaled_value(prefix):
-    '''
-    Interpret a text as a scaled value (milli, kilo, Mega etc.)
-    '''
+    """Interpret a text as a scaled value (milli, kilo, Mega etc.)."""
     prefix = prefix.split(' ')
     if len(prefix) == 1:
         multiplier = 1
@@ -383,8 +408,8 @@ def read_scaled_value(prefix):
 
 
 def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
-    '''
-    Automatically set file name
+    """Find new file name from date and counter.
+
     Finds next free file name on format prefix_yyyy_mm_dd_nnnn.ext where
     yyyy_mm_dd is the date and nnnn is a counter.
     Saves to directory resultdir.
@@ -398,7 +423,7 @@ def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
                 resultdir     : Full path to result directory
                 resultfile    : Name of result file (no path)
                 result_counter: Number of result file
-    '''
+    """
     if not (os.path.isdir(resultdir)):     # Create result directory if needed
         os.mkdir(resultdir)
 
@@ -425,14 +450,14 @@ def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
 
 
 def plot_pulse(t, x, time_unit="us"):
-    '''
-    Plot pulse on standardised graph
+    """Plot pulse in standardised graph.
+
     Inputs      t : Time vector
                 x : Vector of values to plot
         time_unit : Unit for scaling time axis
 
     Outputs     0
-    '''
+    """
     multiplier, freq_unit = find_timescale(time_unit)
     plt.plot(t*multiplier, x)
     plt.xlabel(f'Time [{time_unit}]')
@@ -443,8 +468,8 @@ def plot_pulse(t, x, time_unit="us"):
 
 def powerspectrum(y, dt, nfft=None,
                   scale="linear", normalise=False, transpose=True):
-    '''
-    Calculate power spectrum of pulse. Finite length signal, no window
+    """Calculate power spectrum of pulse. Finite length signal, no window.
+
     Inputs     x  : Time trace
               dt : Sample interval
             nfft : No of points in FFT, zero-padding
@@ -457,7 +482,7 @@ def powerspectrum(y, dt, nfft=None,
 
     Datapoints in rows (dimension 0),columns (dimension 1) are channels
     The periodogram function calculates FT along dimension 1.
-    '''
+    """
     y = y.transpose()
     f, psd = signal.periodogram(y, fs=1/dt, nfft=nfft, detrend=False)
     psd = psd.transpose()
@@ -476,8 +501,8 @@ def powerspectrum(y, dt, nfft=None,
 
 def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
                   scale="dB", normalise=True):
-    '''
-    Plot time trace and power spectrum on standardised format
+    """Plot time trace and power spectrum on standardised format.
+
     Requires evenly sampled points
     Inputs    t  : Time vector
               x  : Time trace
@@ -488,7 +513,7 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
        normalise : Normalise spectrum to max value
 
     Outputs    0
-    '''
+    """
     # Pulse in time-domain
     plt.subplot(2, 1, 1)
     plot_pulse(t, x, time_unit)

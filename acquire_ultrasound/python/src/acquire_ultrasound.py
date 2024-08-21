@@ -1,10 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec 20 22:20:43 2022
-
-@author: larsh
-
-Analysis program made for USN ultrasound lab
+"""Analysis program made for USN ultrasound lab.
 
 Investigate and save traces from single-element ultrasound transducers using
 Picoscope 5000-series osciloscopes.
@@ -13,9 +7,15 @@ Based on earlier NI LabWindows, LabVIEW and Matlab programs. Result file format
 is compatible with these, but smaller modifications may be
 required in some cases.
 
-Sets up a GUI to control the system
-Continously reads traces from the oscilloscope
-Function generator to transmit shaped pulses
+Operation
+    Sets up a GUI to control the system
+    Continously reads traces from the oscilloscope
+    Includes an arbitrary waveform generator to transmit shaped pulses
+
+coding: utf-8 -*-
+Created on Tue Dec 20 22:20:43 2022
+@author: larsh
+
 """
 
 # %% Libraries
@@ -58,27 +58,23 @@ oscilloscope_main_window, QtBaseClass = uic.loadUiType(
 # %% Classes
 
 class Display:
-    '''
-    Settings for display on screen during runtime
-    '''
+    """Settings for display on screen during runtime."""
+
     t_min = 0               # [s] Zoomed section, pulse to be analysed
     t_max = 10              # [s]
     channel = [True, True]  # Channels to display on screen
 
 
 class AcquisitionControl:
-    '''
-    Flags to control running of program
-    '''
+    """Flags to control running of program."""
+
     oscilloscope_ready = False   # Osciloscope connected and ready to acquire
     stop_acquisition = False     # Stop data acquisition, do not quit program
     sampling_changed = True      # Sampling updated
 
 
 class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
-    '''
-    Starts GUI and initialises system
-    '''
+    """Start GUI and initialise system."""
 
     def __init__(self):
 
@@ -113,9 +109,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% Connect and disconnect oscilloscope
 
     def connect_dso(self):
-        '''
-        Connect, configure and start instrument
-        '''
+        """Connect, configure and start instrument."""
         self.statusBar.showMessage('Connecting instrument')
         errorcode = 0
 
@@ -126,7 +120,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                     ps.stop_adc(self.dso, self.status)
                     ps.close_adc(self.dso, self.status)
             self.status = {}
-        except:
+        except ValueError:
             self.status = {}
 
         # Connect and initialise instrument
@@ -163,15 +157,13 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return errorcode
 
     def close_connection(self):
-        '''
-        Close instrument connection, does not stop program
-        '''
+        """Close instrument connection, does not stop program."""
         self.statusBar.showMessage("Closing")
         matplotlib.pyplot.close(self.fig)
         try:
             self.status = ps.close_adc(self.dso, self.status)
             errorcode = 0
-        except:
+        except ValueError:
             errorcode = -1
         finally:
             self.close()
@@ -182,9 +174,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% Update oscilloscope settings
 
     def update_vertical(self):
-        '''
-        Read vertical settings from GUI and send to instrument
-        '''
+        """Read vertical settings from GUI and send to instrument."""
         self.ch[0].enabled = True  # Display or not, traces are always aquired
         self.ch[1].enabled = True
 
@@ -205,9 +195,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return self.status
 
     def update_trigger(self):
-        '''
-        Read trigger settings from GUI and send to instrument
-        '''
+        """Read trigger settings from GUI and send to instrument."""
         self.trigger.source = self.triggerSourceComboBox.currentText()
         self.trigger.enable = self.trigger.source.lower()[0:3] != 'int'
         self.trigger.position = self.triggerPositionSpinBox.value()
@@ -223,10 +211,10 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return self.status
 
     def update_sampling(self):
-        '''
-        Read trace length from GUI and set sample rate.
-        No communication with instrument
-        '''
+        """Read trace length from GUI and set sample rate.
+
+        This function does not communicate with instrument
+        """
         self.sampling.timebase = 3
         self.sampling.n_samples = int(self.nSamplesSpinBox.value()*1e3)
         if self.dso.connected:
@@ -237,10 +225,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def update_pulser(self):
-        '''
+        """Send pluse to arbitrary waveform generator.
+
         Read settings for arbitrary waveform generator (awg)
         Plot pulse and send to instrument
-        '''
+        """
         self.pulse.on = self.transmitButton.isChecked()
         self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
         self.pulse.shape = self.pulseShapeComboBox.currentText()
@@ -269,9 +258,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def update_rf_filter(self):
-        '''
-        Read RF noise filter settings from GUI
-        '''
+        """Read RF noise filter settings from GUI."""
         self.rf_filter.sample_rate = self.sampling.fs()
         self.rf_filter.type = self.filterComboBox.currentText()
         self.rf_filter.f_min = self.fminSpinBox.value()*FREQUENCYSCALE
@@ -282,9 +269,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% Acquire, display, and save results
 
     def control_acquisition(self):
-        '''
-        Acquire data from oscilloscope
-        '''
+        """Control data acquisition from oscilloscope."""
         if self.acquireButton.isChecked():
             self.acquire_trace()
         else:
@@ -292,9 +277,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def acquire_trace(self):
-        '''
-        Acquire trace from instrument
-        '''
+        """Acquire trace from instrument."""
         if self.runstate.oscilloscope_ready:
             self.runstate.oscilloscope_ready = False
             self.runstate_sampling_changed = True
@@ -325,9 +308,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def stop_acquisition(self):
-        '''
-        Stop acquisition of traces, does not close instrument connection
-        '''
+        """Stop acquisition of traces without closing instrument connection."""
         if not (self.runstate.stop_acquisition):
             self.statusBar.showMessage("Stopping")
             self.update_status_box("Stopping", COLOR_WARNING)
@@ -338,9 +319,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def plot_result(self, time_unit="us"):
-        '''
-        Plot measured trace on screen
-        '''
+        """Plot measured trace on screen."""
         wfm_filtered = self.wfm.filtered(self.rf_filter)
         wfm_zoomed = wfm_filtered.zoomed(self.display.t_lim)
         f, psd = wfm_zoomed.powerspectrum(scale="dB", normalise="True")
@@ -364,10 +343,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def save_result(self):
-        '''
-        Save measured traces and parameters to binary file with
-        automatically generated filename
-        '''
+        """Save measured traces and parameters to binary file.
+
+        The filename is generated automatically from a short description,
+        the date, and a counter.
+        The file format is compatible with older LabVIEW and Matlab systems
+        """
         self.statusBar.showMessage("Saving results ...")
 
         resultpath, resultdir, resultfile, n_result = us.find_filename(
@@ -384,9 +365,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% General GUI read and write
 
     def update_status(self, message, append=False):
-        '''
-        Status field, at bottom of window
-        '''
+        """Update a the short status message field at the bottom of window."""
         if append:
             old_message = self.status_textEdit.toPlainText()
             message += old_message
@@ -394,27 +373,21 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return message
 
     def update_status_box(self, message, color=COLOR_NEUTRAL):
-        '''
-        Write message to status box, optional colours
-        '''
+        """Write message to status box, in optional colours."""
         self.statusEdit.setText(message)
         self.statusEdit.setStyleSheet(
             f"color:{color[0]}; background-color:{color[1]}")
         return 0
 
     def update_connected_box(self, message, color=COLOR_NEUTRAL):
-        '''
-        Write connected status
-        '''
+        """Write status of the instrument connection."""
         self.connectedEdit.setText(message)
         self.connectedEdit.setStyleSheet(
            f"color:{color[0]}; background-color:{color[1]}")
         return 0
 
     def update_transmit_box(self, transmitting=False):
-        '''
-        Write connected status
-        '''
+        """Write whether the waveform generator is transmitting pulses."""
         if transmitting:
             message = "Transmitting"
             color = COLOR_OK
@@ -428,9 +401,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def find_voltagescale(self, vmax):
-        '''
-        Find scale for voltage axis based on maximum value
-        '''
+        """Find scale for voltage axis based on maximum value."""
         if vmax < 1e-3:
             voltage_scale = 1e-6
             unit = "uV"
@@ -443,9 +414,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return voltage_scale, unit
 
     def update_display(self, time_unit="us"):
-        '''
-        Update values and markers on screen
-        '''
+        """Update values and markers on screen."""
         # Full trace
         self.axis["trace"][0].set_xlim(self.sampling.t0()/TIMESCALE,
                                        self.sampling.t_max()/TIMESCALE)
@@ -491,7 +460,10 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% Conect GUI to functions
 
     def connect_gui(self):
-        # Connect functions to elements from GUI-file. QT naming convention
+        """Connect functions to elements from GUI-file.
+
+        The GUI elements use the QT naming convention (camelCase)
+        """
         # Display
         self.zoomStartSpinBox.valueChanged.connect(self.update_display)
         self.zoomEndSpinBox.valueChanged.connect(self.update_display)
@@ -572,10 +544,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
 # %% Define graphs
     def define_graphs(self):
-        '''
-        Initialise result graphs
-        Layout, titles, scales, colours etc.
-        '''
+        """Initialise result graphs, layout, titles, scales, colours etc."""
         matplotlib.pyplot.ion()   # Does not seem to make any difference?
 
         # Figure layout

@@ -8,7 +8,8 @@ Created on Tue Sep 13 21:46:41 2022
 """
 
 import copy
-from math import pi, radians, cos, log10, floor, frexp
+# from math import pi, radians, cos, log10, floor, frexp
+from math import pi, radians, log10, floor, frexp
 import numpy as np
 from scipy import signal
 from scipy.signal import windows
@@ -41,6 +42,7 @@ class Waveform:
     """
 
     def __init__(self, y=np.zeros((100, 1)), dt=1, t0=0):
+        """Initialise to ensure correct shapes."""
         self.y = y              # Voltage traces as 2D numpy array
         if y.ndim == 1:         # Ensure v is 2D
             self.y = self.y.reshape((1, len(y)))
@@ -291,7 +293,7 @@ class Pulse:
             case "saw":
                 s = 1/2*signal.sawtooth(arg, width=1)
             case _:
-                s = cos(arg)
+                s = np.cos(arg)
         y = self.a*win*s
         y[-1] = 0         # Avoid DC-level after pulse is over
         return y
@@ -335,7 +337,7 @@ class WaveformFilter:
         return np.array([self.f_min, self.f_max])/(self.sample_rate/2)
 
     def coefficients(self):
-        """Return filter coefficients (b,a) from filter description."""
+        """Return filter coefficients from filter description, (b,a)-form."""
         b, a = signal.butter(self.order,
                              self.wc(),
                              btype='bandpass',
@@ -495,7 +497,7 @@ def powerspectrum(y, dt, nfft=None,
             for k in range(n_ch):
                 psd[:, k] = psd[:, k]/psd[:, k].max()
     if scale.lower() == "db":
-        psd = 10*log10(psd)
+        psd = 10*np.log10(psd)
     return f, psd
 
 

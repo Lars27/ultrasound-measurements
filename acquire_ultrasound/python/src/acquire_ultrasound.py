@@ -77,8 +77,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
     """Start GUI and initialise system."""
 
     def __init__(self):
-
-        # Set up GUI, following example
+        """Set up GUI and initialise classes and variables."""
         QtWidgets.QMainWindow.__init__(self)
         oscilloscope_main_window.__init__(self)     # Qt GUI window
         self.setupUi(self)
@@ -120,7 +119,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                     ps.stop_adc(self.dso, self.status)
                     ps.close_adc(self.dso, self.status)
             self.status = {}
-        except ValueError:
+        except AttributeError:
             self.status = {}
 
         # Connect and initialise instrument

@@ -8,7 +8,8 @@ Created on Tue Sep 13 21:46:41 2022
 """
 
 import copy
-from math import pi, radians, cos, log10, floor, frexp
+# from math import pi, radians, cos, log10, floor, frexp
+from math import pi, radians, log10, floor, frexp
 import numpy as np
 from scipy import signal
 from scipy.signal import windows
@@ -41,6 +42,7 @@ class Waveform:
     """
 
     def __init__(self, y=np.zeros((100, 1)), dt=1, t0=0):
+        """Initialise to ensure correct shapes."""
         self.y = y              # Voltage traces as 2D numpy array
         if y.ndim == 1:         # Ensure v is 2D
             self.y = self.y.reshape((1, len(y)))
@@ -113,7 +115,11 @@ class Waveform:
 
     def plot(self, time_unit="us", filtered=True):
         """Plot time traces using unit time_unit."""
+<<<<<<< Updated upstream
         plot_pulse(self.t(), self.y(), self.time_unit())
+=======
+        plot_pulse(self.t(), self.y, time_unit)
+>>>>>>> Stashed changes
         return 0
 
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
@@ -125,7 +131,7 @@ class Waveform:
         """
         f, psd = powerspectrum(self.y,
                                self.dt,
-                               nfft=self.n_fft(upsample=2),
+                               n_fft=self.n_fft(upsample=2),
                                scale=scale,
                                normalise=normalise)
         return f, psd
@@ -140,7 +146,11 @@ class Waveform:
         scale : Linear (Watt) or dB
         """
         plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
+<<<<<<< Updated upstream
                       nfft=self.n_fft(), normalise=normalise, scale=scale)
+=======
+                      n_fft=self.n_fft(), normalise=normalise, scale=scale)
+>>>>>>> Stashed changes
         return 0
 
     def load(self, filename):
@@ -291,7 +301,7 @@ class Pulse:
             case "saw":
                 s = 1/2*signal.sawtooth(arg, width=1)
             case _:
-                s = cos(arg)
+                s = np.cos(arg)
         y = self.a*win*s
         y[-1] = 0         # Avoid DC-level after pulse is over
         return y
@@ -303,7 +313,11 @@ class Pulse:
 
     def powerspectrum(self):
         """Calculate power spectrum of trace."""
+<<<<<<< Updated upstream
         f, psd = powerspectrum(self.y(), self.dt, nfft=self.n_fft(),
+=======
+        f, psd = powerspectrum(self.y(), self.dt, n_fft=self.n_fft(),
+>>>>>>> Stashed changes
                                scale="dB", normalise=True)
         return f, psd
 
@@ -322,7 +336,11 @@ class Pulse:
 # %% Utility classes
 
 class WaveformFilter:
+<<<<<<< Updated upstream
     """Parameteres of digital filter for "Waveform" class."""
+=======
+    """Parameters of digital filter for "Waveform" class."""
+>>>>>>> Stashed changes
 
     type = "No filter"        # Filter type: None, AC removal, bandpass, ...
     f_min = 100e3             # [Hz] Lower cutoff frequency
@@ -335,12 +353,26 @@ class WaveformFilter:
         return np.array([self.f_min, self.f_max])/(self.sample_rate/2)
 
     def coefficients(self):
+<<<<<<< Updated upstream
         """Return filter coefficients (b,a) from filter description."""
+=======
+        """Return filter coefficients from filter description, (b,a)-form."""
+>>>>>>> Stashed changes
         b, a = signal.butter(self.order,
                              self.wc(),
                              btype='bandpass',
                              output='ba')
         return b, a
+
+
+class ResultFile:
+    """Path, name and counter for resultfile."""
+    prefix = 'test'
+    ext = 'trc'
+    path = ''
+    directory = ''
+    name = ''
+    counter = 0
 
 
 # %% Utility functions
@@ -407,7 +439,11 @@ def read_scaled_value(prefix):
     return value
 
 
+<<<<<<< Updated upstream
 def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
+=======
+def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
+>>>>>>> Stashed changes
     """Find new file name from date and counter.
 
     Finds next free file name on format prefix_yyyy_mm_dd_nnnn.ext where
@@ -415,38 +451,60 @@ def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
     Saves to directory resultdir.
     Last counter value is saved in the counter file prefix.cnt.
     Starts looking for next free finelame after value in counter file
+    Defining this methods in the RsultFile-class was too complicated due to
+    the cross-checking and creation of new directory
+
     Inputs      prefix    : Characterises measurement type
                 ext       : File Extension
                 resultdir : Directory for results
 
+<<<<<<< Updated upstream
     Outputs     resultpath    : Full path to resultfile
                 resultdir     : Full path to result directory
                 resultfile    : Name of result file (no path)
                 result_counter: Number of result file
     """
+=======
+    Outputs     ResultFile-class
+    """
+
+    resultfile = ResultFile()
+
+    prefix = prefix.lower()
+    ext = ext.lower()
+
+>>>>>>> Stashed changes
     if not (os.path.isdir(resultdir)):     # Create result directory if needed
         os.mkdir(resultdir)
 
     counterfile = os.path.join(os.getcwd(), resultdir, f'{prefix}.cnt')
     if os.path.isfile(counterfile):    # Read existing counter file
         with open(counterfile, 'r') as fid:
-            result_counter = int(fid.read())
+            counter = int(fid.read())
     else:
-        result_counter = 0   # Set counter to 0 if no counter file exists
+        counter = 0   # Set counter to 0 if no counter file exists
 
     datecode = datetime.date.today().strftime('%Y_%m_%d')
     ext = ext.split('.')[-1]
     resultdir = os.path.abspath(os.path.join(os.getcwd(), resultdir))
     file_exists = True
     while file_exists:   # Find lowest free file number
-        result_counter += 1
-        resultfile = (prefix + '_' + datecode + '_'
-                      + f'{result_counter:04d}' + '.' + ext)
-        resultpath = os.path.join(resultdir, resultfile)
+        counter += 1
+        filename = (prefix + '_' + datecode + '_'
+                    + f'{counter:04d}' + '.' + ext)
+        resultpath = os.path.join(resultdir, filename)
         file_exists = os.path.isfile(resultpath)
     with open(counterfile, 'wt') as fid:    # Write counter to counter file
-        fid.write(f'{result_counter:d}')
-    return resultpath, resultdir, resultfile, result_counter
+        fid.write(f'{counter:d}')
+
+    resultfile.prefix = prefix
+    resultfile.counter = counter
+    resultfile.ext = ext
+    resultfile.directory = resultdir
+    resultfile.name = filename
+    resultfile.path = resultpath
+
+    return resultfile
 
 
 def plot_pulse(t, x, time_unit="us"):
@@ -466,7 +524,7 @@ def plot_pulse(t, x, time_unit="us"):
     return 0
 
 
-def powerspectrum(y, dt, nfft=None,
+def powerspectrum(y, dt, n_fft=None,
                   scale="linear", normalise=False, transpose=True):
     """Calculate power spectrum of pulse. Finite length signal, no window.
 
@@ -484,7 +542,7 @@ def powerspectrum(y, dt, nfft=None,
     The periodogram function calculates FT along dimension 1.
     """
     y = y.transpose()
-    f, psd = signal.periodogram(y, fs=1/dt, nfft=nfft, detrend=False)
+    f, psd = signal.periodogram(y, fs=1/dt, nfft=n_fft, detrend=False)
     psd = psd.transpose()
 
     if normalise:
@@ -495,7 +553,7 @@ def powerspectrum(y, dt, nfft=None,
             for k in range(n_ch):
                 psd[:, k] = psd[:, k]/psd[:, k].max()
     if scale.lower() == "db":
-        psd = 10*log10(psd)
+        psd = 10*np.log10(psd)
     return f, psd
 
 
@@ -522,12 +580,16 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
     plt.subplot(2, 1, 2)
     dt = t[1] - t[0]   # Assumes even sampling
     multiplier, freq_unit = find_timescale(time_unit)
-    f, psd = powerspectrum(x, dt, nfft=n_fft, normalise=normalise, scale=scale)
+    f, psd = powerspectrum(x, dt, n_fft=n_fft,
+                           scale=scale, normalise=normalise)
     plt.plot(f/multiplier, psd)
     plt.xlabel(f'Frequency [{freq_unit}]')
     plt.grid(True)
+    if f_max is None:
+        f_max = f.max()
+
     plt.xlim((0, f_max/multiplier))
-    if scale.lower() == "db":
+    if normalise and (scale.lower() == "db"):
         plt.ylabel('Power [dB re. max]')
         plt.ylim((-40.0, 0))
     else:

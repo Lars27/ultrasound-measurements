@@ -77,8 +77,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
     """Start GUI and initialise system."""
 
     def __init__(self):
-
-        # Set up GUI, following example
+        """Set up GUI and initialise classes and variables."""
         QtWidgets.QMainWindow.__init__(self)
         oscilloscope_main_window.__init__(self)     # Qt GUI window
         self.setupUi(self)
@@ -120,7 +119,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                     ps.stop_adc(self.dso, self.status)
                     ps.close_adc(self.dso, self.status)
             self.status = {}
+<<<<<<< Updated upstream
         except ValueError:
+=======
+        except AttributeError:
+>>>>>>> Stashed changes
             self.status = {}
 
         # Connect and initialise instrument
@@ -355,7 +358,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                                                         prefix='US',
                                                         ext='trc',
                                                         resultdir='results')
-        self.wfm.save(resultpath)
+        resultfile = us.find_filename(prefix='us',
+                                      ext='trc',
+                                      resultdir='results')
+
+        self.wfm.save(resultfile.path)
         self.filecounterSpinBox.setValue(n_result)
         self.resultfileEdit.setText(resultfile)
         self.resultpathEdit.setText(resultpath)

@@ -119,11 +119,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                     ps.stop_adc(self.dso, self.status)
                     ps.close_adc(self.dso, self.status)
             self.status = {}
-<<<<<<< Updated upstream
-        except ValueError:
-=======
         except AttributeError:
->>>>>>> Stashed changes
             self.status = {}
 
         # Connect and initialise instrument

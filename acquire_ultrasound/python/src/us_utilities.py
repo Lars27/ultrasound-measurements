@@ -115,11 +115,7 @@ class Waveform:
 
     def plot(self, time_unit="us", filtered=True):
         """Plot time traces using unit time_unit."""
-<<<<<<< Updated upstream
-        plot_pulse(self.t(), self.y(), self.time_unit())
-=======
         plot_pulse(self.t(), self.y, time_unit)
->>>>>>> Stashed changes
         return 0
 
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
@@ -146,11 +142,7 @@ class Waveform:
         scale : Linear (Watt) or dB
         """
         plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
-<<<<<<< Updated upstream
-                      nfft=self.n_fft(), normalise=normalise, scale=scale)
-=======
                       n_fft=self.n_fft(), normalise=normalise, scale=scale)
->>>>>>> Stashed changes
         return 0
 
     def load(self, filename):
@@ -313,11 +305,7 @@ class Pulse:
 
     def powerspectrum(self):
         """Calculate power spectrum of trace."""
-<<<<<<< Updated upstream
-        f, psd = powerspectrum(self.y(), self.dt, nfft=self.n_fft(),
-=======
         f, psd = powerspectrum(self.y(), self.dt, n_fft=self.n_fft(),
->>>>>>> Stashed changes
                                scale="dB", normalise=True)
         return f, psd
 
@@ -336,11 +324,7 @@ class Pulse:
 # %% Utility classes
 
 class WaveformFilter:
-<<<<<<< Updated upstream
-    """Parameteres of digital filter for "Waveform" class."""
-=======
     """Parameters of digital filter for "Waveform" class."""
->>>>>>> Stashed changes
 
     type = "No filter"        # Filter type: None, AC removal, bandpass, ...
     f_min = 100e3             # [Hz] Lower cutoff frequency
@@ -353,11 +337,7 @@ class WaveformFilter:
         return np.array([self.f_min, self.f_max])/(self.sample_rate/2)
 
     def coefficients(self):
-<<<<<<< Updated upstream
-        """Return filter coefficients (b,a) from filter description."""
-=======
         """Return filter coefficients from filter description, (b,a)-form."""
->>>>>>> Stashed changes
         b, a = signal.butter(self.order,
                              self.wc(),
                              btype='bandpass',
@@ -439,11 +419,7 @@ def read_scaled_value(prefix):
     return value
 
 
-<<<<<<< Updated upstream
-def find_filename(prefix='us', ext='wfm', resultdir="..\\results"):
-=======
 def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
->>>>>>> Stashed changes
     """Find new file name from date and counter.
 
     Finds next free file name on format prefix_yyyy_mm_dd_nnnn.ext where
@@ -458,13 +434,6 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
                 ext       : File Extension
                 resultdir : Directory for results
 
-<<<<<<< Updated upstream
-    Outputs     resultpath    : Full path to resultfile
-                resultdir     : Full path to result directory
-                resultfile    : Name of result file (no path)
-                result_counter: Number of result file
-    """
-=======
     Outputs     ResultFile-class
     """
 
@@ -473,7 +442,6 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
     prefix = prefix.lower()
     ext = ext.lower()
 
->>>>>>> Stashed changes
     if not (os.path.isdir(resultdir)):     # Create result directory if needed
         os.mkdir(resultdir)
 

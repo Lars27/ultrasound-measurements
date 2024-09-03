@@ -158,7 +158,7 @@ def open_adc(dso, status):
                                                    resolution)
     try:
         assert_pico_ok(status["openunit"])
-    except ValueError:  # PicoNotOkError:
+    except:  # PicoNotOkError:
         power_status = status["openunit"]
         if power_status in [
                 picoscope.PICO_STATUS["PICO_POWER_SUPPLY_NOT_CONNECTED"],

@@ -354,7 +354,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                                                         prefix='US',
                                                         ext='trc',
                                                         resultdir='results')
-        self.wfm.save(resultpath)
+        resultfile = us.find_filename(prefix='us',
+                                      ext='trc',
+                                      resultdir='results')
+
+        self.wfm.save(resultfile.path)
         self.filecounterSpinBox.setValue(n_result)
         self.resultfileEdit.setText(resultfile)
         self.resultpathEdit.setText(resultpath)

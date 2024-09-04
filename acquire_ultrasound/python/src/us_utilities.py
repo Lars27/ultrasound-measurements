@@ -61,9 +61,10 @@ class Waveform:
     def n_fft(self, upsample=2):
         """Return number of points used to calculate spectrum.
 
-        Always a power of 2, zeros are padded if needed.
-        upsample : Extra powers of 2 added
+        Always a power of 2, zeros padded if needed.
+        upsample : Number of extra powers of 2 to add
         """
+        upsample = max(round(upsample), 0)
         m, e = frexp(self.n_samples())
         n = 2**(e+upsample)
         # n = 2**(self.n_samples().bit_length() +upsample)  # Next power of 2
@@ -91,14 +92,13 @@ class Waveform:
         wfm = copy.deepcopy(self)
         match(filter.type[0:2].lower()):
             case "no":
-                y = self.y
+                wfm.y = self.y
             case "ac":
                 dc_level = self.y.mean(axis=0)
-                y = self.y - dc_level
+                wfm.y = self.y - dc_level
             case _:
                 b, a = filter.coefficients()
-                y = signal.filtfilt(b, a, self.y, axis=0)
-        wfm.y = y
+                wfm.y = signal.filtfilt(b, a, self.y, axis=0)
         return wfm
 
     def zoomed(self, tlim):
@@ -107,10 +107,8 @@ class Waveform:
         nlim = np.flatnonzero((self.t() >= min(tlim))
                               & (self.t() <= max(tlim)))
 
-        t0 = self.t()[np.min(nlim)]
-        y = self.y[nlim]
-        wfm.t0 = t0
-        wfm.y = y
+        wfm.t0 = self.t()[np.min(nlim)]
+        wfm.y = self.y[nlim]
         return wfm
 
     def plot(self, time_unit="us", filtered=True):
@@ -138,7 +136,7 @@ class Waveform:
 
         time_unit :  Unit in time trace plot
         f_max : Maximum frequency to plot
-        normalise : Normalise powwer spectrum plot 1 (0 dB)
+        normalise : Normalise power spectrum plot 1 (0 dB)
         scale : Linear (Watt) or dB
         """
         plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
@@ -162,19 +160,16 @@ class Waveform:
         with open(filename, 'rb') as fid:
             n_header = int(np.fromfile(fid, dtype='>i4', count=1))
             header_bytes = fid.read(n_header)
-            header = header_bytes.decode("utf-8")
+            self.header = header_bytes.decode("utf-8")
+
             n_ch = int(np.fromfile(fid, dtype='>u4', count=1))
-            t0 = float(np.fromfile(fid, dtype='>f8', count=1))
-            dt = float(np.fromfile(fid, dtype='>f8', count=1))
-            dtr = float(np.fromfile(fid, dtype='>f8', count=1))
-            x = np.fromfile(fid, dtype='>f4', count=-1)   # Traces, 2D array
+            self.t0 = float(np.fromfile(fid, dtype='>f8', count=1))
+            self.dt = float(np.fromfile(fid, dtype='>f8', count=1))
+            self.dtr = float(np.fromfile(fid, dtype='>f8', count=1))
+            y = np.fromfile(fid, dtype='>f4', count=-1)   # Traces, 2D array
+            self.y = np.reshape(y, (-1, n_ch))
 
             self.sourcefile = filename
-            self.header = header
-            self.t0 = t0
-            self.dt = dt
-            self.dtr = dtr     # Rarely used, for backward compatibility
-            self.y = np.reshape(x, (-1, n_ch))
         return 0
 
     def save(self, filename):

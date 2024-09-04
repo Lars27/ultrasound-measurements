@@ -19,11 +19,19 @@ Created on Tue Dec 20 22:20:43 2022
 # %% Libraries
 
 import keyboard
+<<<<<<< Updated upstream
+=======
+import matplotlib.pyplot as plt
+>>>>>>> Stashed changes
 import us_utilities as us
 import ps5000a_ultrasound_wrappers as ps
 
 # Initialise instrument variables.
+<<<<<<< Updated upstream
 dso = ps.Communication()    # Instrument connection and status.
+=======
+dso = ps.Communication()    # Connection to Picoscope
+>>>>>>> Stashed changes
 ch = [ps.Channel(0),
       ps.Channel(1)]        # Vertical channel configuration
 trigger = ps.Trigger()      # Trigger configuration
@@ -35,6 +43,7 @@ resultfile = us.ResultFile()
 
 # Connect oscilloscope
 # Controlled by dso
+<<<<<<< Updated upstream
 # Try to close if an old handle is still resident. May not work
 try:
     if "openunit" in status:
@@ -48,6 +57,24 @@ except AttributeError:
 if dso.connected:
     # Configure vertical settings
     # Controlled by ch
+=======
+
+# Try to close if an old handle is still resident. May not work
+try:
+    if "openunit" in dso.status:
+        if not ("close" in dso.status):
+            ps.stop_adc(dso)
+            ps.close_adc(dso)
+            dso.status = {}
+except AttributeError:
+    dso.status = {}
+
+dso = ps.open_adc(dso)
+
+# Run program only is connection was successful
+if dso.connected:
+    # Configure vertical settings
+>>>>>>> Stashed changes
     ch[0].enabled = True  # Display or not, traces are always aquired
     ch[0].v_range = 1.0            # Requested vertical range in Volts
     ch[0].v_range = ch[0].v_max()  # Adjust to allowed range in Picoscope
@@ -74,7 +101,11 @@ if dso.connected:
     # Configure sampling (Horizontal scale)
     sampling.pretrigger = trigger.position/100  # Convert from %
     sampling.timebase = 3      # Sets sample rate, see Picoscope documentation
+<<<<<<< Updated upstream
     sampling.n_samples = 20e3  # No. of samples in single teace
+=======
+    sampling.n_samples = 10000  # No. of samples in single teace
+>>>>>>> Stashed changes
 
     # Configure RF-filter, for display only
     # Two-way zero-phase Butterworth filter
@@ -84,6 +115,7 @@ if dso.connected:
     rf_filter.f_max = 20e6          # Upper cutoff, Hz
     rf_filter.order = 2
 
+<<<<<<< Updated upstream
     # Find filename for saving results
 
     # Send settings to Picoscope
@@ -94,13 +126,29 @@ if dso.connected:
     status = ps.set_trigger(dso, status, trigger, ch, sampling)
     sampling.dt = ps.get_sample_interval(dso, sampling)
     status, dso = ps.configure_acquisition(dso, status, sampling)
+=======
+    # Send settings to Picoscope
+    for k in range(len(ch)):
+        ch[k].no = k
+        dso.status = ps.set_vertical(dso, ch[k])
+
+    dso.status = ps.set_trigger(dso, trigger, ch, sampling)
+    sampling.dt = ps.get_sample_interval(dso, sampling)
+    dso = ps.configure_acquisition(dso, sampling)
+>>>>>>> Stashed changes
 
     # Acquire traces
     wfm.t0 = sampling.t0()
     wfm.dt = sampling.dt
     while (True):
+<<<<<<< Updated upstream
         status, dso, wfm.y = ps.acquire_trace(dso, status, sampling, ch)
         wfm.plot_spectrum(f_max=10e6)
+=======
+        dso, wfm.y = ps.acquire_trace(dso, sampling, ch)
+        wfm.plot_spectrum(f_max=10e6)
+        plt.show()
+>>>>>>> Stashed changes
 
         if keyboard.is_pressed('s'):
             resultfile = us.find_filename(prefix='ustest',
@@ -108,12 +156,21 @@ if dso.connected:
                                           resultdir='results')
 
             wfm.save(resultfile.path)
+<<<<<<< Updated upstream
+=======
+            print(f'Result saved to {resultfile.name}')
+>>>>>>> Stashed changes
 
         if keyboard.is_pressed('q'):
             print('Program terminated by user')
             break
 
     # Close instrument connection
+<<<<<<< Updated upstream
     status = ps.close_adc(dso, status)
+=======
+    dso.status = ps.stop_adc(dso)
+    dso.status = ps.close_adc(dso)
+>>>>>>> Stashed changes
 else:
     print('Could not connect to instrument')

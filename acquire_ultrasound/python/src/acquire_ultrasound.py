@@ -94,6 +94,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.pulse = us.Pulse()          # Pulse for function generator output
         self.rf_filter = us.WaveformFilter()  # Filtering, for display only
         self.pulse.dt = 1/ps.DAC_SAMPLERATE
+
+        # OPen gui and connect initailse graphs
         self.connect_gui()
         fig, axis, graph = self.define_graphs()
         self.fig = fig
@@ -114,21 +116,21 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
         # Try to close if an old handle is still resident. May not work
         try:
-            if "openunit" in self.status:
-                if not ("close" in self.status):
-                    ps.stop_adc(self.dso, self.status)
-                    ps.close_adc(self.dso, self.status)
-            self.status = {}
+            if "openunit" in self.dso.status:
+                if not ("close" in self.dso.status):
+                    ps.stop_adc(self.dso, self.dso.status)
+                    ps.close_adc(self.dso, self.dso.status)
+            self.dso.status = {}
         except AttributeError:
-            self.status = {}
+            self.dso.status = {}
 
         # Connect and initialise instrument
-        self.status, self.dso = ps.open_adc(self.dso, self.status)
+        self.dso = ps.open_adc(self.dso)
 
         if self.dso.connected:
             # Send initial configuration to oscilloscope
-            self.status = self.update_vertical()
-            self.status = self.update_trigger()
+            self.dso.status = self.update_vertical()
+            self.dso.status = self.update_trigger()
 
             # Update configuration parameters
             self.update_sampling()
@@ -160,7 +162,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.statusBar.showMessage("Closing")
         matplotlib.pyplot.close(self.fig)
         try:
-            self.status = ps.close_adc(self.dso, self.status)
+            self.dso.status = ps.close_adc(self.dso)
             errorcode = 0
         except ValueError:
             errorcode = -1
@@ -168,7 +170,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
             self.close()
 
         self.statusBar.showMessage('Closed')
-        return self.status, errorcode
+        return self.dso.status, errorcode
 
 # %% Update oscilloscope settings
 
@@ -188,10 +190,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         if self.dso.connected:
             for k in range(len(self.ch)):
                 self.ch[k].no = k
-                self.status = ps.set_vertical(self.dso,
-                                              self.status,
-                                              self.ch[k])
-        return self.status
+                self.dso.status = ps.set_vertical(self.dso, self.ch[k])
+        return self.dso.status
 
     def update_trigger(self):
         """Read trigger settings from GUI and send to instrument."""
@@ -205,9 +205,9 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.sampling.pretrigger = self.trigger.position/100  # Convert %
 
         if self.dso.connected:
-            self.status = ps.set_trigger(self.dso, self.status, self.trigger,
-                                         self.ch, self.sampling)
-        return self.status
+            self.dso.status = ps.set_trigger(self.dso, self.trigger,
+                                             self.ch, self.sampling)
+        return self.dso.status
 
     def update_sampling(self):
         """Read trace length from GUI and set sample rate.
@@ -245,7 +245,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.axis['awg'].set_ylim(-vlim, vlim)
         self.graph['awgspec'].set_data(f/FREQUENCYSCALE, psd)
 
-        ps.set_signal(self.dso, self.status, self.sampling, self.pulse)
+        ps.set_signal(self.dso, self.sampling, self.pulse)
         for g in ['awg', 'awgspec']:
             if self.pulse.on:
                 self.graph[g].set_linestyle("solid")
@@ -287,17 +287,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
             self.statusBar.showMessage("Acquiring data ...")
             while not (self.runstate.stop_acquisition):
                 if self.runstate.sampling_changed:
-                    self.status, self.dso = ps.configure_acquisition(
-                                                    self.dso,
-                                                    self.status,
-                                                    self.sampling)
+                    self.dso = ps.configure_acquisition(self.dso,
+                                                        self.sampling)
                     self.runstate.sampling_changed = False
-                self.status, self.dso, y = ps.acquire_trace(
-                                                    self.dso,
-                                                    self.status,
-                                                    self.sampling,
-                                                    self.ch)
-                self.wfm.y = y
+                self.dso, self.wfm.y = ps.acquire_trace(self.dso,
+                                                        self.sampling,
+                                                        self.ch)
                 self.wfm.dt = self.sampling.dt
                 self.wfm.t0 = self.sampling.t0()
                 self.plot_result()

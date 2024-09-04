@@ -31,14 +31,6 @@ CH_NAMES = ["A", "B"]
 
 # %% Classes
 
-class Status:
-    """Instrument connection status monitoring."""
-
-    handle = ctypes.c_int16()
-    connected = False
-    status = {}
-
-
 class Channel:
     """Osciloscope vertical (voltage) channel settings and status."""
 
@@ -75,7 +67,7 @@ class Channel:
 
 
 class Trigger:
-    """Osciloscope trigger settings and status."""
+    """Osciloscope trigger settings."""
 
     source = "A"
     enable = True
@@ -88,7 +80,7 @@ class Trigger:
 
 
 class Horizontal:
-    """Osciloscope horizontal (time) scale settings status."""
+    """Osciloscope horizontal (time) scale."""
 
     timebase = 3       # Oscilloscope internal timebase no
     n_samples = 1000   # Number of samples
@@ -123,9 +115,9 @@ class Horizontal:
 class Communication:
     """c-type variables for calling c-style functions in DLLs from Pico SDK."""
 
+    handle = ctypes.c_int16(0)
     connected = False
     status = {}
-    handle = ctypes.c_int16(0)
     ready = ctypes.c_int16(0)
     check = ctypes.c_int16(0)
     max_samples = ctypes.c_int32(0)
@@ -147,69 +139,67 @@ Data are exchanged using the classes defined above
 """
 
 
-def open_adc(dso, status):
+def open_adc(dso):
     """Open connection to oscilloscope.
 
     Resolution is fixed to 15 bit and 2-channels
     """
     resolution = picoscope.PS5000A_DEVICE_RESOLUTION["PS5000A_DR_15BIT"]
-    status["openunit"] = picoscope.ps5000aOpenUnit(ctypes.byref(dso.handle),
-                                                   None,
-                                                   resolution)
+    dso.status["openunit"] = picoscope.ps5000aOpenUnit(
+                                ctypes.byref(dso.handle), None, resolution)
     try:
-        assert_pico_ok(status["openunit"])
+        assert_pico_ok(dso.status["openunit"])
     except:  # PicoNotOkError:
-        power_status = status["openunit"]
-        if power_status in [
+        power_state = dso.status["openunit"]
+        if power_state in [
                 picoscope.PICO_STATUS["PICO_POWER_SUPPLY_NOT_CONNECTED"],
                 picoscope.PICO_STATUS["PICO_USB3_0_DEVICE_NON_USB3_0_PORT"]
                 ]:
-            status["changePowerSource"] = picoscope.ps5000aChangePowerSource(
-                                                    dso.handle,
-                                                    power_status)
+            dso.status["changePowerSource"] = picoscope.ps5000aChangePowerSource(
+                                                    dso.handle, power_state)
         else:
             raise
 
-        assert_pico_ok(status["changePowerSource"])
-        status["maximumValue"] = picoscope.ps5000aMaximumValue(
+        assert_pico_ok(dso.status["changePowerSource"])
+        dso.status["maximumValue"] = picoscope.ps5000aMaximumValue(
                                                 dso.handle,
                                                 ctypes.byref(dso.max_adc))
-        assert_pico_ok(status["maximumValue"])
-        dso.connected = ((status["changePowerSource"] == 0)
-                         and (status["maximumValue"] == 0))
-    return status, dso
+        assert_pico_ok(dso.status["maximumValue"])
+        dso.connected = ((dso.status["changePowerSource"] == 0)
+                         and (dso.status["maximumValue"] == 0))
+    return dso
 
 
-def stop_adc(dso, status):
+def stop_adc(dso):
     """Stop oscilloscope. Only applicable when in streaming mode."""
-    status["stop"] = picoscope.ps5000aStop(dso.handle)
-    assert_pico_ok(status["stop"])
-    return status
+    dso.status["stop"] = picoscope.ps5000aStop(dso.handle)
+    assert_pico_ok(dso.status["stop"])
+    return dso.status
 
 
-def close_adc(dso, status):
+def close_adc(dso):
     """Close connection to ocsiloscope."""
-    status["close"] = picoscope.ps5000aCloseUnit(dso.handle)
-    assert_pico_ok(status["close"])
-    return status
+    dso.status["close"] = picoscope.ps5000aCloseUnit(dso.handle)
+    assert_pico_ok(dso.status["close"])
+    return dso.status
 
 
-def set_vertical(dso, status, channel):
+def set_vertical(dso, channel):
     """Set vertical scale in oscilloscope (Voltage range)."""
     name = channel_no_to_name(channel.no)
     status_name = f"setCh{name}"
-    status[status_name] = picoscope.ps5000aSetChannel(
+    dso.status[status_name] = picoscope.ps5000aSetChannel(
         dso.handle,
         channel.no,
         channel.enabled,
         channel.coupling_code(),
         channel.adc_range(),
         channel.offset)
-    assert_pico_ok(status[status_name])
-    return status
+    assert_pico_ok(dso.status[status_name])
+    return dso.status
 
 
-def set_trigger(dso, status, trigger, channel, sampling):
+def set_trigger(dso, trigger, channel, sampling):
     """Configure oscilloscope trigger."""
     enable = int(trigger.enable)
     if trigger.source == "EXT":
@@ -222,8 +212,8 @@ def set_trigger(dso, status, trigger, channel, sampling):
         relative_level = np.clip(trigger.level/channel[ch_no].v_max(), -1, 1)
         threshold = int(relative_level*channel[ch_no].adc_max)
     else:
-        status["trigger"] = -1
-        return status
+        dso.status["trigger"] = -1
+        return dso.status
 
     # Only the two basic trigger modes implemented: Rising or falling edge
     if trigger.direction.lower()[0:4] == 'fall':
@@ -234,32 +224,32 @@ def set_trigger(dso, status, trigger, channel, sampling):
     delay_pts = int(trigger.delay/sampling.dt)
     autotrigger_ms = ctypes.c_int16(int(trigger.autodelay*1e3))
     autotrigger_us = ctypes.c_uint64(int(trigger.autodelay*1e6))
-    status["trigger"] = picoscope.ps5000aSetSimpleTrigger(dso.handle,
-                                                          enable,
-                                                          source,
-                                                          threshold,
-                                                          mode,
-                                                          delay_pts,
-                                                          autotrigger_ms)
-    assert_pico_ok(status["trigger"])
-    status["autoTrigger"] = picoscope.ps5000aSetAutoTriggerMicroSeconds(
+    dso.status["trigger"] = picoscope.ps5000aSetSimpleTrigger(dso.handle,
+                                                              enable,
+                                                              source,
+                                                              threshold,
+                                                              mode,
+                                                              delay_pts,
+                                                              autotrigger_ms)
+    assert_pico_ok(dso.status["trigger"])
+    dso.status["autoTrigger"] = picoscope.ps5000aSetAutoTriggerMicroSeconds(
                                                     dso.handle,
                                                     autotrigger_us)
-    assert_pico_ok(status["autoTrigger"])
-    return status
+    assert_pico_ok(dso.status["autoTrigger"])
+    return dso.status
 
 
-def get_trigger_time_offset(dso, status):
+def get_trigger_time_offset(dso):
     """Read offset of last trigger."""
     segment_index = 0
     trigger_time = ctypes.c_int64(0)
     time_units = ctypes.c_int32(0)
-    status["triggerTimeOffset"] = picoscope.ps5000aGetTriggerTimeOffset64(
+    dso.status["triggerTimeOffset"] = picoscope.ps5000aGetTriggerTimeOffset64(
                                                     dso.handle,
                                                     ctypes.byref(trigger_time),
                                                     ctypes.byref(time_units),
                                                     segment_index)
-    assert_pico_ok(status["triggerTimeOffset"])
+    assert_pico_ok(dso.status["triggerTimeOffset"])
     trigger_time_offset = float(trigger_time.value)
     return trigger_time_offset
 
@@ -279,7 +269,7 @@ def get_sample_interval(dso, sampling):
     return sample_interval
 
 
-def configure_acquisition(dso, status, sampling):
+def configure_acquisition(dso, sampling):
     """Configure acquisition of data from oscilloscope."""
     dso.max_samples.value = sampling.n_samples
     segment_index = 0
@@ -288,49 +278,50 @@ def configure_acquisition(dso, status, sampling):
     dso.buffer.append((ctypes.c_int16*sampling.n_samples)())
     dso.buffer.append((ctypes.c_int16*sampling.n_samples)())
     status_prefix = "setDataBuffers"
-    # ch_status_names= ["A","B"]
     ch_no = 0
     for ch_name in CH_NAMES:
         status_name = status_prefix+ch_name
-        status[status_name] = picoscope.ps5000aSetDataBuffer(
+        dso.status[status_name] = picoscope.ps5000aSetDataBuffer(
                                              dso.handle,
                                              ch_no,
                                              ctypes.byref(dso.buffer[ch_no]),
                                              sampling.n_samples,
                                              segment_index,
                                              downsample_mode)
-        assert_pico_ok(status[status_name])
+        assert_pico_ok(dso.status[status_name])
         ch_no += 1
-    return status, dso
+    return dso
 
 
-def acquire_trace(dso, status, sampling, ch):
+def acquire_trace(dso, sampling, ch):
     """Acuire voltage trace from oscilloscope."""
     start_index = 0
     downsample_ratio = 0
     downsample_mode = 0
     segment_index = 0
-    status["runBlock"] = picoscope.ps5000aRunBlock(dso.handle,
-                                                   sampling.n_pretrigger(),
-                                                   sampling.n_posttrigger(),
-                                                   sampling.timebase,
-                                                   None,
-                                                   segment_index,
-                                                   None,
-                                                   None)
-    assert_pico_ok(status["runBlock"])
+    dso.status["runBlock"] = picoscope.ps5000aRunBlock(
+                                    dso.handle,
+                                    sampling.n_pretrigger(),
+                                    sampling.n_posttrigger(),
+                                    sampling.timebase,
+                                    None,
+                                    segment_index,
+                                    None,
+                                    None)
+    assert_pico_ok(dso.status["runBlock"])
 
     # Check for data collection to finish
     # Primitive polling, consider replacing with ps5000aIsReady
     dso.ready.value = 0
     dso.check.value = 0
     while dso.ready.value == dso.check.value:
-        status["isReady"] = picoscope.ps5000aIsReady(dso.handle,
-                                                     ctypes.byref(dso.ready))
+        dso.status["isReady"] = picoscope.ps5000aIsReady(
+                                        dso.handle,
+                                        ctypes.byref(dso.ready))
         time.sleep(0.01)
 
     # Transfer data values
-    status["getValues"] = picoscope.ps5000aGetValues(
+    dso.status["getValues"] = picoscope.ps5000aGetValues(
                                          dso.handle,
                                          start_index,
                                          ctypes.byref(dso.max_samples),
@@ -338,7 +329,7 @@ def acquire_trace(dso, status, sampling, ch):
                                          downsample_mode,
                                          segment_index,
                                          ctypes.byref(dso.overflow))
-    assert_pico_ok(status["getValues"])
+    assert_pico_ok(dso.status["getValues"])
 
     # Convert ADC counts data to Volts
     n_channels = len(ch)
@@ -348,22 +339,22 @@ def acquire_trace(dso, status, sampling, ch):
                                 ch[ch_no].adc_range(),
                                 dso.max_adc)
     v = 1e-3*v_mv  # np.column_stack([mv_a, mv_b])
-    return status, dso, v
+    return dso, v
 
 
-def set_signal(dso, status, sampling, pulse):
+def set_signal(dso, sampling, pulse):
     """Send pulse to arbitrary waveform generator."""
     if pulse.on:
         amplitude = min(pulse.a, DAC_MAX_AMPLITUDE)
     else:
         amplitude = 0
-    status["sigGenArbMinMax"] = picoscope.ps5000aSigGenArbitraryMinMaxValues(
+    dso.status["sigGenArbMinMax"] = picoscope.ps5000aSigGenArbitraryMinMaxValues(
                                             dso.handle,
                                             ctypes.byref(dso.awg_min_value),
                                             ctypes.byref(dso.awg_max_value),
                                             ctypes.byref(dso.awg_min_length),
                                             ctypes.byref(dso.awg_max_length))
-    assert_pico_ok(status["sigGenArbMinMax"])
+    assert_pico_ok(dso.status["sigGenArbMinMax"])
 
     # Scale pulse for awg buffer
     y_scaled = pulse.y()/pulse.a*dso.awg_max_value
@@ -371,13 +362,13 @@ def set_signal(dso, status, sampling, pulse):
     buffer_length = ctypes.c_uint32(len(pulsedata))
     index_mode = ctypes.c_int32(0)
     delta_phase = ctypes.c_uint32(0)
-    status["freqToPhase"] = picoscope.ps5000aSigGenFrequencyToPhase(
+    dso.status["freqToPhase"] = picoscope.ps5000aSigGenFrequencyToPhase(
                                                 dso.handle,
                                                 1/pulse.duration(),
                                                 index_mode,
                                                 buffer_length,
                                                 ctypes.byref(delta_phase))
-    assert_pico_ok(status["freqToPhase"])
+    assert_pico_ok(dso.status["freqToPhase"])
 
     """
     Settings not in use
@@ -399,7 +390,7 @@ def set_signal(dso, status, sampling, pulse):
     ext_in_threshold = ctypes.c_int16(0)
     waveform_length = ctypes.c_int32(len(pulsedata))
     waveform_pointer = pulsedata.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
-    status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
+    dso.status["setSigGenArbitrary"] = picoscope.ps5000aSetSigGenArbitrary(
                                                 dso.handle,
                                                 offset_voltage_uv,
                                                 pp_voltage_uv,
@@ -417,8 +408,8 @@ def set_signal(dso, status, sampling, pulse):
                                                 trigger_type,
                                                 trigger_source,
                                                 ext_in_threshold)
-    assert_pico_ok(status["setSigGenArbitrary"])
-    return status
+    assert_pico_ok(dso.status["setSigGenArbitrary"])
+    return dso.status
 
 
 # %% Utility functions

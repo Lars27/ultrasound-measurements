@@ -42,14 +42,14 @@ class Channel:
         self.offset = 0        # [V] Offset voltage
         self.enabled = True    # hannel enabled or not
         self.coupling = "DC"   # Oscilloscope coupling mode
-        self.bwl = 0           # Bandwidth limit
+        self.bwl = False       # Bandwidth limit
 
     def v_max(self):
         """[V] Find allowed voltage range from requested range."""
         vm = find_scale(self.v_range)
         return vm
 
-    def channel_name(self):
+    def name(self):
         """Return Picoscope channel name (A,B, ...) from number (0,1, ...)."""
         return channel_no_to_name(self.no)
 
@@ -93,7 +93,7 @@ class Horizontal:
 
     def n_pretrigger(self):
         """Return number of samples before trigger."""
-        return int(self.n_samples * self.pretrigger)
+        return int(self.n_samples * self.pretrigger/100)
 
     def n_posttrigger(self):
         """Return number of samples after trigger."""
@@ -155,8 +155,8 @@ def open_adc(dso):
                 picoscope.PICO_STATUS["PICO_POWER_SUPPLY_NOT_CONNECTED"],
                 picoscope.PICO_STATUS["PICO_USB3_0_DEVICE_NON_USB3_0_PORT"]
                 ]:
-            dso.status["changePowerSource"] = picoscope.ps5000aChangePowerSource(
-                                                    dso.handle, power_state)
+            dso.status["changePowerSource"] \
+                = picoscope.ps5000aChangePowerSource(dso.handle, power_state)
         else:
             raise
 
@@ -195,6 +195,19 @@ def set_vertical(dso, channel):
         channel.coupling_code(),
         channel.adc_range(),
         channel.offset)
+    assert_pico_ok(dso.status[status_name])
+    return dso.status
+
+
+def set_bwl(dso, channel):
+    """Activate bandwidth limit in oscilloscope."""
+#    name = channel_no_to_name(channel.no)
+    status_name = f"setBwl{channel.name()}"
+    bwl = ctypes.c_int32(channel.bwl)
+    dso.status[status_name] = picoscope.ps5000aSetBandwidthFilter(
+                                    dso.handle,
+                                    channel.no,
+                                    bwl)
     assert_pico_ok(dso.status[status_name])
     return dso.status
 
@@ -348,7 +361,8 @@ def set_signal(dso, sampling, pulse):
         amplitude = min(pulse.a, DAC_MAX_AMPLITUDE)
     else:
         amplitude = 0
-    dso.status["sigGenArbMinMax"] = picoscope.ps5000aSigGenArbitraryMinMaxValues(
+    dso.status["sigGenArbMinMax"] \
+        = picoscope.ps5000aSigGenArbitraryMinMaxValues(
                                             dso.handle,
                                             ctypes.byref(dso.awg_min_value),
                                             ctypes.byref(dso.awg_max_value),

@@ -111,7 +111,7 @@ class Waveform:
         wfm.y = self.y[nlim]
         return wfm
 
-    def plot(self, time_unit="us", filtered=True):
+    def plot(self, time_unit="us"):
         """Plot time traces using unit time_unit."""
         plot_pulse(self.t(), self.y, time_unit)
         return 0
@@ -140,7 +140,8 @@ class Waveform:
         scale : Linear (Watt) or dB
         """
         plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
-                      n_fft=self.n_fft(), normalise=normalise, scale=scale)
+                      n_fft=self.n_fft(), normalise=normalise,
+                      scale=scale)
         return 0
 
     def load(self, filename):
@@ -307,11 +308,8 @@ class Pulse:
     def plot_spectrum(self):
         """Plot trace and power spectrum."""
         f_max = scale_125(3*self.f0)
-        plot_spectrum(self.t(),
-                      self.y(),
-                      time_unit=self.time_unit(),
-                      f_max=f_max,
-                      n_fft=self.n_fft(),
+        plot_spectrum(self.t(), self.y(), time_unit=self.time_unit(),
+                      f_max=f_max, n_fft=self.n_fft(),
                       normalise=True, scale="db")
         return 0
 
@@ -321,11 +319,11 @@ class Pulse:
 class WaveformFilter:
     """Parameters of digital filter for "Waveform" class."""
 
-    type = "No filter"        # Filter type: None, AC removal, bandpass, ...
-    f_min = 100e3             # [Hz] Lower cutoff frequency
-    f_max = 10e6              # [Hz] Upper cutoff frequency
-    order = 2                 # Filter order
-    sample_rate = 100e6       # Sample rate
+    type = "No"          # Filter type: 'NO, 'AC', 'BPF'
+    f_min = 100e3        # [Hz] Lower cutoff frequency
+    f_max = 10e6         # [Hz] Upper cutoff frequency
+    order = 2            # Filter order
+    sample_rate = 100e6  # Sample rate
 
     def wc(self):      # Cutoff normalised to Nyquist-frequency
         """Return normalised cutoff-frequencies."""
@@ -431,7 +429,6 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
 
     Outputs     ResultFile-class
     """
-
     resultfile = ResultFile()
 
     prefix = prefix.lower()
@@ -532,6 +529,7 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
            n_fft : No of points in FFT,, zero-padding
            scale : Linear or dB
        normalise : Normalise spectrum to max value
+       rf_filter = PArameters of RF bandpass filter
 
     Outputs    0
     """

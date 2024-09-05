@@ -22,15 +22,13 @@ Created on Tue Dec 20 22:20:43 2022
 
 # General
 import sys
-from PyQt5 import QtWidgets, uic         # For setup with Qt
+from PyQt5 import QtWidgets, uic           # For setup with Qt
 import numpy as np
 import matplotlib
 import matplotlib.colors as mcolors
+import ultrasound_utilities as us         # USN ultrasound lab specific
+import ps5000a_ultrasound_wrappers as ps  # Interface to Pico c-style library
 
-# USN ultrasound lab specific
-import us_utilities as us
-# Interface to Picoscope c-style library
-import ps5000a_ultrasound_wrappers as ps
 
 # Constants
 COLOR_WARNING = ["white", "red"]    # [Text, Background]
@@ -86,8 +84,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.runstate = AcquisitionControl()
         self.display = Display()         # Scaling and display options
         self.dso = ps.Communication()    # Instrument connection and status.
-        self.ch = [ps.Channel(0),
-                   ps.Channel(1)]        # Vertical channel configuration
+        self.channel = [ps.Channel(0),
+                        ps.Channel(1)]        # Vertical channel configuration
         self.trigger = ps.Trigger()      # Trigger configuration
         self.sampling = ps.Horizontal()  # Horisontal configuration (time)
         self.wfm = us.Waveform()         # Result, storing acquired traces
@@ -176,21 +174,25 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
     def update_vertical(self):
         """Read vertical settings from GUI and send to instrument."""
-        self.ch[0].enabled = True  # Display or not, traces are always aquired
-        self.ch[1].enabled = True
+        self.channel[0].enabled = True  # Both traces are always aquired
+        self.channel[1].enabled = True
 
-        for k in range(len(self.ch)):
-            self.ch[k].v_range = us.read_scaled_value(
+        for k in range(len(self.channel)):
+            self.channel[k].v_range = us.read_scaled_value(
                                       self.rangeComboBox[k].currentText())
-            self.ch[k].v_range = self.ch[k].v_max()
-            self.ch[k].coupling = self.couplingComboBox[k].currentText()
-            self.ch[k].offset = self.offsetSpinBox[k].value()
-            self.ch[k].bwl = self.bwlComboBox[k].currentText()
+            self.channel[k].v_range = self.channel[k].v_max()
+            self.channel[k].coupling = self.couplingComboBox[k].currentText()
+            self.channel[k].offset = self.offsetSpinBox[k].value()
+
+            bwl = self.bwlComboBox[k].currentText()
+            self.channel[k].bwl = bwl.lower()[0:2] != 'no'
 
         if self.dso.connected:
-            for k in range(len(self.ch)):
-                self.ch[k].no = k
-                self.dso.status = ps.set_vertical(self.dso, self.ch[k])
+            for k in range(len(self.channel)):
+                self.channel[k].no = k
+                self.dso.status = ps.set_vertical(self.dso, self.channel[k])
+                self.dso.status = ps.set_bwl(self.dso, self.channel[k])
+
         return self.dso.status
 
     def update_trigger(self):
@@ -206,7 +208,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
         if self.dso.connected:
             self.dso.status = ps.set_trigger(self.dso, self.trigger,
-                                             self.ch, self.sampling)
+                                             self.channel, self.sampling)
         return self.dso.status
 
     def update_sampling(self):
@@ -292,7 +294,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
                     self.runstate.sampling_changed = False
                 self.dso, self.wfm.y = ps.acquire_trace(self.dso,
                                                         self.sampling,
-                                                        self.ch)
+                                                        self.channel)
                 self.wfm.dt = self.sampling.dt
                 self.wfm.t0 = self.sampling.t0()
                 self.plot_result()
@@ -440,8 +442,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
             vzoom = us.read_scaled_value(
                                 self.displayrangeComboBox[k].currentText())
             self.axis["zoom"][k].set_ylim(-vzoom, vzoom)
-            self.axis["trace"][k].set_ylim(-self.ch[k].v_max(),
-                                           self.ch[k].v_max())
+            self.axis["trace"][k].set_ylim(-self.channel[k].v_max(),
+                                           self.channel[k].v_max())
             self.axis["spectrum"][k].set_ylim(db_lim)
         self.axis["awgspec"].set_ylim(db_lim)
 

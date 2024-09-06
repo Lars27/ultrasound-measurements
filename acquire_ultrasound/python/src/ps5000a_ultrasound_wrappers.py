@@ -70,22 +70,24 @@ class Trigger:
     """Osciloscope trigger settings."""
 
     source = "A"
-    enable = True
     level = 0.5           # [V]
     direction = "Rising"
-    position = 0.0        # Trigger position in % of trace length
     delay = 0             # [s]
     autodelay = 10e-3     # [s]
     adc_max = 0           # Meaningless value, will be imported later
+
+    def enabled(self):
+        """Dectivate trigger if source is 'Internal'."""
+        return (self.source.lower()[0:3] != 'int')
 
 
 class Horizontal:
     """Osciloscope horizontal (time) scale."""
 
-    timebase = 3       # Oscilloscope internal timebase no
-    n_samples = 1000   # Number of samples
-    dt = 8e-9          # [s] Sample interval
-    pretrigger = 0     # [%] Samples before trigger
+    timebase = 3            # Oscilloscope internal timebase no
+    n_samples = 1000        # Number of samples
+    dt = 8e-9               # [s] Sample interval
+    trigger_position = 0.0  # Trigger position in % of trace length
 
     def fs(self):
         """Return Picoscope samplig rate [S/s]."""
@@ -93,7 +95,7 @@ class Horizontal:
 
     def n_pretrigger(self):
         """Return number of samples before trigger."""
-        return int(self.n_samples * self.pretrigger/100)
+        return int(self.n_samples * self.trigger_position/100)
 
     def n_posttrigger(self):
         """Return number of samples after trigger."""
@@ -214,7 +216,8 @@ def set_bwl(dso, channel):
 
 def set_trigger(dso, trigger, channel, sampling):
     """Configure oscilloscope trigger."""
-    enable = int(trigger.enable)
+    enabled = int(trigger.enabled())
+
     if trigger.source == "EXT":
         source = picoscope.PS5000A_CHANNEL["PS5000A_EXTERNAL"]
         relative_level = np.clip(trigger.level/5.0, -1, 1)
@@ -238,7 +241,7 @@ def set_trigger(dso, trigger, channel, sampling):
     autotrigger_ms = ctypes.c_int16(int(trigger.autodelay*1e3))
     autotrigger_us = ctypes.c_uint64(int(trigger.autodelay*1e6))
     dso.status["trigger"] = picoscope.ps5000aSetSimpleTrigger(dso.handle,
-                                                              enable,
+                                                              enabled,
                                                               source,
                                                               threshold,
                                                               mode,

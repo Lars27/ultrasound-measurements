@@ -58,7 +58,7 @@ if dso.connected:
     channel[0].offset = 0.0      # Offset voltage [V]
     channel[0].bwl = True        # Boolean, activates 20 MHz hardware limit
 
-    channel[1].enabled = False
+    channel[1].enabled = True
     channel[1].v_range = 0.5
     channel[1].v_range = channel[1].v_max()
     channel[1].coupling = 'DC'
@@ -67,17 +67,15 @@ if dso.connected:
 
     # Trigger
     trigger.source = 'EXT'     # 'A', 'B', 'EXT', 'Internal'
-    trigger.enable = trigger.source.lower()[0:3] != 'int'
-    trigger.position = 10          # Relative position [%]
     trigger.direction = 'Rising'   # 'Rising', 'Falling'
     trigger.level = 0.5            # Absolute level  [V]
     trigger.delay = 0              # Delay [s]
     trigger.autodelay = 10e-3      # Automatic trigger  [s]
 
     # Sampling (Horizontal scale)
-    sampling.pretrigger = trigger.position  # Samples before trigger
-    sampling.timebase = 3      # Sets sample rate, see Picoscope documentation
-    sampling.n_samples = 10000  # No. of samples in single teace
+    sampling.trigger_position = 10  # Relative position [%]
+    sampling.timebase = 3   # Defines sample rate, see Picoscope documentation
+    sampling.n_samples = 10000   # No. of samples in single teace
 
     # RF-filter, for display only.Two-way zero-phase Butterworth
     rf_filter.sample_rate = sampling.fs()

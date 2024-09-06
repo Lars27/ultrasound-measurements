@@ -198,13 +198,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
     def update_trigger(self):
         """Read trigger settings from GUI and send to instrument."""
         self.trigger.source = self.triggerSourceComboBox.currentText()
-        self.trigger.enable = self.trigger.source.lower()[0:3] != 'int'
-        self.trigger.position = self.triggerPositionSpinBox.value()
         self.trigger.direction = self.triggerModeComboBox.currentText()
         self.trigger.level = self.triggerLevelSpinBox.value()
         self.trigger.delay = self.triggerDelaySpinBox.value()*TIMESCALE
         self.trigger.autodelay = self.triggerAutoDelaySpinBox.value()*1e-3
-        self.sampling.pretrigger = self.trigger.position/100  # Convert %
+
+        self.sampling.trigger_position = self.triggerPositionSpinBox.value()
 
         if self.dso.connected:
             self.dso.status = ps.set_trigger(self.dso, self.trigger,
@@ -347,18 +346,14 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         """
         self.statusBar.showMessage("Saving results ...")
 
-        resultpath, resultdir, resultfile, n_result = us.find_filename(
-                                                        prefix='US',
-                                                        ext='trc',
-                                                        resultdir='results')
         resultfile = us.find_filename(prefix='us',
                                       ext='trc',
                                       resultdir='results')
 
         self.wfm.save(resultfile.path)
-        self.filecounterSpinBox.setValue(n_result)
-        self.resultfileEdit.setText(resultfile)
-        self.resultpathEdit.setText(resultpath)
+        self.filecounterSpinBox.setValue(resultfile.counter)
+        self.resultfileEdit.setText(resultfile.name)
+        self.resultpathEdit.setText(resultfile.path)
         self.statusBar.showMessage(f'Result saved to {resultfile}')
         return 0
 

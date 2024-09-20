@@ -1,4 +1,3 @@
-
 """Analysis program made for USN ultrasound lab.
 
 Investigate and save traces from single-element ultrasound transducers using
@@ -13,7 +12,6 @@ Operation
 coding: utf-8 -*-
 Created on Tue Dec 20 22:20:43 2022
 @author: larsh
-
 """
 
 # %% Libraries
@@ -66,20 +64,23 @@ if dso.connected:
     channel[1].bwl = True
 
     # Trigger
-    trigger.source = 'EXT'     # 'A', 'B', 'EXT', 'Internal'
+    trigger.source = 'EXT'         # 'A', 'B', 'EXT', 'Internal'
     trigger.direction = 'Rising'   # 'Rising', 'Falling'
     trigger.level = 0.5            # Absolute level  [V]
     trigger.delay = 0              # Delay [s]
     trigger.autodelay = 10e-3      # Automatic trigger  [s]
 
     # Sampling (Horizontal scale)
+    fs_requested = 10e3   # [Hz] Sample rate will be modified to permitted
+    timebase, fs_actual = ps.find_timebase(fs_requested)
+
     sampling.trigger_position = 10  # Relative position [%]
-    sampling.timebase = 3   # Defines sample rate, see Picoscope documentation
-    sampling.n_samples = 10000   # No. of samples in single teace
+    sampling.timebase = timebase   # Defines sample rate, see documentation
+    sampling.n_samples = 5000   # No. of samples in single trace
 
     # RF-filter, for display only.Two-way zero-phase Butterworth
     rf_filter.sample_rate = sampling.fs()
-    rf_filter.type = 'No'           # 'No', 'AC', 'BPF'
+    rf_filter.type = 'AC'           # 'No', 'AC', 'BPF'
     rf_filter.f_min = 0.5e6         # Lower cutoff, Hz
     rf_filter.f_max = 20e6          # Upper cutoff, Hz
     rf_filter.order = 2
@@ -99,7 +100,7 @@ if dso.connected:
     while (True):
         dso, wfm.y = ps.acquire_trace(dso, sampling, channel)
         wfm_filtered = wfm.filtered(rf_filter)
-        wfm_filtered.plot_spectrum(f_max=40e6)
+        wfm_filtered.plot_spectrum(f_max=sampling.fs()/4, db_min=-40)
         plt.show()
 
         if keyboard.is_pressed('s'):

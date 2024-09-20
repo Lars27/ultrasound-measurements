@@ -131,7 +131,7 @@ class Waveform:
         return f, psd
 
     def plot_spectrum(self, time_unit="s", f_max=None,
-                      normalise=True, scale="dB"):
+                      normalise=True, scale="dB", db_min=-40):
         """Plot trace and power spectrum in one graph.
 
         time_unit :  Unit in time trace plot
@@ -141,7 +141,7 @@ class Waveform:
         """
         plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
                       n_fft=self.n_fft(), normalise=normalise,
-                      scale=scale)
+                      scale=scale, db_min=db_min)
         return 0
 
     def load(self, filename):
@@ -518,7 +518,7 @@ def powerspectrum(y, dt, n_fft=None,
 
 
 def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
-                  scale="dB", normalise=True):
+                  scale="dB", normalise=True, db_min=-40):
     """Plot time trace and power spectrum on standardised format.
 
     Requires evenly sampled points
@@ -552,7 +552,7 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
     plt.xlim((0, f_max/multiplier))
     if normalise and (scale.lower() == "db"):
         plt.ylabel('Power [dB re. max]')
-        plt.ylim((-40.0, 0))
+        plt.ylim((db_min, 0))
     else:
         plt.ylabel('Power')
     return 0

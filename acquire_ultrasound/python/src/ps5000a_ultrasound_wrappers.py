@@ -285,6 +285,29 @@ def get_sample_interval(dso, sampling):
     return sample_interval
 
 
+# =============================================================================
+# Taken from documentation, but not available in the Python library
+# Not tested, probably not implemented in Python
+# def find_sample_interval(dso, dt_requested):
+#     """Find sample interval nearest to the requested value."""
+#     enabled_channel_flags = 5   # 1+4 meand ch A and B, see documentation
+#     adc_resolution = 3          # Corresponds to 15 bit, see documentation
+#     use_ets = 0                 # Equivalent Time Sampling, not used
+#     timebase = ctypes.c_uint32(0)
+#     dt_actual = ctypes.c_double(0)
+#     dso.status["findDt"] = picoscope.ps5000aNearestSampleIntervalStateless(
+#         dso.handle,
+#         enabled_channel_flags,
+#         dt_requested,
+#         adc_resolution,
+#         use_ets,
+#         ctypes.byref(timebase),
+#         ctypes.byref(dt_actual))
+#
+#     return int(timebase), float(dt_actual)
+# =============================================================================
+
+
 def configure_acquisition(dso, sampling):
     """Configure acquisition of data from oscilloscope."""
     dso.max_samples.value = sampling.n_samples
@@ -439,6 +462,18 @@ def channel_no_to_name(no):
 def channel_name_to_no(name):
     """Convert Picoscope channel name (A, B, ...) to number."""
     return ord(name)-ord("A")
+
+
+def find_timebase(fs_requested):
+    """Find instriment timebase based on requested sample rate."""
+    fs_max = 125e6
+    timebase = int(fs_max/fs_requested)+2  # See documentation for 'Timebases'
+    timebase = max(timebase, 3)            # Min. allowed timebase is 3
+
+    dt = (timebase-2)/fs_max
+    fs_actual = 1/dt
+
+    return timebase, fs_actual
 
 
 def find_scale(x):

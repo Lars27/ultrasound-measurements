@@ -31,6 +31,7 @@ sampling = ps.Horizontal()  # Horisontal configuration (time)
 wfm = us.Waveform()         # Result, storing acquired traces
 rf_filter = us.WaveformFilter()  # Filtering, for display only
 resultfile = us.ResultFile()
+pulse = us.Pulse()
 
 # %% Connect oscilloscope. Controlled by dso, run if connected successfully
 
@@ -84,6 +85,9 @@ if dso.connected:
     rf_filter.f_min = 0.5e6         # Lower cutoff, Hz
     rf_filter.f_max = 20e6          # Upper cutoff, Hz
     rf_filter.order = 2
+
+    # Check for signal generator
+    dso = ps.check_awg(dso)
 
     # %% Send settings to Picoscope and aquire traces
     for k in range(len(channel)):

@@ -340,6 +340,7 @@ class WaveformFilter:
 
 class ResultFile:
     """Path, name and counter for resultfile."""
+
     prefix = 'test'
     ext = 'trc'
     path = ''

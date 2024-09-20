@@ -17,17 +17,19 @@ resultfile = us.ResultFile()
 # %% Set up recording
 devices = sd.query_devices()  # Returnl ist of available devices
 
-fs = 8000  # [Hz] Sample rate
+fs = 44100  # [Hz] Sample rate
 duration = 0.5  # [s] Duration of each recording
 f_max = 1000  # Max. frequwncy to display
+n_samples = int(duration * fs)
 
-sd.default.device = 1    # Device to record from, see list in devices
+sd.default.device = 0    # Device to record from, see list in devices
 sd.default.samplerate = fs
-sd.default.channels = 1  # Chech that this is available, see list in devices
+sd.default.channels = 2  # Chech that this is available, see list in devices
+sd.default.latency = 'high'
 
 # RF-filter, for display only.Two-way zero-phase Butterworth
 rf_filter.sample_rate = fs
-rf_filter.type = 'AC'           # 'No', 'AC', 'BPF'
+rf_filter.type = 'No'           # 'No', 'AC', 'BPF'
 rf_filter.f_min = 0.5e6         # Lower cutoff, Hz
 rf_filter.f_max = 20e6          # Upper cutoff, Hz
 rf_filter.order = 2
@@ -36,7 +38,7 @@ rf_filter.order = 2
 wfm.dt = 1/fs
 wfm.t0 = 0
 while (True):
-    wfm.y = sd.rec(int(duration * fs))
+    wfm.y = sd.rec(n_samples)
     sd.wait()  # Wait until recording is finished
 
     wfm_filtered = wfm.filtered(rf_filter)
@@ -55,3 +57,5 @@ while (True):
     if keyboard.is_pressed('q'):
         print('Program terminated by user')
         break
+
+sd.default.reset()

@@ -119,6 +119,7 @@ class Communication:
 
     handle = ctypes.c_int16(0)
     connected = False
+    signal_generator = False
     status = {}
     ready = ctypes.c_int16(0)
     check = ctypes.c_int16(0)
@@ -203,7 +204,6 @@ def set_vertical(dso, channel):
 
 def set_bwl(dso, channel):
     """Activate bandwidth limit in oscilloscope."""
-#    name = channel_no_to_name(channel.no)
     status_name = f"setBwl{channel.name()}"
     bwl = ctypes.c_int32(channel.bwl)
     dso.status[status_name] = picoscope.ps5000aSetBandwidthFilter(
@@ -381,6 +381,29 @@ def acquire_trace(dso, sampling, ch):
     return dso, v
 
 
+def check_awg(dso):
+    """Check whether the oscilloscope has a waveform generator.
+
+    No dedicated function for this was found in the documentation.
+    Uses instead a call to the simplest signal generator fubnction and
+    checks for error.
+    """
+    dso.status["sigGenArbMinMax"] \
+        = picoscope.ps5000aSigGenArbitraryMinMaxValues(
+                                            dso.handle,
+                                            ctypes.byref(dso.awg_min_value),
+                                            ctypes.byref(dso.awg_max_value),
+                                            ctypes.byref(dso.awg_min_length),
+                                            ctypes.byref(dso.awg_max_length))
+    try:
+        assert_pico_ok(dso.status["sigGenArbMinMax"])
+        dso.signal_generator = True
+    except:   # PicoSDKCtypesError
+        dso.signal_generator = False
+
+    return dso
+
+
 def set_signal(dso, sampling, pulse):
     """Send pulse to arbitrary waveform generator."""
     if pulse.on:
@@ -394,7 +417,12 @@ def set_signal(dso, sampling, pulse):
                                             ctypes.byref(dso.awg_max_value),
                                             ctypes.byref(dso.awg_min_length),
                                             ctypes.byref(dso.awg_max_length))
-    assert_pico_ok(dso.status["sigGenArbMinMax"])
+    try:
+        assert_pico_ok(dso.status["sigGenArbMinMax"])
+        dso.signal_generator = True
+    except:   # PicoSDKCtypesError
+        dso.signal_generator = False
+        return dso
 
     # Scale pulse for awg buffer
     y_scaled = pulse.y()/pulse.a*dso.awg_max_value
@@ -449,7 +477,7 @@ def set_signal(dso, sampling, pulse):
                                                 trigger_source,
                                                 ext_in_threshold)
     assert_pico_ok(dso.status["setSigGenArbitrary"])
-    return dso.status
+    return dso
 
 
 # %% Utility functions

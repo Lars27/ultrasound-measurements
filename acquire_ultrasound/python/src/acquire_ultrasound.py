@@ -93,7 +93,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.rf_filter = us.WaveformFilter()  # Filtering, for display only
         self.pulse.dt = 1/ps.DAC_SAMPLERATE
 
-        # OPen gui and connect initailse graphs
+        # Open gui and connect initailse graphs
         self.connect_gui()
         fig, axis, graph = self.define_graphs()
         self.fig = fig
@@ -126,6 +126,9 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.dso = ps.open_adc(self.dso)
 
         if self.dso.connected:
+            # Check for signal generator
+            self.dso = ps.check_awg(self.dso)
+
             # Send initial configuration to oscilloscope
             self.dso.status = self.update_vertical()
             self.dso.status = self.update_trigger()
@@ -215,21 +218,29 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
         This function does not communicate with instrument
         """
-        self.sampling.timebase = 3
+        # Find oscilloscope timebase from sample rate
+        fs_requested = int(self.samplerateSpinBox.value()*FREQUENCYSCALE)
+        self.sampling.timebase, fs_actual = ps.find_timebase(fs_requested)
+        self.sampling.dt = 1/fs_actual
         self.sampling.n_samples = int(self.nSamplesSpinBox.value()*1e3)
+
         if self.dso.connected:
             self.sampling.dt = ps.get_sample_interval(self.dso, self.sampling)
-            self.samplerateSpinBox.setValue(self.sampling.fs()/FREQUENCYSCALE)
+
+        self.samplerateSpinBox.setValue(self.sampling.fs()/FREQUENCYSCALE)
 
         self.runstate.sampling_changed = True
         return 0
 
     def update_pulser(self):
-        """Send pluse to arbitrary waveform generator.
+        """Send pulse to arbitrary waveform generator.
 
         Read settings for arbitrary waveform generator (awg)
         Plot pulse and send to instrument
         """
+        if not self.dso.signal_generator:
+            return 0    # Does nothing signal genarator not available
+
         self.pulse.on = self.transmitButton.isChecked()
         self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
         self.pulse.shape = self.pulseShapeComboBox.currentText()
@@ -246,7 +257,7 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         self.axis['awg'].set_ylim(-vlim, vlim)
         self.graph['awgspec'].set_data(f/FREQUENCYSCALE, psd)
 
-        ps.set_signal(self.dso, self.sampling, self.pulse)
+        self.dso = ps.set_signal(self.dso, self.sampling, self.pulse)
         for g in ['awg', 'awgspec']:
             if self.pulse.on:
                 self.graph[g].set_linestyle("solid")
@@ -281,9 +292,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         if self.runstate.oscilloscope_ready:
             self.runstate.oscilloscope_ready = False
             self.runstate_sampling_changed = True
-            self.transmitButton.setEnabled(True)
+
             self.saveButton.setEnabled(True)
             self.closeButton.setEnabled(False)
+            self.transmitButton.setEnabled(self.dso.signal_generator)
+
             self.update_status_box("Acquiring", COLOR_OK)
             self.statusBar.showMessage("Acquiring data ...")
             while not (self.runstate.stop_acquisition):
@@ -608,7 +621,6 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
 
 # %% Main function
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = ReadUltrasound()

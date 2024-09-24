@@ -86,7 +86,7 @@ class Horizontal:
 
     timebase = 3            # Oscilloscope internal timebase no
     n_samples = 1000        # Number of samples
-    dt = 8e-9               # [s] Sample interval
+    dt = 1                  # [s] Sample interval dummy, read from intrument
     trigger_position = 0.0  # Trigger position in % of trace length
 
     def fs(self):

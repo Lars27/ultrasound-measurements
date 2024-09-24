@@ -51,13 +51,13 @@ if dso.connected:
     # %% Configure oscilloscope
     # Vertical
     channel[0].enabled = True    # Display, traces are always aquired
-    channel[0].v_range = 0.5     # Requested vertical range [V]
+    channel[0].v_range = 10e-3   # Requested vertical range [V]
     channel[0].v_range = channel[0].v_max()  # Adjust to allowed Picoscoperange
     channel[0].coupling = 'DC'   # 'DC', 'AC'
     channel[0].offset = 0.0      # Offset voltage [V]
     channel[0].bwl = True        # Boolean, activates 20 MHz hardware limit
 
-    channel[1].enabled = True
+    channel[1].enabled = False
     channel[1].v_range = 0.5
     channel[1].v_range = channel[1].v_max()
     channel[1].coupling = 'DC'
@@ -72,39 +72,48 @@ if dso.connected:
     trigger.autodelay = 10e-3      # Automatic trigger  [s]
 
     # Sampling (Horizontal scale)
-    fs_requested = 10e3   # [Hz] Sample rate will be modified to permitted
+    fs_requested = 40e3   # [Hz] Sample rate will be modified to permitted
     timebase, fs_actual = ps.find_timebase(fs_requested)
 
-    sampling.trigger_position = 10  # Relative position [%]
+    sampling.trigger_position = 0  # Relative position [%]
     sampling.timebase = timebase   # Defines sample rate, see documentation
-    sampling.n_samples = 5000   # No. of samples in single trace
+    sampling.n_samples = 10000   # No. of samples in single trace
 
     # RF-filter, for display only.Two-way zero-phase Butterworth
-    rf_filter.sample_rate = sampling.fs()
-    rf_filter.type = 'AC'           # 'No', 'AC', 'BPF'
-    rf_filter.f_min = 0.5e6         # Lower cutoff, Hz
-    rf_filter.f_max = 20e6          # Upper cutoff, Hz
+    rf_filter.type = 'BPF'       # 'No', 'AC', 'BPF'
+    rf_filter.f_min = 10         # Lower cutoff, Hz
+    rf_filter.f_max = 2e3        # Upper cutoff, Hz
     rf_filter.order = 2
 
     # Check for signal generator
     dso = ps.check_awg(dso)
 
     # %% Send settings to Picoscope and aquire traces
+    channel_display = []
     for k in range(len(channel)):
         channel[k].no = k
         dso.status = ps.set_vertical(dso, channel[k])
         dso.status = ps.set_bwl(dso, channel[k])
 
+        if channel[k].enabled:
+            channel_display.append(k)
+
     dso.status = ps.set_trigger(dso, trigger, channel, sampling)
     sampling.dt = ps.get_sample_interval(dso, sampling)
+    rf_filter.sample_rate = sampling.fs()
+
     dso = ps.configure_acquisition(dso, sampling)
 
     wfm.t0 = sampling.t0()
     wfm.dt = sampling.dt
+    # Loop to acquire pulses
     while (True):
         dso, wfm.y = ps.acquire_trace(dso, sampling, channel)
         wfm_filtered = wfm.filtered(rf_filter)
-        wfm_filtered.plot_spectrum(f_max=sampling.fs()/4, db_min=-40)
+        wfm_filtered.plot_spectrum(ch=channel_display,
+                                   y_max=channel[0].v_range,
+                                   f_max=1000,
+                                   db_min=-40)
         plt.show()
 
         if keyboard.is_pressed('s'):

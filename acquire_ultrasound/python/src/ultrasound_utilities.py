@@ -111,9 +111,10 @@ class Waveform:
         wfm.y = self.y[nlim]
         return wfm
 
-    def plot(self, time_unit="us"):
+    def plot(self, time_unit="us", ch=[0, 1], y_max=None):
         """Plot time traces using unit time_unit."""
-        plot_pulse(self.t(), self.y, time_unit)
+        plot_pulse(self.t(), self.y[ch], time_unit, y_max)
+
         return 0
 
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
@@ -130,8 +131,8 @@ class Waveform:
                                normalise=normalise)
         return f, psd
 
-    def plot_spectrum(self, time_unit="s", f_max=None,
-                      normalise=True, scale="dB", db_min=-40):
+    def plot_spectrum(self, ch=[0, 1], time_unit="s", y_max=None, f_max=None,
+                      normalise=True, scale="dB", db_min=-40, ):
         """Plot trace and power spectrum in one graph.
 
         time_unit :  Unit in time trace plot
@@ -139,9 +140,9 @@ class Waveform:
         normalise : Normalise power spectrum plot 1 (0 dB)
         scale : Linear (Watt) or dB
         """
-        plot_spectrum(self.t(), self.y, time_unit=time_unit, f_max=f_max,
-                      n_fft=self.n_fft(), normalise=normalise,
-                      scale=scale, db_min=db_min)
+        plot_spectrum(self.t(), self.y[:, ch], time_unit=time_unit,
+                      y_max=y_max, f_max=f_max, n_fft=self.n_fft(),
+                      normalise=normalise, scale=scale, db_min=db_min)
         return 0
 
     def load(self, filename):
@@ -468,7 +469,7 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
     return resultfile
 
 
-def plot_pulse(t, x, time_unit="us"):
+def plot_pulse(t, x, time_unit="us", y_max=None):
     """Plot pulse in standardised graph.
 
     Inputs      t : Time vector
@@ -482,6 +483,8 @@ def plot_pulse(t, x, time_unit="us"):
     plt.xlabel(f'Time [{time_unit}]')
     plt.ylabel('Ampltude')
     plt.grid(True)
+    if y_max is not None:
+        plt.ylim(-y_max, y_max)
     return 0
 
 
@@ -518,7 +521,7 @@ def powerspectrum(y, dt, n_fft=None,
     return f, psd
 
 
-def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
+def plot_spectrum(t, x, time_unit="s", y_max=None, f_max=None, n_fft=None,
                   scale="dB", normalise=True, db_min=-40):
     """Plot time trace and power spectrum on standardised format.
 
@@ -536,7 +539,7 @@ def plot_spectrum(t, x, time_unit="s", f_max=None, n_fft=None,
     """
     # Pulse in time-domain
     plt.subplot(2, 1, 1)
-    plot_pulse(t, x, time_unit)
+    plot_pulse(t, x, time_unit, y_max)
 
     # Power spectrum
     plt.subplot(2, 1, 2)

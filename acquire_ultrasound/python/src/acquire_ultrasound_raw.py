@@ -50,19 +50,18 @@ dso = ps.open_adc(dso)
 if dso.connected:
     # %% Configure oscilloscope
     # Vertical
-    channel[0].enabled = True    # Display, traces are always aquired
-    channel[0].v_range = 10e-3   # Requested vertical range [V]
-    channel[0].v_range = channel[0].v_max()  # Adjust to allowed Picoscoperange
-    channel[0].coupling = 'DC'   # 'DC', 'AC'
-    channel[0].offset = 0.0      # Offset voltage [V]
-    channel[0].bwl = True        # Boolean, activates 20 MHz hardware limit
+    # Common settings
+    for k in [0, 1]:
+        channel[k].enabled = True    # Display, traces are always aquired
+        channel[k].v_range = 10e-3   # Requested vertical range [V]
+        channel[k].v_range = channel[k].v_max()  # Adjust to allowed range
+        channel[k].coupling = 'DC'   # 'DC', 'AC'
+        channel[k].offset = 0.0      # Offset voltage [V]
+        channel[k].bwl = True        # Boolean, activates 20 MHz hardware limit
 
-    channel[1].enabled = False
-    channel[1].v_range = 0.5
-    channel[1].v_range = channel[1].v_max()
-    channel[1].coupling = 'DC'
-    channel[1].offset = 0.0
-    channel[1].bwl = True
+    # Channel dependent setting configured here
+    channel[0].enabled = True
+    channel[1].enabled = True
 
     # Trigger
     trigger.source = 'EXT'         # 'A', 'B', 'EXT', 'Internal'

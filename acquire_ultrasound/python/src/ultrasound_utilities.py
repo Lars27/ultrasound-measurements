@@ -61,15 +61,15 @@ class Waveform:
         self.dtr = 0             # [s]  Interval between blocks. Obsolete
 
     def n_channels(self):
-        """Return number of data channels in trace."""
+        """Number of data channels in trace."""
         return self.y.shape[1]
 
     def n_samples(self):
-        """Return number of points in trace."""
+        """Number of points in trace."""
         return self.y.shape[0]
 
     def t(self):
-        """Return time vector [s].
+        """Time vector [s].
 
         Calculated from start time and sample interval [s]
         """
@@ -78,14 +78,17 @@ class Waveform:
                            self.n_samples())
 
     def fs(self):
-        """Return sample rate [Hz]."""
+        """Sample rate [Hz]."""
         return 1/self.dt
 
-    def n_fft(self, upsample=2):
-        """Return number of points used to calculate spectrum.
+    def n_fft(self, upsample=0):
+        """Number of points used to calculate spectrum.
 
         Always a power of 2, zeros padded if needed.
-        upsample : Number of extra powers of 2 to add
+
+        Arguments
+        ---------
+        upsample    Int     Number of extra powers of 2 to add
         """
         upsample = max(round(upsample), 0)
         m, e = frexp(self.n_samples())
@@ -94,7 +97,7 @@ class Waveform:
         return max(n, 2048)
 
     def f(self):
-        """Return frequency vector [Hz]."""
+        """Frequency vector [Hz]."""
         return np.arange(0, self.n_fft()/2)/self.n_fft() * self.fs()
 
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
@@ -105,6 +108,11 @@ class Waveform:
         normalise Boolean   Normalise to 1 (0 dB) as maximum
         scale     String    Linear (Power)  or dB
         upsample  Int       Interpolate spectrum by padding to next power of 2
+
+        Outputs
+        -------
+        f       1D array    Frequency vector
+        psd     2D array    Power spectral density
         """
         f, psd = powerspectrum(self.y,
                                self.dt,
@@ -114,11 +122,15 @@ class Waveform:
         return f, psd
 
     def filtered(self, filter):
-        """Return bandpass filtered trace.
+        """Bandpass filtered trace.
 
         Arguments
         ---------
         filter  WaveformFilter  Filter specification
+
+        Outputs
+        -------
+        wfm     Waveform    Copy of original waveform with filtered data
         """
         wfm = copy.deepcopy(self)
         match(filter.type[0:2].lower()):
@@ -137,7 +149,12 @@ class Waveform:
 
         Arguments
         ---------
-        tlim = [tmin tmax]  Start and en of interval to select
+        tlim = [tmin tmax]  Start and end of interval to select
+
+        Outputs
+        -------
+        wfm     Waveform    Copy of original waveform zommed to interval
+
         """
         wfm = copy.deepcopy(self)
         nlim = np.flatnonzero((self.t() >= min(tlim))
@@ -153,7 +170,7 @@ class Waveform:
         Arguments
         ---------
         time_unit   String      Unit to plot tim in, 's', 'ms', 'us'
-        ch          List on int Channels to plot
+        ch          List of int Channels to plot
         y_max       Float       Max. scale on amplitude-axis
         """
         plot_pulse(self.t(), self.y[ch], time_unit, y_max)
@@ -286,7 +303,7 @@ class Pulse:
     on = False
 
     def t(self):
-        """Return time vector [s]."""
+        """Time vector [s]."""
         return np.arange(0, self.duration(), self.dt)
 
     def y(self):
@@ -319,19 +336,19 @@ class Pulse:
         return y
 
     def period(self):
-        """Return period of carrier wave [s]."""
+        """Period of carrier wave [s]."""
         return 1/self.f0
 
     def duration(self):
-        """Return duration of pulse [s]."""
+        """Duration of pulse [s]."""
         return self.period()*self.n_cycles
 
     def n_samples(self):
-        """Return number of samples in pulse."""
+        """Number of samples in pulse."""
         return len(self.t())
 
     def time_unit(self):
-        """Return unit for time trace plot, based on cantre frequency."""
+        """Unit for time trace plot, based on cantre frequency."""
         if self.f0 > 1e9:
             return "ns"
         if self.f0 > 1e6:
@@ -342,7 +359,7 @@ class Pulse:
             return "s"
 
     def n_fft(self):
-        """Find number of points to calculate spectrum.
+        """Number of points to calculate spectrum.
 
         Always as power of 2, zeros padded at end
         """
@@ -354,8 +371,8 @@ class Pulse:
     def powerspectrum(self):
         """Calculate power spectrum of trace.
 
-        Return
-        ------
+        Outputs
+        -------
         f   1D array    Frequency vector
         psd 1D array    Power spectral density
         """
@@ -477,7 +494,17 @@ def find_timescale(time_unit="s"):
 
 
 def find_limits(limits, min_diff=1):
-    """Return minimum and maximum values as numpy array."""
+    """Minimum and maximum values as numpy array.
+
+    Arguments
+    ---------
+    limits      List of 2 numbers   Requested limits
+    min_diff    Float               Minimum difference between min and max
+
+    Outputs
+    -------
+    [min, max]   Numpy array        Actual limits
+    """
     min_value = min(limits)
     max_value = max(max(limits), min_value+min_diff)
     return np.array([min_value, max_value])
@@ -583,7 +610,6 @@ def plot_pulse(t, x, time_unit="s", y_max=None):
     t   1D array        Time vector
     x   1D or 2D array  Vector of values to plot
     time_unit   String  Unit for scaling time axis
-
     """
     multiplier, freq_unit = find_timescale(time_unit)
     plt.plot(t*multiplier, x)
@@ -599,22 +625,26 @@ def powerspectrum(y, dt, n_fft=None,
                   scale="linear", normalise=False, transpose=True):
     """Calculate power spectrum of pulse. Finite length signal, no window.
 
-    Inputs     x  : Time trace
-              dt : Sample interval
-            nfft : No of points in FFT, zero-padding
-           scale : Linear or dB
-       normalise : Normalise spectrum to max value
+    Datapoints in rows (dimension 0)
+    Channels in (dimension 1)
+    Transposed to fit definition of periodogram function in scipy
+
+    Arguments
+    ---------
+    x           1D array    Time trace
+    dt          Float       Sample interval
+    n_fft       Int         Number of points in FFT
+    scale       String      Linear (power) or dB
+    normalise   Booloean    Normalise spectrum to max value
 
     Outputs
-               f : Frequency vector
-             psd : Power spectral density
-
-    Datapoints in rows (dimension 0),columns (dimension 1) are channels
-    The periodogram function calculates FT along dimension 1.
+    -------
+    f       1D array    Frequency vector
+    psd     2D aray     Power spectral density
     """
     y = y.transpose()
     f, psd = signal.periodogram(y, fs=1/dt, nfft=n_fft, detrend=False)
-    psd = psd.transpose()
+    psd = psd.transpose()  # Periodogram function calculates along dimension 1
 
     if normalise:
         if psd.ndim == 1:

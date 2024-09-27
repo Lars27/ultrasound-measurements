@@ -56,19 +56,33 @@ oscilloscope_main_window, QtBaseClass = uic.loadUiType(
 # %% Classes
 
 class Display:
-    """Settings for display on screen during runtime."""
+    """Settings for display on screen during runtime.
 
-    t_min = 0               # [s] Zoomed section, pulse to be analysed
-    t_max = 10              # [s]
-    channel = [True, True]  # Channels to display on screen
+    Attributes
+    ----------
+    t_min   Float               Start time of part of trace to be analysed
+    t_max   Float               End time of part of trace to be analysed
+    channel List of Boolean     Channels to display on screen
+    """
+
+    t_min = 0
+    t_max = 10
+    channel = [True, True]
 
 
 class AcquisitionControl:
-    """Flags to control running of program."""
+    """Flags to control running of program.
 
-    oscilloscope_ready = False   # Osciloscope connected and ready to acquire
-    stop_acquisition = False     # Stop data acquisition, do not quit program
-    sampling_changed = True      # Sampling updated
+    Attributes
+    ----------
+    oscilloscope_ready  Boolean     Osciloscope connected and ready to acquire
+    stop_acquisition    Boolean     Stop data acquisition, do not quit program
+    sampling_changed    Boolean     Sampling updated
+    """
+
+    oscilloscope_ready = False
+    stop_acquisition = False
+    sampling_changed = True
 
 
 class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
@@ -239,9 +253,11 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         Plot pulse and send to instrument
         """
         if not self.dso.signal_generator:
+            self.pulse.status = "UNAVAILABLE"
+            self.update_transmit_box(self.pulse.status)
             return 0    # Does nothing signal genarator not available
 
-        self.pulse.on = self.transmitButton.isChecked()
+        self.pulse.status = self.transmitButton.isChecked()
         self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
         self.pulse.shape = self.pulseShapeComboBox.currentText()
         self.pulse.f0 = self.pulseFrequencySpinBox.value()*FREQUENCYSCALE
@@ -259,12 +275,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
         self.dso = ps.set_signal(self.dso, self.sampling, self.pulse)
         for g in ['awg', 'awgspec']:
-            if self.pulse.on:
+            if self.pulse.status.lower()[0:2] == "on":
                 self.graph[g].set_linestyle("solid")
             else:
                 self.graph[g].set_linestyle("dotted")
         self.update_display()
-        self.update_transmit_box(self.pulse.on)
+        self.update_transmit_box(self.pulse.status)
 
         return 0
 
@@ -327,7 +343,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return 0
 
     def plot_result(self, time_unit="us"):
-        """Plot measured trace on screen."""
+        """Plot measured trace on screen.
+
+        Arguments
+        ---------
+        time_unit   String  Unit to use for time trace, 's', 'ms', 'us'
+        """
         wfm_filtered = self.wfm.filtered(self.rf_filter)
         wfm_zoomed = wfm_filtered.zoomed(self.display.t_lim)
         f, psd = wfm_zoomed.powerspectrum(scale="dB", normalise="True")
@@ -353,9 +374,8 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
     def save_result(self):
         """Save measured traces and parameters to binary file.
 
-        The filename is generated automatically from a short description,
-        the date, and a counter.
-        The file format is compatible with older LabVIEW and Matlab systems
+        The filename is generated automatically from a short descriptive
+        prefix, the date, and a counter.
         """
         self.statusBar.showMessage("Saving results ...")
 
@@ -373,7 +393,17 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 # %% General GUI read and write
 
     def update_status(self, message, append=False):
-        """Update a the short status message field at the bottom of window."""
+        """Update a the short status message field at the bottom of window.
+
+        Arguments
+        ---------
+        message     String      Text to show in message field
+        append       Boolean     Append new message to exixsting text
+
+        Outputs
+        ---------
+        message     String      New text in message field
+        """
         if append:
             old_message = self.status_textEdit.toPlainText()
             message += old_message
@@ -381,35 +411,78 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return message
 
     def update_status_box(self, message, color=COLOR_NEUTRAL):
-        """Write message to status box, in optional colours."""
+        """Write message to status box, in optional colours.
+
+        Arguments
+        ---------
+        message     String      Text to show in message field
+        color       Int (Hex)   Background color as Matplotlib color code
+
+        Outputs
+        ---------
+        message     String      New text in message field
+        """
         self.statusEdit.setText(message)
         self.statusEdit.setStyleSheet(
             f"color:{color[0]}; background-color:{color[1]}")
-        return 0
+        return message
 
     def update_connected_box(self, message, color=COLOR_NEUTRAL):
-        """Write status of the instrument connection."""
+        """Write status of the instrument connection.
+
+        Arguments
+        ---------
+        message     String      Text to show in message field
+        color       Int (Hex)   Background color as Matplotlib color code
+
+        Outputs
+        ---------
+        message     String      New text in message field
+        """
         self.connectedEdit.setText(message)
         self.connectedEdit.setStyleSheet(
            f"color:{color[0]}; background-color:{color[1]}")
-        return 0
+        return message
 
-    def update_transmit_box(self, transmitting=False):
-        """Write whether the waveform generator is transmitting pulses."""
-        if transmitting:
-            message = "Transmitting"
-            color = COLOR_OK
-        else:
-            message = "OFF"
-            color = COLOR_WARNING
+    def update_transmit_box(self, status="UNAVAILABLE"):
+        """Write whether the waveform generator is transmitting pulses.
+
+        Arguments
+        ---------
+        transmitting    Boolean     Pulser transmitting or not
+
+        Outputs
+        ---------
+        message         String      New text in message field
+        """
+        match status.lower()[0:2]:
+            case "on":
+                message = "Transmitting"
+                color = COLOR_OK
+            case "of":
+                message = "OFF"
+                color = COLOR_WARNING
+            case _:
+                message = "Not available"
+                color = COLOR_NEUTRAL
 
         self.transmitStatusEdit.setText(message)
         self.transmitStatusEdit.setStyleSheet(
             f"color:{color[0]}; background-color:{color[1]}")
-        return 0
+        return message
 
     def find_voltagescale(self, vmax):
-        """Find scale for voltage axis based on maximum value."""
+        """Find scale for voltage axis based on maximum value.
+
+        Arguments
+        ---------
+        vmax    Float   Scaling for voltage axis, V, mV, uV
+
+        Outputs
+        -------
+        voltage_scale   Float   Voltage scale multiplier
+        unit            String  Voltage scale unit text
+        """
         if vmax < 1e-3:
             voltage_scale = 1e-6
             unit = "uV"
@@ -422,7 +495,12 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         return voltage_scale, unit
 
     def update_display(self, time_unit="us"):
-        """Update values and markers on screen."""
+        """Update values and markers on screen.
+
+        Arguments
+        ---------
+        time_unit   String  Unit to use on time axis, "s", "ms", "us"
+        """
         # Full trace
         self.axis["trace"][0].set_xlim(self.sampling.t0()/TIMESCALE,
                                        self.sampling.t_max()/TIMESCALE)
@@ -552,7 +630,15 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
 
 # %% Define graphs
     def define_graphs(self):
-        """Initialise result graphs, layout, titles, scales, colours etc."""
+        """Initialise result graphs, layout, titles, scales, colours etc.
+
+        Outputs
+        -------
+        fig     Handle              Handle to result figure
+        axis    List of handles     Handles to graphs (subplots) in figure
+        graph   List of handles     Handles to plots inside subplots
+
+        """
         matplotlib.pyplot.ion()   # Does not seem to make any difference?
 
         # Figure layout

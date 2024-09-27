@@ -61,11 +61,11 @@ class Waveform:
         self.dtr = 0             # [s]  Interval between blocks. Obsolete
 
     def n_channels(self):
-        """Number of data channels in trace."""
+        """Find number of data channels in trace."""
         return self.y.shape[1]
 
     def n_samples(self):
-        """Number of points in trace."""
+        """Find number of points in trace."""
         return self.y.shape[0]
 
     def t(self):
@@ -82,7 +82,7 @@ class Waveform:
         return 1/self.dt
 
     def n_fft(self, upsample=0):
-        """Number of points used to calculate spectrum.
+        """Set number of points used to calculate spectrum.
 
         Always a power of 2, zeros padded if needed.
 
@@ -276,6 +276,8 @@ class Pulse:
     a           Float     Amplitude
     dt          Float     Sample interval
     alpha       Float     Tukey window cosine-fraction, alpha = 0 ... 1
+    trigger_source
+    status      String    Pulser status, "ON", "OFF", "UNAVAILABLE"
 
     Methods
     -------
@@ -300,7 +302,7 @@ class Pulse:
     dt = 8e-9
     alpha = 0.5
     trigger_source = 1
-    on = False
+    status = "OFF"
 
     def t(self):
         """Time vector [s]."""
@@ -344,11 +346,11 @@ class Pulse:
         return self.period()*self.n_cycles
 
     def n_samples(self):
-        """Number of samples in pulse."""
+        """Find number of samples in pulse."""
         return len(self.t())
 
     def time_unit(self):
-        """Unit for time trace plot, based on cantre frequency."""
+        """Set unit for time trace plot, based on cantre frequency."""
         if self.f0 > 1e9:
             return "ns"
         if self.f0 > 1e6:
@@ -359,7 +361,7 @@ class Pulse:
             return "s"
 
     def n_fft(self):
-        """Number of points to calculate spectrum.
+        """Set number of points to calculate spectrum.
 
         Always as power of 2, zeros padded at end
         """
@@ -522,10 +524,10 @@ def read_scaled_value(quantity):
     value      Value scaled with unit, e.g. 3 400 000 or 3.4e6
     """
     quantity = quantity.split(' ')   # Split in number and unit at space
+    number = float(quantity[0])
     if len(quantity) == 1:
         multiplier = 1
     else:
-        number = float(quantity[0])
         prefix = quantity[1][0]    # First letter of unit gives scale
         if prefix == 'u':
             multiplier = 1e-6

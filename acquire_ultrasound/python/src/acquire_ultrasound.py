@@ -253,34 +253,36 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
         Plot pulse and send to instrument
         """
         if not self.dso.signal_generator:
-            self.pulse.status = "UNAVAILABLE"
-            self.update_transmit_box(self.pulse.status)
+            self.update_transmit_box(available=False)
             return 0    # Does nothing signal genarator not available
 
-        self.pulse.status = self.transmitButton.isChecked()
-        self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
-        self.pulse.shape = self.pulseShapeComboBox.currentText()
-        self.pulse.f0 = self.pulseFrequencySpinBox.value()*FREQUENCYSCALE
-        self.pulse.n_cycles = self.pulseDurationSpinBox.value()
-        self.pulse.phase = self.pulsePhaseSpinBox.value()
-        self.pulse.a = self.pulseAmplitudeSpinBox.value()
+        else:
+            self.pulse.status = self.transmitButton.isChecked()
+            self.pulse.envelope = self.pulseEnvelopeComboBox.currentText()
+            self.pulse.shape = self.pulseShapeComboBox.currentText()
+            self.pulse.f0 = self.pulseFrequencySpinBox.value()*FREQUENCYSCALE
+            self.pulse.n_cycles = self.pulseDurationSpinBox.value()
+            self.pulse.phase = self.pulsePhaseSpinBox.value()
+            self.pulse.a = self.pulseAmplitudeSpinBox.value()
 
-        t_max = self.pulse.duration() / TIMESCALE
-        vlim = 1.1 * self.pulse.a
-        f, psd = self.pulse.powerspectrum()
-        self.graph['awg'].set_data(self.pulse.t()/TIMESCALE, self.pulse.y())
-        self.axis['awg'].set_xlim(0, t_max)
-        self.axis['awg'].set_ylim(-vlim, vlim)
-        self.graph['awgspec'].set_data(f/FREQUENCYSCALE, psd)
+            t_max = self.pulse.duration() / TIMESCALE
+            vlim = 1.1 * self.pulse.a
+            f, psd = self.pulse.powerspectrum()
+            self.graph['awg'].set_data(self.pulse.t()/TIMESCALE,
+                                       self.pulse.y())
+            self.axis['awg'].set_xlim(0, t_max)
+            self.axis['awg'].set_ylim(-vlim, vlim)
+            self.graph['awgspec'].set_data(f/FREQUENCYSCALE, psd)
 
-        self.dso = ps.set_signal(self.dso, self.sampling, self.pulse)
-        for g in ['awg', 'awgspec']:
-            if self.pulse.status.lower()[0:2] == "on":
-                self.graph[g].set_linestyle("solid")
-            else:
-                self.graph[g].set_linestyle("dotted")
-        self.update_display()
-        self.update_transmit_box(self.pulse.status)
+            self.dso = ps.set_signal(self.dso, self.sampling, self.pulse)
+            for g in ['awg', 'awgspec']:
+                if self.pulse.on:
+                    self.graph[g].set_linestyle("solid")
+                else:
+                    self.graph[g].set_linestyle("dotted")
+
+            self.update_display()
+            self.update_transmit_box(available=True, on=self.pulse.on)
 
         return 0
 
@@ -444,27 +446,28 @@ class ReadUltrasound(QtWidgets.QMainWindow, oscilloscope_main_window):
            f"color:{color[0]}; background-color:{color[1]}")
         return message
 
-    def update_transmit_box(self, status="UNAVAILABLE"):
+    def update_transmit_box(self, available=False, on=False):
         """Write whether the waveform generator is transmitting pulses.
 
         Arguments
         ---------
-        transmitting    Boolean     Pulser transmitting or not
+        available   Boolean     Pulser available on instrument
+        on          Boolean     Pulser transmitting or not
 
         Outputs
         ---------
         message         String      New text in message field
         """
-        match status.lower()[0:2]:
-            case "on":
+        if not available:
+            message = "Not available"
+            color = COLOR_NEUTRAL
+        else:
+            if on:
                 message = "Transmitting"
                 color = COLOR_OK
-            case "of":
+            else:
                 message = "OFF"
                 color = COLOR_WARNING
-            case _:
-                message = "Not available"
-                color = COLOR_NEUTRAL
 
         self.transmitStatusEdit.setText(message)
         self.transmitStatusEdit.setStyleSheet(

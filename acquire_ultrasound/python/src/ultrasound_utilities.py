@@ -302,7 +302,8 @@ class Pulse:
     dt = 8e-9
     alpha = 0.5
     trigger_source = 1
-    status = "OFF"
+    available = False
+    on = False
 
     def t(self):
         """Time vector [s]."""

@@ -16,6 +16,7 @@ from scipy.signal import windows
 import matplotlib.pyplot as plt
 import os
 import datetime
+import pdb
 
 
 # %% Classes
@@ -29,26 +30,43 @@ class Waveform:
 
     Attributes
     ----------
-    t0  double    Start time
-    dt  double    Sample interval
-    dtr  double   Interval between sample blocks. Rarely used
-    y   2D array  Results. Each column is a channel, samples as rows
+    t0 : float
+        Start time
+    dt : float
+        Sample interval
+    dtr :float
+        Interval between sample blocks. Rarely used
+    y : 2D array of float
+        Results. Each column is a channel, samples as rows
 
     Methods
     -------
-    n_channels  int         Number of data channels
-    n_samples   int         Number of samples per channel
-    t           1D array    Time vector
-    fs          float       Sample rate
-    n_fft       int         Number of points used to calculate spectrum
-    f           1D array    Frequency vector
-    powerspectrum 1D array  Powerspecrum of traces
-    filtered    Waveform    Bandpass filtered traces, all else equal
-    zoomed      Waveform    Zoomed to specified interval, all else identtical
-    plot                    Plots result in figure
-    plot_spectrum           Plots traces and spectrum
-    save                    Loads Waveform from binary file
-    load                    Saves Waveform to binary file
+    n_channels : int
+        Number of data channels
+    n_samples : int
+        Number of samples per channel
+    t : 1D array of float
+        Time vector
+    fs : float
+        Sample rate
+    n_fft : int
+        Number of points used to calculate spectrum
+    f : 1D array
+        Frequency vector
+    powerspectrum : 1D array of float
+        Powerspectrum of traces
+    filtered : Waveform class
+        Bandpass filtered traces, all else equal
+    zoomed : Waveform class
+        Zoomed to specified interval, all else identtical
+    plot : Function
+        Plots result in figure
+    plot_spectrum : Function
+        Plots traces and spectrum
+    save : Function
+        Loads Waveform from binary file
+    load : Function
+        Saves Waveform to binary file
     """
 
     def __init__(self, y=np.zeros((100, 1)), dt=1, t0=0):
@@ -86,9 +104,10 @@ class Waveform:
 
         Always a power of 2, zeros padded if needed.
 
-        Arguments
-        ---------
-        upsample    Int     Number of extra powers of 2 to add
+        Parameters
+        ----------
+        upsample : Int
+            Number of extra powers of 2 to add
         """
         upsample = max(round(upsample), 0)
         m, e = frexp(self.n_samples())
@@ -103,16 +122,21 @@ class Waveform:
     def powerspectrum(self, normalise=False, scale="linear", upsample=2):
         """Calculate power spectrum of time trace.
 
-        Arguments
-        ---------
-        normalise Boolean   Normalise to 1 (0 dB) as maximum
-        scale     String    Linear (Power)  or dB
-        upsample  Int       Interpolate spectrum by padding to next power of 2
+        Parameters
+        ----------
+        normalise : Boolean
+            Normalise to 1 (0 dB) as maximum
+        scale : String
+            Linear (Power)  or dB
+        upsample : Int
+            Interpolate spectrum by padding to next power of 2
 
-        Outputs
+        Returns
         -------
-        f       1D array    Frequency vector
-        psd     2D array    Power spectral density
+        f : 1D array
+            Frequency vector
+        psd : 2D array
+            Power spectral density
         """
         f, psd = powerspectrum(self.y,
                                self.dt,
@@ -124,13 +148,15 @@ class Waveform:
     def filtered(self, filter):
         """Bandpass filtered trace.
 
-        Arguments
-        ---------
-        filter  WaveformFilter  Filter specification
+        Parameters
+        ----------
+        filter : WaveformFilter
+            Filter specification
 
-        Outputs
+        Returns
         -------
-        wfm     Waveform    Copy of original waveform with filtered data
+        wfm : Waveform
+            Copy of original waveform with filtered data
         """
         wfm = copy.deepcopy(self)
         match(filter.type[0:2].lower()):
@@ -147,13 +173,15 @@ class Waveform:
     def zoomed(self, tlim):
         """Extract copy of trace from interval in specified by tlim.
 
-        Arguments
-        ---------
-        tlim = [tmin tmax]  Start and end of interval to select
+        Parameters
+        ----------
+        tlim : List of float
+            Start and end of interval to select
 
-        Outputs
+        Returns
         -------
-        wfm     Waveform    Copy of original waveform zommed to interval
+        wfm : Waveform class
+            Copy of original waveform zommed to interval
 
         """
         wfm = copy.deepcopy(self)
@@ -167,33 +195,45 @@ class Waveform:
     def plot(self, time_unit="us", ch=[0, 1], y_max=None):
         """Plot time traces using unit time_unit.
 
-        Arguments
-        ---------
-        time_unit   String      Unit to plot tim in, 's', 'ms', 'us'
-        ch          List of int Channels to plot
-        y_max       Float       Max. scale on amplitude-axis
+        Parameters
+        ----------
+        time_unit : String
+            Unit to plot tim in, 's', 'ms', 'us'
+        ch : List of int
+            Channels to plot
+        y_max : Float
+            Max. scale on amplitude-axis
         """
         plot_pulse(self.t(), self.y[ch], time_unit, y_max)
 
         return 0
 
     def plot_spectrum(self, time_unit="s", ch=[0, 1], y_max=None, f_max=None,
-                      normalise=True, scale="dB", db_min=-40, ):
+                      normalise=True, scale="dB", db_min=-40, ax=None):
         """Plot trace and power spectrum in one graph.
 
-        Arguments
-        ---------
-        time_unit   String      Unit to plot tim in, 's', 'ms', 'us'
-        ch          List of int Channels to plot
-        y_max       Float       Max. scale on amplitude-axis
-        f_max       Float       Max. scale on frequency axis
-        normalise   Boolean     Normalise power spectrum plot  to 1 (0 dB)
-        scale       String      Linear (Power) or dB
-        db_min      Float       Dynamic range on dB-plot
+        Parameters
+        ----------
+        time_unit : String
+            Unit to plot tim in, 's', 'ms', 'us'
+        ch : List of int
+            Channels to plot
+        y_max : Float
+            Max. scale on amplitude-axis
+        f_max : Float
+            Max. scale on frequency axis
+        normalise : Boolean
+            Normalise power spectrum plot  to 1 (0 dB)
+        scale : String
+            Linear (Power) or dB
+        db_min : Float
+            Dynamic range on dB-plot
+        ax :List of axis objects
+            Axes to plot time trace and spectrum
         """
         plot_spectrum(self.t(), self.y[:, ch], time_unit=time_unit,
                       y_max=y_max, f_max=f_max, n_fft=self.n_fft(),
-                      normalise=normalise, scale=scale, db_min=db_min)
+                      normalise=normalise, scale=scale, db_min=db_min, ax=ax)
         return 0
 
     def save(self, filename):
@@ -204,18 +244,24 @@ class Waveform:
         Uses 'c-order' of arrays and IEEE big-endian byte order
         Complements save()
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         filename    String  Full path of file to save data in
 
         Contents of file
         ----------------
-        hd  String  Header, informative text
-        nc  Int     Number of channels
-        t0  Float   Start time
-        dt  Float   Sample interval
-        dtr Float   Interval between blocks. Used only in special cases
-        v   2D array of sgl     Data points (often voltage)
+        hd : String
+            Header, informative text
+        nc : Int
+            Number of channels
+        t0 : Float
+            Start time
+        dt : Float
+            Sample interval
+        dtr : Float
+            Interval between blocks. Used only in special cases
+        v : 2D array of float
+            Data points (often voltages)
         """
         header = "<WFM_Python_>f4>"    # Header gives source and data format
         n_header = len(header)
@@ -238,9 +284,10 @@ class Waveform:
         Uses 'c-order' of arrays and IEEE big-endian byte order
         Complements save()
 
-        Arguments
-        ---------
-        filename    String  Full path of file lo load
+        Parameters
+        ----------
+        filename : String
+            Full path of file lo load
         """
         with open(filename, 'rb') as fid:
             n_header = int(np.fromfile(fid, dtype='>i4', count=1))
@@ -268,29 +315,49 @@ class Pulse:
 
     Attributes
     ----------
-    envelope    String    Pulse envelope: rect, hann, tukey, ...
-    shape       String    Carrier wave: sine, square, triangle, ...
-    f0          Float     Carrier wave frequency
-    n_cycles    Float     Pulse length as number of cycles
-    phase       Float     Phase of carrier wave in degrees, ref. cosine
-    a           Float     Amplitude
-    dt          Float     Sample interval
-    alpha       Float     Tukey window cosine-fraction, alpha = 0 ... 1
+    envelope : String
+        Pulse envelope: rect, hann, tukey, ...
+    shape :  String
+        Carrier wave: sine, square, triangle, ...
+    f0 : Float
+        Carrier wave frequency
+    n_cycles : Float
+        Pulse length as number of cycles
+    phase : Float
+        Phase of carrier wave in degrees, ref. cosine
+    a : Float
+        Amplitude
+    dt : Float
+        Sample interval
+    alpha : Float
+        Tukey window cosine-fraction, alpha = 0 ... 1
     trigger_source
-    status      String    Pulser status, "ON", "OFF", "UNAVAILABLE"
+        Not implemented yet
+    status: String
+        Pulser status, "ON", "OFF", "UNAVAILABLE"
 
     Methods
     -------
-    t           1D array    Time vector
-    y           1D array    Pulse time trace
-    period      Float       Carrier wave period
-    duration    Float       Pulse duration, seconds
-    n_samples   Int         Number of samples in pulse
-    n_fft       int         Number of points used to calculate spectrum
-    powerspectrum 1D array  Powerspectrum of pulse
-    time_unit   String      Appropriate unit for time-trace plot, from f0
-    plot                    Plots result in figure
-    plot_spectrum           Plots traces and spectrum
+    t  : 1D array of float
+        Time vector
+    y : 1D array of float
+        Pulse time trace
+    period : Float
+        Carrier wave period
+    duration : Float
+        Pulse duration, seconds
+    n_samples : Int
+        Number of samples in pulse
+    n_fft : Int         ,
+        Number of points used to calculate spectrum
+    powerspectrum : 1D array of float
+        Powerspectrum of pulse
+    time_unit : String
+        Appropriate unit for time-trace plot, from f0
+    plot : Function
+        Plots result in figure
+    plot_spectrum : Function
+        Plots traces and spectrum
     """
 
     shape = "sine"
@@ -374,10 +441,12 @@ class Pulse:
     def powerspectrum(self):
         """Calculate power spectrum of trace.
 
-        Outputs
+        Returns
         -------
-        f   1D array    Frequency vector
-        psd 1D array    Power spectral density
+        f : 1D array of float
+            Frequency vector
+        psd : 1D array of float
+            Power spectral density
         """
         f, psd = powerspectrum(self.y(), self.dt, n_fft=self.n_fft(),
                                scale="dB", normalise=True)
@@ -404,16 +473,23 @@ class WaveformFilter:
 
     Attributes
     ----------
-    type    String  Type filter: "None", "AC", "BPF" (Bandpass)
-    f_min   Float   Lower cutoff frequency
-    f_max   Float   Upper cutoff frequency
-    order   Int     Filter order
-    fs      Float   Sample rate
+    type : String
+        Type filter: "None", "AC", "BPF" (Bandpass)
+    f_min : Float
+        Lower cutoff frequency
+    f_max : Float
+        Upper cutoff frequency
+    order :  Int
+        Filter order
+    fs : Float
+        Sample rate
 
     Methods
     -------
-    wc      List    Cutoff-frequencies normalised to sample rate
-    coefficients    Filter coefficients, b and a
+    wc : 1D array of float
+        Cutoff-frequencies normalised to sample rate
+    coefficients : 1D array of float
+        Filter coefficients, b and a
     """
 
     type = "No"          # Filter type: 'NO, 'AC', 'BPF'
@@ -453,11 +529,13 @@ def scale_125(x):
 
     Argumments
     ----------
-    x   Float   Reference value, positive or negative
+    x : Float
+        Reference value, positive or negative
 
-    Outputs
+    Returns
     -------
-    xn Float    Next number in 1-2-5-10 sequence greater than magnitude of x
+    xn : Float
+        Next number in 1-2-5-10 sequence greater than magnitude of x
     """
     prefixes = np.array([1, 2, 5, 10])
     exponent = int(floor(log10(abs(x))))
@@ -471,14 +549,17 @@ def scale_125(x):
 def find_timescale(time_unit="s"):
     """Return time and frequency axis scaling based on time unit.
 
-    Arguments
-    ---------
-    time_unit   String  Time unit used in plots: "s", "ms", "us", "ns"
+    Parameters
+    ----------
+    time_unit : String
+        Time unit used in plots: "s", "ms", "us", "ns"
 
-    Outputs
+    Returns
     -------
-    multiplier  Float   Multiplier for time to get requested unit
-    freq_unit   String  Corresponting Frequency unit
+    multiplier : Float
+        Multiplier for time to get requested unit
+    freq_unit : String
+        Corresponting Frequency unit
     """
     match(time_unit):
         case "ns":
@@ -499,14 +580,17 @@ def find_timescale(time_unit="s"):
 def find_limits(limits, min_diff=1):
     """Minimum and maximum values as numpy array.
 
-    Arguments
-    ---------
-    limits      List of 2 numbers   Requested limits
-    min_diff    Float               Minimum difference between min and max
+    Parameters
+    ----------
+    limits : 1Darray of floats
+        Requested limits
+    min_diff : Float
+        Minimum difference between min and max
 
-    Outputs
+    Returns
     -------
-    [min, max]   Numpy array        Actual limits
+    [min, max] : 1D array of float
+        Actual limits
     """
     min_value = min(limits)
     max_value = max(max(limits), min_value+min_diff)
@@ -516,13 +600,15 @@ def find_limits(limits, min_diff=1):
 def read_scaled_value(quantity):
     """Interpret a text as a scaled value (milli, kilo, Mega etc.).
 
-    Arguments
-    ---------
-    quantity    String  Value as "number unit", e.g. "3.4 MHz"
+    Parameters
+    ----------
+    quantity : String
+        Value as "number unit", e.g. "3.4 MHz"
 
-    Outputs
+    Returns
     -------
-    value      Value scaled with unit, e.g. 3 400 000 or 3.4e6
+    value : Float
+        Value scaled with unit, e.g. 3 400 000 or 3.4e6
     """
     quantity = quantity.split(' ')   # Split in number and unit at space
     number = float(quantity[0])
@@ -557,15 +643,19 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
     Defining this methods in the RsultFile-class was too complicated due to
     the cross-checking and creation of new directory
 
-    Arguments
-    ---------
-    prefix      String  Code that characterises measurement type
-    ext         String  File Extension
-    resultdir   String  Directory for results
+    Parameters
+    ----------
+    prefix :String
+        Code that characterises measurement type
+    ext : String
+        File Extension
+    resultdir : String
+        Directory for results
 
-    Outputs
+    Returns
     -------
-    resultfile  ResultFile()    Result-fil name, path, counter, etc.
+    resultfile : ResultFile class
+        Result-file parameteres: name, path, counter, etc.
     """
     resultfile = ResultFile()
 
@@ -605,22 +695,28 @@ def find_filename(prefix='test', ext='trc', resultdir="..\\results"):
     return resultfile
 
 
-def plot_pulse(t, x, time_unit="s", y_max=None):
+def plot_pulse(ax, t, x, time_unit="s", y_max=None):
     """Plot pulse as time-trace in standardised graph.
 
-    Arguments
-    ---------
-    t   1D array        Time vector
-    x   1D or 2D array  Vector of values to plot
-    time_unit   String  Unit for scaling time axis
+    Parameters
+    ----------
+    t : 1D array of float
+        Time vector
+    x : 1D or 2D array of float
+        Vector of values to plot
+    time_unit : String
+        Unit for scaling time axis
     """
     multiplier, freq_unit = find_timescale(time_unit)
-    plt.plot(t*multiplier, x)
-    plt.xlabel(f'Time [{time_unit}]')
-    plt.ylabel('Ampltude')
-    plt.grid(True)
+    ax.plot(t*multiplier, x)
+
+    ax.set(xlabel=f"Time [{time_unit}]",
+           ylabel="Ampltude")
+    ax.grid(True)
+
     if y_max is not None:
-        plt.ylim(y_max*np.array([-1, 1]))
+        ax.set_ylim(y_max*np.array([-1, 1]))
+
     return 0
 
 
@@ -630,20 +726,27 @@ def powerspectrum(y, dt, n_fft=None,
 
     Datapoints in rows (dimension 0)
     Channels in (dimension 1)
-    Transposed to fit definition of periodogram function in scipy
+    Transposed to fit definition of periodogram function in SciPy
 
-    Arguments
-    ---------
-    x           1D array    Time trace
-    dt          Float       Sample interval
-    n_fft       Int         Number of points in FFT
-    scale       String      Linear (power) or dB
-    normalise   Booloean    Normalise spectrum to max value
+    Parameters
+    ----------
+    x : 1D array of float
+        Time trace
+    dt : Float
+        Sample interval
+    n_fft : Int
+        Number of points in FFT
+    scale : String
+        Linear (power) or dB
+    normalise : Booloean
+        Normalise spectrum to max value
 
-    Outputs
+    Returns
     -------
-    f       1D array    Frequency vector
-    psd     2D aray     Power spectral density
+    f : 1D array of float
+        Frequency vector
+    psd : 2D aray of float
+        Power spectral density
     """
     y = y.transpose()
     f, psd = signal.periodogram(y, fs=1/dt, nfft=n_fft, detrend=False)
@@ -663,47 +766,65 @@ def powerspectrum(y, dt, n_fft=None,
 
 def plot_spectrum(t, x, time_unit="s",
                   y_max=None, f_max=None, n_fft=None,
-                  scale="dB", normalise=True, db_min=-40):
+                  scale="dB", normalise=True, db_min=-40, ax=None):
     """Plot time trace and power spectrum on standardised format.
 
     Requires evenly sampled points
 
-    Arguments
-    ---------
-    t           1D array        Time vector
-    x           1D or 2D array  Values, time trace(s)
-    time_unit   String          Unit for time axis, also for frequency scale
-    f_max       Float           Max. frequency to plot
-    n_fft       Int             No of points in FFT
-    scale       String          Linear (Power)  or dB
-    normalise   Boolean         Normalise to 1 (0 dB) as maximum
-    db_min      Float           Minimum on dB-scale, re. max.
+    Parameters
+    ----------
+    t : 1D array of float
+        Time vector
+    x : 1D or 2D array of float
+        Values, time trace(s)
+    time_unit : String
+        Unit for time axis, also for frequency scale
+    f_max : Float
+        Max. frequency to plot
+    n_fft : Int
+        No of points in FFT
+    scale : String
+        Linear (Power)  or dB
+    normalise : Boolean
+        Normalise to 1 (0 dB) as maximum
+    db_min : Float
+        Minimum on dB-scale, re. max.
     """
     # Pulse in time-domain
-    plt.subplot(2, 1, 1)
-    plot_pulse(t, x, time_unit, y_max)
+    if ax is None:
+        fig = plt.figure(figsize=[10, 10])
+        ax = [fig.add_subplot(2, 1, 1), fig.add_subplot(2, 1, 2)]
+
+    plot_pulse(ax[0], t, x, time_unit, y_max)
 
     # Power spectrum
-    plt.subplot(2, 1, 2)
     dt = t[1] - t[0]   # Assumes even sampling
-    multiplier, freq_unit = find_timescale(time_unit)
+
     f, psd = powerspectrum(x, dt, n_fft=n_fft,
                            scale=scale, normalise=normalise)
-    plt.plot(f/multiplier, psd)
-    plt.xlabel(f'Frequency [{freq_unit}]')
-    plt.grid(True)
+
+    multiplier, freq_unit = find_timescale(time_unit)
+
     if f_max is None:
         f_max = f.max()
-    db_lim = psd.max() + np.array([db_min, 0])
-
-    plt.xlim((0, f_max/multiplier))
 
     if (scale.lower() == "db"):
-        plt.ylim(db_lim)
+        db_lim = np.array([db_min, 0])
+        if not np.any(np.isnan(psd)):
+            db_lim = psd.max() + db_lim
+        ax[1].set_ylabel(db_lim)
+
         if normalise:
-            plt.ylabel('Power [dB re. max]')
+            spectrumlabel = "Power [dB re. max]"
         else:
-            plt.ylabel('Power [dB]')
+            spectrumlabel = "Power [dB]"
     else:
-        plt.ylabel('Power')
+        spectrumlabel('Power')
+
+    ax[1].plot(f/multiplier, psd)
+    ax[1].set(xlabel=f"Frequency [{freq_unit}]",
+              xlim=(0, f_max/multiplier),
+              ylabel=spectrumlabel)
+    ax[1].grid(True)
+
     return 0

@@ -37,20 +37,32 @@ class Channel:
 
     Attributes
     ----------
-    no        Int      Channel number
-    enabled   Boolean  Channel enabled or not
-    v_range   Float    Requested full-scale voltage range (plus/minus)
-    adc_max   Int      Maximum ADC value, for scaling to voltage
-    offset    Float    Offset voltage
-    coupling  String   Channel coupling, "DC"  or "AC"
-    bwl       Boolean  Bandwidth limiter activated in instrument
+    no : int
+      Channel number
+    enabled : bool
+        Channel enabled or not
+    v_range : float
+        Requested full-scale voltage range (plus/minus)
+    adc_max : int
+          Maximum ADC value, for scaling to voltage
+    offset : float
+        Offset voltage
+    coupling : str
+        Channel coupling, "DC"  or "AC"
+    bwl : bool
+        Bandwidth limiter activated in instrument.
+        Not available on PS2000-serias
 
     Methods
     -------
-    name           String  Name of channel, "A", "B", ...
-    v_max          Float   Actual full-scale range of instrument
-    adc_range      Int     Instrument ADC range no. for voltage range
-    coupling_code  Int     Numerical code corresponding to coupling string
+    name : str
+        Name of channel, "A", "B", ...
+    v_max: float
+        Actual full-scale range of instrument
+    adc_range : int
+        Instrument ADC range no. for voltage range
+    coupling_code : int
+        Numerical code corresponding to coupling string
     """
 
     def __init__(self, no):
@@ -90,16 +102,23 @@ class Trigger:
 
     Attributes
     ----------
-    source     String  Name of source for trigger, "A", "B", "EXT", ...
-    level      Float   Trigger level in Volts
-    direction  String  Trigger edge direction, "Rising", "Falling"
-    delay      Float   Trigger delay [seconds]
-    autodelay  Float   Wait time for auto trigger [seconds]
-    adc_max    Float   Instrument ADC maximum value, for scaling
+    source : str
+        Name of source for trigger, "A", "B", "EXT", ...
+    level : float
+        Trigger level in Volts
+    direction : str
+        Trigger edge direction, "Rising", "Falling"
+    delay : float
+        Trigger delay [seconds]
+    autodelay : float
+        Wait time for auto trigger [seconds]
+    adc_max : float
+        Instrument ADC maximum value, for scaling
 
     Methods
     -------
-    enabled  Boolean  External trigger enabled or internal trigger
+    enabled : bool
+        External trigger enabled or internal trigger
     """
 
     source = "A"
@@ -119,18 +138,27 @@ class Horizontal:
 
     Attributes
     ----------
-    timebase          Int    Number defining oscilloscope sample rate
-    n_samples         Int    Number of samples to aquire per channel
-    dt                Float  Oscilloscope sampling interval
-    trigger_position  Float  Trigger position in % of trace length
+    timebase : int
+        Number defining oscilloscope sample rate
+    n_samples : int
+        Number of samples to aquire per channel
+    dt : float
+        Oscilloscope sampling interval
+    trigger_position : float
+        Trigger position in % of trace length
 
     Methods
     -------
-    fs             Float  Sample rate
-    n_pretrigger   Int    Number of sample points before trigger
-    n_posttrigger  Int    Number of sample points after trigger
-    t0             Float  Time of first sample point
-    t_max          Float  Time of last sample point
+    fs : float
+        Sample rate
+    n_pretrigger : int
+        Number of sample points before trigger
+    n_posttrigger : int
+        Number of sample points after trigger
+    t0 : float
+        Time of first sample point
+    t_max : float
+        Time of last sample point
     """
 
     timebase = 3
@@ -177,24 +205,42 @@ class Horizontal:
 class Communication:
     """c-type variables for calling c-style functions in DLLs from Pico SDK.
 
-    Interface between c-type calls and Python.
+    Handle to and information about the istrument (oscilloscope)
+    The SK for communication with the instrument uses c-type function calls.
+    This requres use of c-type variables. This function provides an interface
+    from Python to these functions.
+    The c-type variables are only used inside this function.
 
     Attributes
     ----------
-    handle            ctypes.c_int16    Handle to instument , identifier
-    connected         Boolean           Instument connected or not
-    signal_generator  Boolean           Arbitrary waveform generator available
-    status            Dictionary        Status messages for instrument
-    acqusition_ready  ctypes.c_int16    Instument acquisition finished
-    max_samples       ctypes.c_int32    Max. no of samples to acquire
-    max_adc           ctypes.c_int16    Maximum value for instument ADC
-    overflow          ctypes.c_int16    Overflow detected in input data
-    channel           String            Channel name, 'A', 'B', ...
-    buffer            List of pointers  Buffer for acquired data ponts
-    awg_max_value     ctypes.c_int16    Max value for AWG
-    awg_min_value     ctypes.c_int16    Min value for AWG
-    awg_min_length    ctypes.c_int32    Min. no of points for AWG
-    awg_max_length    ctypes.c_int32    Max. no of points for AWG
+    handle : ctypes.c_int16
+        Handle to instument , identifier
+    connected : bool
+        Is the instrument connected?
+    signal_generator : bool
+        Does the instrument contains an arbitrary waveform generator?
+    status : dictionary of str
+        Status messages for instrument
+    acqusition_ready : ctypes.c_int16
+        Instument acquisition finished
+    max_samples : ctypes.c_int32
+        Max. no of samples to acquire
+    max_adc : ctypes.c_int16
+        Maximum value for instument ADC
+    overflow : ctypes.c_int16
+        Overflow detected in input data
+    channel : str
+        Channel name, 'A', 'B', ...
+    buffer : List of pointers
+        Buffer for acquired data ponts
+    awg_max_value : ctypes.c_int16
+        Max value for arbitrary waveform generator
+    awg_min_value : ctypes.c_int16
+        Min value for arbitrary waveform generator
+    awg_min_length : ctypes.c_int32
+        Min. no of points for arbitrary waveform generator
+    awg_max_length : ctypes.c_int32
+        Max. no of points for arbitrary waveform generator
     """
 
     handle = ctypes.c_int16(0)
@@ -226,7 +272,8 @@ def open_adc(dso):
 
     Argument and output
     -------------------
-    dso Communication class  Communuication status for instrument
+    dso : Communication class
+        Communication status for instrument
     """
     dso.status["openunit"] = picoscope.ps2000aOpenUnit(
                                 ctypes.byref(dso.handle),
@@ -262,11 +309,13 @@ def stop_adc(dso):
 
     Argument
     --------
-    dso  Communication class  Communuication status for instrument
+    dso : Communication class
+        Communication status for instrument
 
     Output
     ------
-    dso.status  Dictionary  Status messages for instrument
+    dso.status : dictionary of str
+        Status messages for instrument
     """
     dso.status["stop"] = picoscope.ps2000aStop(dso.handle)
     assert_pico_ok(dso.status["stop"])
@@ -278,11 +327,13 @@ def close_adc(dso):
 
     Argument
     --------
-    dso  Communication class  Communuication status for instrument
+    dso : Communication class
+        Communication status for instrument
 
     Output
     ------
-    dso.status  Dictionary  Status messages for instrument
+    dso.status : dictionary of str
+        Status messages for instrument
     """
     dso.status["close"] = picoscope.ps2000aCloseUnit(dso.handle)
     assert_pico_ok(dso.status["close"])
@@ -294,12 +345,15 @@ def set_vertical(dso, channel):
 
     Argument
     --------
-    dso     Communication class  Communuication status for instrument
-    channel Channel class        Oscilloscope channel settings
+    dso : Communication class
+        Communication status for instrument
+    channel : Channel class
+        Oscilloscope channel settings
 
     Output
     ------
-    dso.status  Dictionary  Status messages for instrument
+    dso.status  dictionary of str
+        Status messages for instrument
     """
     name = channel_no_to_name(channel.no)
     status_name = f"setCh{name}"
@@ -319,14 +373,19 @@ def set_trigger(dso, trigger, channel, sampling):
 
     Arguments
     ---------
-    dso       Communication class  Communuication status for instrument
-    trigger   Trigger class        Settings for oscilloscope trigger
-    channel   Channel class        Settings for oscilloscope vertical scale
-    sampling  Horizontal class     Settings for oscilloscope horizontal scale
+    dso : Communication class
+        Communication status for instrument
+    trigger : Trigger class
+        Settings for oscilloscope trigger
+    channel : Channel class
+        Settings for oscilloscope vertical scale
+    sampling : Horizontal class
+        Settings for oscilloscope horizontal scale
 
     Output
     ------
-    dso.status  Dictionary   Status messages for instrument
+    dso.status  dictionary of str
+        Status messages for instrument
     """
     enabled = int(trigger.enabled())
 
@@ -365,11 +424,13 @@ def get_trigger_time_offset(dso):
 
     Arguments
     ---------
-    dso       Communication class  Communuication status for instrument
+    dso : Communication class
+        Communication status for instrument
 
     Output
     ------
-    trigger_time_offset  Float  Time from trigger to first sample point
+    trigger_time_offset : float
+        Time from trigger to first sample point
     """
     segment_index = 0
     trigger_time = ctypes.c_int64(0)
@@ -390,12 +451,15 @@ def get_sample_interval(dso, sampling):
 
     Arguments
     ---------
-    dso       Communication class  Communication status for instrument
-    sampling  Horizontal class     Settings for oscilloscope horizontal scale
+    dso : Communication class
+        Communication status for instrument
+    sampling : Horizontal class
+        Settings for oscilloscope horizontal scale
 
     Output
     ------
-    sample_interval   Float   Sampling interval for acquired trace
+    sample_interval : float
+        Sampling interval for acquired trace
     """
     sample_interval_ns = ctypes.c_float(0)
     max_n_samples = ctypes.c_int32(0)
@@ -420,12 +484,15 @@ def configure_acquisition(dso, sampling):
 
     Arguments
     ---------
-    dso       Communication class   Communication status for instrument
-    sampling  Horizontal class      Oscilloscope horizontal settings
+    dso : Communication class
+        Communication status for instrument
+    sampling : Horizontal class
+        Oscilloscope horizontal settings
 
     Output
     ------
-    dso       Communication class   Communication status for instrument
+    dso : Communication class
+        Communication status for instrument
     """
     dso.max_samples.value = sampling.n_buffer()
     segment_index = 0
@@ -456,14 +523,19 @@ def acquire_trace(dso, sampling, ch):
 
     Arguments
     ---------
-    dso       Communication class   Communication status for instrument
-    ch        List of string        Names of channels to acquire
-    sampling  Horizontal class      Settings for oscilloscope horizontal scale
+    dso : Communication class
+        Communication status for instrument
+    ch : List of string
+        Names of channels to acquire
+    sampling : Horizontal class
+        Settings for oscilloscope horizontal scale
 
     Output
     ------
-    dso.status  Dictionary          Status message for operation
-    v           2D array of float   Acquired traces, scaled in Volts
+    dso.status : dictionary of str
+          Status message for operation
+    v  : 2D array of float
+        Acquired traces, scaled in Volts
     """
     start_index = 0
     downsample_ratio = 0
@@ -522,11 +594,13 @@ def check_awg(dso):
 
     Arguments
     ---------
-    dso       Communication class   Communication status for instrument
+    dso : Communication class
+        Communication status for instrument
 
     Output
     ------
-    dso       Communication class   Communication status for instrument
+    dso : Communication class
+        Communication status for instrument
     """
     dso.status["sigGenArbMinMax"] \
         = picoscope.ps2000aSigGenArbitraryMinMaxValues(
@@ -549,13 +623,17 @@ def set_signal(dso, sampling, pulse):
 
     Arguments
     ---------
-    dso       Communication class  Communication status for instrument
-    sampling  Horizontal class     Settings for oscilloscope horizontal scale
-    pulse     Pulse class          Defnition of pulse for AWG
+    dso : Communication class
+        Communication status for instrument
+    sampling : Horizontal class
+        Settings for oscilloscope horizontal scale
+    pulse : Pulse class
+        Defnition of pulse for AWG
 
     Output
     ------
-    dso       Communication class  Communication status for instrument
+    dso : Communication class
+        Communication status for instrument
     """
     if pulse.on:
         amplitude = min(pulse.a, DAC_MAX_AMPLITUDE)
@@ -647,12 +725,15 @@ def find_timebase(fs_requested):
 
     Arguments
     ---------
-    fs_requested  Float Requested sample rate
+    fs_requested : float
+        Requested sample rate
 
     Outputs
     -------
-    timebase   Int    Oscilloscope timbase closest to requested sample rate
-    fs_actual  Float  Actual sample sate for timebase
+    timebase: int
+        Oscilloscope timbase closest to requested sample rate
+    fs_actual: float
+        Actual sample sate for timebase
     """
     fs_max = 125e6
     timebase = int(fs_max/fs_requested)+2  # See documentation for 'Timebases'
@@ -669,11 +750,13 @@ def find_scale(x):
 
     Arguments
     ---------
-    x  Float  Requested maximum range
+    x : float
+        Requested maximum range
 
     Outputs
     -------
-    xn  Float  Next ooscilloscope range larger than x
+    xn :float
+        Next ooscilloscope range larger than x
     """
     vmin = 20e-3
     vmax = 20

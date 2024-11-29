@@ -480,7 +480,7 @@ def get_sample_interval(dso, sampling):
 def configure_acquisition(dso, sampling):
     """Configure acquisition of data from oscilloscope.
 
-    Configures oscilloscope and sets up buffers fro input data
+    Configures oscilloscope and sets up buffers for input data
 
     Arguments
     ---------

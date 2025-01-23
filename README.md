@@ -29,18 +29,19 @@ These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, usi
 #### acquire_ultrasound_python 
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
-| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 5000 |  Python with GUI  | 'acquire_ultrasound.py' |
-| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 5000 |  Python script    | 'acquire_ultrasound_raw_ps5000a.py' |
-| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 2000 |  Python script    | 'acquire_ultrasound_raw_ps2000a.py' |
-| Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 5000 |  Python class | 'ps5000a_ultrasound_wrappers.py' |
-| Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 2000 |  Python class | 'ps2000a_ultrasound_wrappers.py' |
-| Collection of functions to alalyse and plot the ultrasound results.         |                | Python class  | 'ultrasound_utilities.py' |  
+| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 5000 |  Python with GUI  | `acquire_ultrasound.py` |
+| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 5000 |  Python script    | `acquire_ultrasound_raw_ps5000a.py` |
+| Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 2000 |  Python script    | `acquire_ultrasound_raw_ps2000a.py` |
+| Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 5000 |  Python class | `ps5000a_ultrasound_wrappers.py` |
+| Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 2000 |  Python class | `ps2000a_ultrasound_wrappers.py` |
+| Collection of functions to alalyse and plot the ultrasound results.         |                | Python class  | `ultrasound_utilities.py` |  
 
 #### hydrophone-scanning-onda-aims-iii
 Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
 
 #### lyncee_dhm_processing
-Load, process and display results from Lyncee Tec DHM in Matlab
+Load, process and display results from Lyncee Tec DHM | Lyncee Tec DHM 2100L |Matlab | `animate_DHM.m |
+
 
 ## Acquire Impedance Spectra
 | Description |  Hardware | Type | Function Name | 

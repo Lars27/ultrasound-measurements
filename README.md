@@ -36,11 +36,26 @@ These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, usi
 | Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 2000 |  Python class | `ps2000a_ultrasound_wrappers.py` |
 | Collection of functions to alalyse and plot the ultrasound results.         |                | Python class  | `ultrasound_utilities.py` |  
 
+
+## Ultrasound Beam Profile Measurements
 #### hydrophone-scanning-onda-aims-iii
 Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
+| Description |  Hardware | Type | Function Name | 
+| -- | -- | -- | -- | 
+|  Scan 2D beam profile of ultrasound transducer | Onda AIMS III | Matlab script | `BeamprofileScan.m` |
+| Generate beam profile plots for a colection of measurements | Onda AIMS III | Matlab script | `BatchPlotBeamprofiles`|
+| Calculate and plot beam profile in the axial plane (xz or yz) | Onda AIMS III | Matlab script | `PlotBeamshapeAxial`|
+| Calculate and plot beam profile in the lateral plane (xy) | Onda AIMS III | Matlab script | `PlotBeamshapeLateral`|
 
+
+
+
+
+## Analyse Results from LynceeTec DHM 2100L Holographic Microscope
 #### lyncee_dhm_processing
-Load, process and display results from Lyncee Tec DHM | Lyncee Tec DHM 2100L |Matlab | `animate_DHM.m |
+| Description |  Hardware | Type | Function Name | 
+| -- | -- | -- | -- | 
+|Create amimation from from digital holography raw data files | Lyncee Tec DHM-R2100L |Matlab | `animate_DHM.m |
 
 
 ## Acquire Impedance Spectra

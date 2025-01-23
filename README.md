@@ -13,14 +13,14 @@ The Matlab functions are to be called from the Matlab console or from antoher Ma
 All programs save results to a common in-house defined binary file format called '.wfm'.
 These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, using dedicated functions.
 
-#### Matlab - Active, but new developments will be in Python. `acquire_ultrasound_matlab_app`
+#### Matlab - Active, but new developments will be in Python.
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
 | Acquire and display ultrasound pulses. Save result to Matlab .mat-file   | PicoScope 5000  | Matlab-app       | `AcquirePulses_Picoscope5000a.mlapp` |
 | Acquire and display ultrasound pulses. Save result to binary file (wfm)  | PicoScope 5000  | Matlab-app       | `AcquirePulses_Picoscope5000a_wfm.mlapp` |
 | Load measured ultrasound pulses from binary file (wfm)                   |                 | Matlab-function  | `readwfm.m`|
 
-#### Python. `acquire_ultrasound_python`
+#### Python.
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
 | Acquire and display ultrasound pulses. Save result to binary file (wfm) | PicoScope 5000 |  Python with GUI  | `acquire_ultrasound.py` |
@@ -30,7 +30,7 @@ These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, usi
 | Wrappers for c-type functions to interact with instrument from  from Python | PicoScope 2000 |  Python class | `ps2000a_ultrasound_wrappers.py` |
 | Collection of functions to alalyse and plot the ultrasound results.         |                | Python class  | `ultrasound_utilities.py` |  
 
-### LabVIEW - Not longer maintained. `Acquire_Ultrasound_LabVIEW`
+### LabVIEW - No longer maintained
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
 | Acquire and display ultrasound pulses | National Instruments high-speed data acquisition boards (NI Scope)  | LabVIEW project | `Aquire Ultrasound.lvproj` |

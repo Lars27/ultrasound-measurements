@@ -38,6 +38,6 @@ Load, process and display results from Lyncee Tec DHM in Matlab
 | Acquire S-parameter measurements         | Rhode & Schwartz ZVL vector netwotrk analyzer       | LabVIEW project | `Measure Impedance R&S ZVL.lvproj` |
 | Example program to load and plot one impedance measurement saved as S11-parameters         | | Matlab-function | `ExamplePlotImpedance.m` |
 | Example program to load and plot a group of impedance measurements saved as S11-parameters | | Matlab-function | `ExamplePlotImpedances.m` |
-| Read measured data stored as scaled single precicion float values                          | | Matlab-function | `readtrace.m`|
+| Read measured data stored as scaled single presicion float (float32)                | | Matlab-function | `readtrace.m`|
 | Acquire impedance measurements         | Trewmac TE3100                                       | Python-program | `read_trewmac_gui_continous.py`
-| Read electrical impedance spectra stored as scaled single precicion float values |            | Matlab-function | `read_impedance.m` |
+| Read electrical impedance spectra stored as scaled single precision float  (float32) |            | Matlab-function | `read_impedance.m` |

@@ -28,16 +28,9 @@ Porting of the Matlab-apps for PicoScope 5000 to Python. Work in progress
 
 #### hydrophone-scanning-onda-aims-iii
 Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
-
-#### lyncee_dhm_processing
-Load, process and display results from Lyncee Tec DHM in Matlab
-
-## Acquire Impedance Spectra
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
-| Acquire S-parameter measurements         | Rhode & Schwartz ZVL vector netwotrk analyzer       | LabVIEW project | `Measure Impedance R&S ZVL.lvproj` |
-| Example program to load and plot one impedance measurement saved as S11-parameters         | | Matlab-function | `ExamplePlotImpedance.m` |
-| Example program to load and plot a group of impedance measurements saved as S11-parameters | | Matlab-function | `ExamplePlotImpedances.m` |
-| Read measured data stored as scaled single precicion float values                          | | Matlab-function | `readtrace.m`|
-| Acquire impedance measurements         | Trewmac TE3100                                       | Python-program | `read_trewmac_gui_continous.py`
-| Read electrical impedance spectra stored as scaled single precicion float values |            | Matlab-function | `read_impedance.m` |
+|  Scan 2D beam profile of ultrasound transducer | Onda AIMS III | Matlab script | `BeamprofileScan.m` |
+| Generate beam profile plots for a colection of measurements | Onda AIMS III | Matlab script | `BatchPlotBeamprofiles`|
+| Calculate and plot beam profile in the axial plane (xz or yz) | Onda AIMS III | Matlab script | `PlotBeamshapeAxial`|
+| Calculate and plot beam profile in the lateral plane (xy) | Onda AIMS III | Matlab script | `PlotBeamshapeLateral`|

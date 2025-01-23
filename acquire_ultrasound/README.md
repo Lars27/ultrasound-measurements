@@ -21,6 +21,8 @@ These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, usi
 | Load measured ultrasound pulses from binary file (wfm)                   |                 | Matlab-function  | `readwfm.m`|
 
 <<<<<<< HEAD
+=======
+>>>>>>> fcfdde3973bf989d23ab9904e041fc0f7edbafcd
 ### Python.
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
@@ -36,6 +38,7 @@ These results can be loaded by any of the toos, LabVIEW, Matlab, and Python, usi
 | -- | -- | -- | -- | 
 | Acquire and display ultrasound pulses | National Instruments high-speed data acquisition boards (NI Scope)  | LabVIEW project | `Aquire Ultrasound.lvproj` |
 | Load, analyse, and display aquired ultrasound pulses | Any                                                  | Matlab function, example | `ExamplePlotWaveform.m`|   
+<<<<<<< HEAD
 
 ## Ultrasound Beam Profile Measurements
 #### hydrophone-scanning-onda-aims-iii
@@ -68,3 +71,5 @@ Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
 #### acquire_ultrasound_python 
 Porting of the Matlab-apps for PicoScope 5000 to Python. Work in progress
 >>>>>>> 2074591acfa514cc799e07ac6c3a3125db63b17d
+=======
+>>>>>>> fcfdde3973bf989d23ab9904e041fc0f7edbafcd

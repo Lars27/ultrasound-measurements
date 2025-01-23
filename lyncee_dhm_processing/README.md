@@ -10,4 +10,4 @@ The Matlab functions are to be called from the Matlab console or from antoher Ma
 ## Analyse Results from LynceeTec DHM 2100L Holographic Microscope. `lyncee_dhm_processing`
 | Description |  Hardware | Type | Function Name | 
 | -- | -- | -- | -- | 
-|Create amimation from from digital holography raw data files | Lyncee Tec DHM-R2100L |Matlab | `animate_DHM.m |
+|Create amimation from from digital holography raw data files | Lyncee Tec DHM-R2100L |Matlab | `animate_DHM.m` |

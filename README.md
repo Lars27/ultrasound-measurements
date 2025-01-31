@@ -23,4 +23,4 @@ Acquire and plot pulses from the Onda AIMS III hydrophone system in Matlab
 
 1. **Analyse Results from LynceeTec DHM 2100L Holographic Microscope** `lyncee_dhm_processing`
 
-1. **Acquire Impedance Spectra** `acquire_impedance`. Aquire impedance data from a network or impedance analyser, save to file, and plot results.
+1. **Acquire Impedance Spectra** `acquire_impedance`. Aquire impedance data from a network analyser or impedance analyser, save to file, and plot results.
